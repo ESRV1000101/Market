@@ -12,11 +12,17 @@ const categorias = {
     "Aceitunas y Huevos pardos": ["Aceitunas", "Huevos pardos"]
 };
 
-const productosDiv = document.getElementById("productos");
+const categoriasDiv = document.getElementById("categorias");
 
 for (const categoria in categorias) {
     const catDiv = document.createElement("div");
-    catDiv.innerHTML = `<h2>${categoria}</h2>`;
+    catDiv.className = "categoria";
+    const header = document.createElement("h2");
+    header.textContent = categoria;
+    header.style.cursor = "pointer";
+    const productosDiv = document.createElement("div");
+    productosDiv.style.display = "none";
+
     categorias[categoria].forEach(producto => {
         const prodDiv = document.createElement("div");
         prodDiv.className = "producto";
@@ -27,9 +33,16 @@ for (const categoria in categorias) {
             </select>
             <button onclick="agregarAlCarrito('${producto}')">Agregar al carrito</button>
         `;
-        catDiv.appendChild(prodDiv);
+        productosDiv.appendChild(prodDiv);
     });
-    productosDiv.appendChild(catDiv);
+
+    header.onclick = () => {
+        productosDiv.style.display = productosDiv.style.display === "none" ? "block" : "none";
+    };
+
+    catDiv.appendChild(header);
+    catDiv.appendChild(productosDiv);
+    categoriasDiv.appendChild(catDiv);
 }
 
 function agregarAlCarrito(producto) {
@@ -39,3 +52,4 @@ function agregarAlCarrito(producto) {
     localStorage.setItem("carrito", JSON.stringify(carrito));
     alert("Producto agregado al carrito");
 }
+
