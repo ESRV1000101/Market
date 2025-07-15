@@ -18,7 +18,7 @@ function comprar() {
     }
     const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
     const mensaje = `Nombre: ${nombre}\nDirección: ${direccion}\n\nProductos:\n` + carrito.map(item => `${item.producto} - Cantidad: ${item.cantidad}`).join("\n");
-    window.location.href = "mailto:tuemail@dominio.com?subject=Compra de Verduras y Frutas&body=" + encodeURIComponent(mensaje);
+    window.location.href = "mailto:esanromanvargas@gmail.com.com?subject=Compra de Verduras y Frutas&body=" + encodeURIComponent(mensaje);
 }
 
 mostrarCarrito();
