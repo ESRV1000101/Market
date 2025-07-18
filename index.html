@@ -1145,8 +1145,8 @@
                     <div class="item-info">
                         <img src="${item.image}" alt="${item.name}" class="item-image">
                         <div class="item-details">
-                            <span class="item-name">${item.name} (${item.unit})</span>
-                            <!--<span class="item-quantity">Cantidad: ${item.quantity}</span>-->
+                            <span class="item-name">${item.name}</span>
+                            <!--<span class="item-quantity">Cantidad: ${item.quantity} (${item.unit})</span>-->
                         </div>
                     </div>
                     <div class="item-actions">
@@ -1323,7 +1323,7 @@
             // Calcular totales
             let subtotal = 0;
             cart.forEach(item => {
-                subtotal += item.quantity;
+                subtotal += 1;
             });
             const total = subtotal;
             
@@ -1346,6 +1346,7 @@
                 status: 'Pendiente',
                 items: cart.map(item => ({
                     name: item.name,
+                    unit: item.unit,
                     quantity: item.quantity
                 })),
                 total: total,
