@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market - Panel de Administración</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary: #4a7c59;
+            --primary-dark: #3a6547;
+            --secondary: #8d9f87;
+            --accent: #d0b49f;
+            --light: #f4f1e9;
+            --dark: #2d3319;
+            --gray: #7d8c7d;
+            --light-gray: #e9ecef;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --radius: 8px;
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        /* Cabecera de administración */
+        .admin-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 5%;
+            box-shadow: var(--shadow);
+        }
+        
+        .admin-header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .admin-logo i {
+            font-size: 1.8rem;
+        }
+        
+        .logout-btn {
+            background-color: white;
+            color: var(--primary);
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .logout-btn:hover {
+            background-color: var(--light);
+            transform: translateY(-2px);
+        }
+        
+        /* Panel de administración */
+        .admin-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+        }
+        
+        .admin-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .admin-title {
+            color: var(--primary);
+            font-size: 2rem;
+        }
+        
+        .date-filter {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            background: var(--light-gray);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+        }
+        
+        .date-filter input, 
+        .date-filter select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: var(--radius);
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 1rem;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            height: 300px;
+        }
+        
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .orders-table th, .orders-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .orders-table th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .orders-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .orders-table tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .action-btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-excel {
+            background-color: #217346;
+        }
+        
+        .btn-excel:hover {
+            background-color: #1a5a38;
+        }
+        
+        .btn-gray {
+            background-color: var(--gray);
+        }
+        
+        .btn-gray:hover {
+            background-color: #6c7b6c;
+        }
+        
+        /* Modal para detalles del pedido */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-backdrop.active {
+            display: flex;
+        }
+        
+        .order-details {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .close-modal:hover {
+            color: var(--dark);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            background-color: #f9f9f9;
+            border-radius: var(--radius);
+            margin-top: 1rem;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .empty-state p {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .orders-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .admin-actions {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .date-filter {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+        
+        /* Loader */
+        .loader {
+            display: none;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Login */
+        .login-container {
+            max-width: 400px;
+            margin: 5rem auto;
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .login-title {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: var(--radius);
+            font-size: 1rem;
+        }
+        
+        .form-input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        .login-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .login-btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .error-message {
+            color: #dc3545;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Responsive para modal */
+        @media (max-width: 992px) {
+            .order-details {
+                width: 95%;
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .order-details {
+                padding: 1rem;
+                max-height: 85vh;
+            }
+            
+            .btn-container {
+                flex-direction: column;
+            }
+            
+            .btn-container button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .date-filter {
+                flex-wrap: wrap;
+            }
+            
+            .date-filter > * {
+                margin-bottom: 0.5rem;
+            }
+            
+            .orders-table {
+                font-size: 0.9rem;
+            }
+            
+            .orders-table th, 
+            .orders-table td {
+                padding: 8px 10px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .order-details {
+                width: 98%;
+                padding: 0.8rem;
+            }
+            
+            .order-details h3 {
+                font-size: 1.2rem;
+                padding-right: 30px;
+            }
+            
+            .order-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-actions .btn {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sistema de autenticación -->
+    <div id="login-section">
+        <div class="login-container">
+            <h2 class="login-title">Panel de Administración</h2>
+            <div class="form-group">
+                <label class="form-label">Usuario</label>
+                <input type="text" class="form-input" id="admin-user" placeholder="Ingresa tu usuario">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Contraseña</label>
+                <input type="password" class="form-input" id="admin-password" placeholder="Ingresa tu contraseña">
+            </div>
+            <div class="error-message" id="login-error">Credenciales incorrectas</div>
+            <button class="login-btn" onclick="login()">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </button>
+        </div>
+    </div>
+    
+    <!-- Panel de administración (oculto inicialmente) -->
+    <div id="admin-panel" style="display: none;">
+        <!-- Cabecera de administración -->
+        <div class="admin-header">
+            <div class="admin-header-container">
+                <a href="#" class="admin-logo">
+                    <i class="fas fa-leaf"></i>
+                    Market - Administración
+                </a>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </div>
+        
+        <!-- Contenido de administración -->
+        <div class="admin-container">
+            <div class="admin-actions">
+                <h2 class="admin-title">Gestión de Pedidos</h2>
+                <div class="date-filter">
+                    <label>Filtrar por fecha:</label>
+                    <input type="date" id="filter-start-date">
+                    <span>a</span>
+                    <input type="date" id="filter-end-date">
+                    
+                    <!-- Filtro por estado -->
+                    <select id="filter-status" class="form-input" style="width: auto;">
+                        <option value="">Todos los estados</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Completado">Completado</option>
+                        <option value="Cancelado">Cancelado</option>
+                    </select>
+                    
+                    <button class="btn" onclick="applyDateFilter()">
+                        <i class="fas fa-filter"></i> Buscar
+                    </button>
+                    <button class="btn btn-gray" onclick="clearDateFilter()">
+                        <i class="fas fa-times"></i> Limpiar
+                    </button>
+                </div>
+                <button class="btn btn-excel" id="download-excel-btn" style="display: none;" onclick="downloadExcel()">
+                    <i class="fas fa-file-excel"></i> Descargar Excel
+                </button>
+                <button class="btn" onclick="refreshOrders()">
+                    <i class="fas fa-sync-alt"></i> Actualizar
+                </button>
+            </div>
+            
+            <div class="loader" id="admin-loader"></div>
+            
+            <div class="stats-container" id="stats-container">
+                <!-- Estadísticas se cargarán dinámicamente -->
+            </div>
+            
+            <div class="chart-container" id="chart-container">
+                <canvas id="orders-chart"></canvas>
+            </div>
+            
+            <div id="orders-section">
+                <div class="admin-actions" style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 1rem; color: var(--primary);">Lista de Pedidos</h3>
+                    <div id="orders-count"></div>
+                </div>
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>ID Pedido</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-body">
+                        <!-- Los pedidos se cargarán dinámicamente aquí -->
+                    </tbody>
+                </table>
+                
+                <div id="empty-orders" class="empty-state" style="display: none;">
+                    <i class="fas fa-search"></i>
+                    <h3>No hay pedidos para mostrar</h3>
+                    <p>Seleccione un rango de fechas para buscar pedidos</p>
+                    <button class="btn" onclick="showPendingOrders()">
+                        <i class="fas fa-list"></i> Ver pedidos pendientes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para detalles del pedido -->
+    <div class="modal-backdrop" id="order-details-modal">
+        <div class="order-details">
+            <button class="close-modal" onclick="closeOrderDetails()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="order-details-content">
+                <!-- Contenido dinámico de detalles del pedido -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Credenciales API
+        const MASTER_KEY = '$2a$10$CfialwaKlt.oEV.qHo/IHeu2aUczMtpVkCYXzMgUtZCpjmNU9pIGK';
+        const BIN_ID = '687a974a2de0201b319ca267';
+        const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+        
+        // Credenciales de administrador
+        const ADMIN_USER = "admin";
+        const ADMIN_PASSWORD = "nomura25";
+        
+        let ordersChart = null;
+        let currentOrders = [];
+        let currentOrderDetailsId = null;
+
+        // Función para iniciar sesión
+        function login() {
+            const user = document.getElementById('admin-user').value;
+            const password = document.getElementById('admin-password').value;
+            const errorMessage = document.getElementById('login-error');
+            
+            if (user === ADMIN_USER && password === ADMIN_PASSWORD) {
+                localStorage.setItem('adminLoggedIn', 'true');
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block';
+                showInitialState();
+            } else {
+                errorMessage.style.display = 'block';
+            }
+        }
+        
+        // Función para cerrar sesión
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            location.reload();
+        }
+        
+        // Comprobar si el administrador ya está logueado
+        function checkLogin() {
+            if (localStorage.getItem('adminLoggedIn') === 'true') {
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block';
+                showInitialState();
+            }
+        }
+        
+        // Mostrar estado inicial sin pedidos
+        function showInitialState() {
+            document.getElementById('stats-container').innerHTML = '';
+            document.getElementById('chart-container').style.display = 'none';
+            document.getElementById('orders-count').innerHTML = '';
+            document.getElementById('orders-body').innerHTML = '';
+            document.getElementById('download-excel-btn').style.display = 'none';
+            document.getElementById('empty-orders').style.display = 'block';
+            
+            if (ordersChart) {
+                ordersChart.destroy();
+                ordersChart = null;
+            }
+            
+            // Cerrar detalles si estaban abiertos
+            closeOrderDetails();
+        }
+
+        // Función para mostrar loader
+        function showLoader() {
+            document.getElementById('admin-loader').style.display = 'block';
+            document.getElementById('stats-container').style.display = 'none';
+            document.getElementById('chart-container').style.display = 'none';
+            document.getElementById('orders-body').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Cargando pedidos...</td></tr>';
+            document.getElementById('empty-orders').style.display = 'none';
+            
+            // Cerrar detalles si estaban abiertos
+            closeOrderDetails();
+        }
+
+        // Función para ocultar loader
+        function hideLoader() {
+            document.getElementById('admin-loader').style.display = 'none';
+            document.getElementById('stats-container').style.display = 'grid';
+            document.getElementById('chart-container').style.display = 'block';
+        }
+
+        // Función para obtener los pedidos desde la nube
+        async function fetchOrders() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': MASTER_KEY,
+                        'X-Bin-Meta': 'false'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Error al obtener los pedidos');
+                }
+                
+                const binData = await response.json();
+                return binData.orders || [];
+            } catch (error) {
+                console.error('Error al obtener pedidos:', error);
+                alert('Error al cargar los pedidos. Inténtalo de nuevo más tarde.');
+                return [];
+            }
+        }
+
+        // Función para guardar pedidos en la nube
+        async function saveOrdersToCloud(orders) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'X-Master-Key': MASTER_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ orders })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Error al guardar los pedidos');
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Error al guardar pedidos:', error);
+                throw error;
+            }
+        }
+
+        // Función para cargar los pedidos
+        async function loadOrders() {
+            showLoader();
+            
+            try {
+                const orders = await fetchOrders();
+                currentOrders = orders;
+                renderOrders(orders);
+                updateStats(orders);
+                createOrdersChart(orders);
+                hideLoader();
+                
+                if (orders.length > 0) {
+                    document.getElementById('download-excel-btn').style.display = 'inline-block';
+                }
+            } catch (error) {
+                console.error('Error al cargar pedidos:', error);
+                hideLoader();
+            }
+        }
+        
+        // Función para cargar pedidos filtrados (con filtro de estado)
+        async function loadFilteredOrders() {
+            showLoader();
+            
+            try {
+                const orders = await fetchOrders();
+                const startDateInput = document.getElementById('filter-start-date').value;
+                const endDateInput = document.getElementById('filter-end-date').value;
+                const statusFilter = document.getElementById('filter-status').value;
+                
+                // Filtrar pedidos por fecha y estado
+                let filteredOrders = orders;
+                
+                // Filtro por fechas usando timestamp
+                if (startDateInput) {
+                    const startDate = new Date(startDateInput).getTime();
+                    filteredOrders = filteredOrders.filter(order => order.timestamp >= startDate);
+                }
+                
+                if (endDateInput) {
+                    const endDate = new Date(endDateInput).getTime() + 86399999; // 23:59:59.999
+                    filteredOrders = filteredOrders.filter(order => order.timestamp <= endDate);
+                }
+                
+                if (statusFilter) {
+                    filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
+                }
+                
+                currentOrders = filteredOrders;
+                renderOrders(filteredOrders);
+                updateStats(filteredOrders);
+                createOrdersChart(filteredOrders);
+                hideLoader();
+                
+                document.getElementById('download-excel-btn').style.display = 
+                    filteredOrders.length > 0 ? 'inline-block' : 'none';
+                    
+                document.getElementById('orders-count').innerHTML = `
+                    <span style="background: var(--accent); padding: 4px 8px; border-radius: 20px;">
+                        ${filteredOrders.length} pedidos encontrados
+                    </span>
+                `;
+                    
+                document.getElementById('empty-orders').style.display = 
+                    filteredOrders.length > 0 ? 'none' : 'block';
+                    
+            } catch (error) {
+                console.error('Error al cargar pedidos filtrados:', error);
+                hideLoader();
+            }
+        }
+        
+        // Función para mostrar solo pedidos pendientes
+        async function showPendingOrders() {
+            document.getElementById('filter-start-date').value = '';
+            document.getElementById('filter-end-date').value = '';
+            document.getElementById('filter-status').value = 'Pendiente';
+            loadFilteredOrders();
+        }
+
+        // Función para renderizar pedidos en la tabla
+        function renderOrders(orders) {
+            const tbody = document.getElementById('orders-body');
+            tbody.innerHTML = '';
+            
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No se encontraron pedidos</td></tr>';
+                return;
+            }
+            
+            // Ordenar pedidos por fecha (más recientes primero)
+            orders.sort((a, b) => b.timestamp - a.timestamp);
+            
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.date}</td>
+                    <td>${order.customer}</td>
+                    <td>${order.total}</td>
+                    <td><span class="order-status status-${order.status.toLowerCase()}">${order.status}</span></td>
+                    <td>
+                        <button class="action-btn" onclick="viewOrderDetails(${order.id})">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Función para ver detalles de un pedido
+        async function viewOrderDetails(orderId) {
+            // Si ya está abierto este pedido, cerrarlo
+            if (currentOrderDetailsId === orderId) {
+                closeOrderDetails();
+                return;
+            }
+            
+            const orders = await fetchOrders();
+            const order = orders.find(o => o.id === orderId);
+            
+            if (!order) return;
+            
+            const detailsContent = document.getElementById('order-details-content');
+            detailsContent.innerHTML = `
+                <h3>Detalles del Pedido #${order.id}</h3>
+                
+                <div>
+                    <p><strong>Fecha:</strong> ${order.date}</p>
+                    <p><strong>Cliente:</strong> ${order.customer}</p>
+                    <p><strong>Dirección:</strong> ${order.address}</p>
+                    <p><strong>Teléfono:</strong> ${order.phone || 'No especificado'}</p>
+                    <p><strong>Notas:</strong> ${order.notes || 'Ninguna'}</p>
+                    <p><strong>Estado:</strong> <span class="order-status status-${order.status.toLowerCase()}">${order.status}</span></p>
+                </div>
+                
+                <h4 style="margin-top: 1.5rem;">Productos:</h4>
+                <div class="order-items">
+                    ${order.items.map(item => `
+                        <div class="order-item">
+                            <span>${item.name}</span>
+                            <span>Cantidad: ${item.quantity}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="btn-container">
+                    <button class="btn" onclick="changeOrderStatus(${order.id}, 'Completado')">
+                        <i class="fas fa-check"></i> Marcar como Completado
+                    </button>
+                    <button class="btn" style="background-color: #dc3545;" onclick="changeOrderStatus(${order.id}, 'Cancelado')">
+                        <i class="fas fa-times"></i> Cancelar Pedido
+                    </button>
+                </div>
+            `;
+            
+            // Mostrar modal
+            document.getElementById('order-details-modal').classList.add('active');
+            currentOrderDetailsId = orderId;
+        }
+        
+        // Función para cerrar detalles del pedido
+        function closeOrderDetails() {
+            document.getElementById('order-details-modal').classList.remove('active');
+            currentOrderDetailsId = null;
+        }
+
+        // Función para cambiar el estado de un pedido
+        async function changeOrderStatus(orderId, status) {
+            try {
+                const orders = await fetchOrders();
+                const orderIndex = orders.findIndex(o => o.id === orderId);
+                
+                if (orderIndex !== -1) {
+                    orders[orderIndex].status = status;
+                    await saveOrdersToCloud(orders);
+                    loadFilteredOrders();
+                    viewOrderDetails(orderId);
+                    alert(`El estado del pedido #${orderId} ha sido actualizado a "${status}"`);
+                }
+            } catch (error) {
+                console.error('Error al cambiar estado del pedido:', error);
+                alert('Hubo un error al actualizar el estado del pedido');
+            }
+        }
+
+        // Función para actualizar las estadísticas
+        function updateStats(orders) {
+            const totalOrders = orders.length;
+            const pendingOrders = orders.filter(order => order.status === 'Pendiente').length;
+            const completedOrders = orders.filter(order => order.status === 'Completado').length;
+            const cancelledOrders = orders.filter(order => order.status === 'Cancelado').length;
+            
+            document.getElementById('stats-container').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Pedidos Totales</div>
+                    <div class="stat-value">${totalOrders}</div>
+                    <div class="stat-label">En el rango seleccionado</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pedidos Pendientes</div>
+                    <div class="stat-value">${pendingOrders}</div>
+                    <div class="stat-label">Por atender</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pedidos Completados</div>
+                    <div class="stat-value">${completedOrders}</div>
+                    <div class="stat-label">Atendidos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pedidos Cancelados</div>
+                    <div class="stat-value">${cancelledOrders}</div>
+                    <div class="stat-label">No atendidos</div>
+                </div>
+            `;
+        }
+
+        // Función para crear gráfico de pedidos
+        function createOrdersChart(orders) {
+            const ctx = document.getElementById('orders-chart').getContext('2d');
+            
+            // Destruir gráfico anterior si existe
+            if (ordersChart) {
+                ordersChart.destroy();
+            }
+            
+            if (orders.length === 0) {
+                // Mostrar mensaje de no datos
+                ctx.fillStyle = "#999";
+                ctx.font = "16px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("No hay datos para mostrar", ctx.canvas.width/2, ctx.canvas.height/2);
+                return;
+            }
+            
+            // Agrupar pedidos por día
+            const ordersByDay = {};
+            orders.forEach(order => {
+                const date = new Date(order.timestamp);
+                const dayKey = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+                
+                if (!ordersByDay[dayKey]) {
+                    ordersByDay[dayKey] = 0;
+                }
+                ordersByDay[dayKey]++;
+            });
+            
+            // Ordenar por fecha
+            const sortedDays = Object.keys(ordersByDay).sort((a, b) => {
+                const [aDay, aMonth, aYear] = a.split('/').map(Number);
+                const [bDay, bMonth, bYear] = b.split('/').map(Number);
+                return new Date(aYear, aMonth - 1, aDay) - new Date(bYear, bMonth - 1, bDay);
+            });
+            
+            // Preparar datos para el gráfico
+            const labels = sortedDays;
+            const data = sortedDays.map(day => ordersByDay[day]);
+            
+            // Crear gráfico
+            ordersChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Pedidos por día',
+                        data: data,
+                        backgroundColor: 'rgba(74, 124, 89, 0.7)',
+                        borderColor: 'rgba(74, 124, 89, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Función para aplicar filtro por fecha
+        function applyDateFilter() {
+            loadFilteredOrders();
+        }
+
+        // Función para limpiar filtro de fecha
+        function clearDateFilter() {
+            document.getElementById('filter-start-date').value = '';
+            document.getElementById('filter-end-date').value = '';
+            document.getElementById('filter-status').value = '';
+            showInitialState();
+        }
+
+        // Función para refrescar la lista de pedidos
+        function refreshOrders() {
+            if (document.getElementById('filter-start-date').value || 
+                document.getElementById('filter-end-date').value ||
+                document.getElementById('filter-status').value) {
+                loadFilteredOrders();
+            } else {
+                showInitialState();
+            }
+        }
+        
+        // Función para descargar reporte en Excel de pedidos pendientes
+        function downloadExcel() {
+            // Filtrar solo pedidos pendientes
+            const pendingOrders = currentOrders.filter(order => order.status === 'Pendiente');
+            
+            if (pendingOrders.length === 0) {
+                alert('No hay pedidos pendientes para exportar');
+                return;
+            }
+            
+            // 1. Hoja de resumen de productos
+            const productSummary = {};
+            
+            // Calcular totales por producto
+            pendingOrders.forEach(order => {
+                order.items.forEach(item => {
+                    if (!productSummary[item.name]) {
+                        productSummary[item.name] = 0;
+                    }
+                    productSummary[item.name] += item.quantity;
+                });
+            });
+            
+            // Convertir a array para Excel
+            const summaryData = [
+                ['RESUMEN DE PRODUCTOS PENDIENTES', '', '', '', ''],
+                ['Producto', 'Cantidad Total', '', '', ''],
+            ];
+            
+            for (const [product, total] of Object.entries(productSummary)) {
+                summaryData.push([product, total]);
+            }
+            
+            // 2. Crear libro de Excel
+            const workbook = XLSX.utils.book_new();
+            
+            // Hoja de resumen con formato
+            const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+            
+            // Aplicar estilos a la hoja de resumen
+            const summaryRange = XLSX.utils.decode_range(summarySheet['!ref']);
+            for (let row = 0; row <= summaryRange.e.r; row++) {
+                for (let col = 0; col <= summaryRange.e.c; col++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                    
+                    if (!summarySheet[cellAddress]) continue;
+                    
+                    // Estilo para encabezados
+                    if (row === 0) {
+                        summarySheet[cellAddress].s = {
+                            font: { bold: true, sz: 16, color: { rgb: "FFFFFF" } },
+                            fill: { fgColor: { rgb: "4A7C59" } },
+                            alignment: { horizontal: "center" }
+                        };
+                    }
+                    else if (row === 1) {
+                        summarySheet[cellAddress].s = {
+                            font: { bold: true, color: { rgb: "FFFFFF" } },
+                            fill: { fgColor: { rgb: "8d9f87" } }
+                        };
+                    }
+                    // Estilo para datos
+                    else {
+                        summarySheet[cellAddress].s = {
+                            border: { top: { style: "thin" }, bottom: { style: "thin" } }
+                        };
+                        
+                        // Alternar colores de fila
+                        if (row % 2 === 0) {
+                            summarySheet[cellAddress].s.fill = { fgColor: { rgb: "F4F1E9" } };
+                        }
+                    }
+                }
+            }
+            
+            // Unir celdas para el título
+            summarySheet["!merges"] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }
+            ];
+            
+            // Ajustar anchos de columna
+            summarySheet["!cols"] = [
+                { wch: 30 },
+                { wch: 15 },
+                { wch: 5 },
+                { wch: 5 },
+                { wch: 5 }
+            ];
+            
+            XLSX.utils.book_append_sheet(workbook, summarySheet, "Resumen");
+            
+            // 3. Hojas para cada pedido
+            pendingOrders.forEach(order => {
+                const orderData = [
+                    [`PEDIDO #${order.id} - ${order.customer}`, '', '', '', ''],
+                    ['Fecha:', order.date, '', '', ''],
+                    ['Dirección:', order.address, '', '', ''],
+                    ['Teléfono:', order.phone || 'No especificado', '', '', ''],
+                    ['Notas:', order.notes || 'Ninguna', '', '', ''],
+                    ['Estado:', order.status, '', '', ''],
+                    ['', '', '', '', ''],
+                    ['Producto', 'Cantidad', '', '', ''],
+                ];
+                
+                // Agregar productos
+                order.items.forEach(item => {
+                    orderData.push([item.name, item.quantity]);
+                });
+                
+                // Agregar total
+                orderData.push(['', '', '', '', '']);
+                orderData.push(['Total productos:', order.items.reduce((sum, item) => sum + item.quantity, 0)]);
+                
+                // Crear hoja
+                const orderSheet = XLSX.utils.aoa_to_sheet(orderData);
+                
+                // Aplicar estilos
+                const orderRange = XLSX.utils.decode_range(orderSheet['!ref']);
+                for (let row = 0; row <= orderRange.e.r; row++) {
+                    for (let col = 0; col <= orderRange.e.c; col++) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+                        
+                        if (!orderSheet[cellAddress]) continue;
+                        
+                        // Estilo para título del pedido
+                        if (row === 0) {
+                            orderSheet[cellAddress].s = {
+                                font: { bold: true, sz: 14, color: { rgb: "FFFFFF" } },
+                                fill: { fgColor: { rgb: "4A7C59" } }
+                            };
+                        }
+                        // Estilo para encabezados de información
+                        else if (row < 6) {
+                            if (col === 0) {
+                                orderSheet[cellAddress].s = {
+                                    font: { bold: true },
+                                    fill: { fgColor: { rgb: "F4F1E9" } }
+                                };
+                            }
+                        }
+                        // Estilo para encabezado de productos
+                        else if (row === 7) {
+                            orderSheet[cellAddress].s = {
+                                font: { bold: true, color: { rgb: "FFFFFF" } },
+                                fill: { fgColor: { rgb: "8d9f87" } }
+                            };
+                        }
+                        // Estilo para total
+                        else if (row === orderRange.e.r) {
+                            orderSheet[cellAddress].s = {
+                                font: { bold: true },
+                                border: { top: { style: "medium" } }
+                            };
+                        }
+                    }
+                }
+                
+                // Unir celdas para el título
+                orderSheet["!merges"] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }
+                ];
+                
+                // Ajustar anchos de columna
+                orderSheet["!cols"] = [
+                    { wch: 30 },
+                    { wch: 15 },
+                    { wch: 5 },
+                    { wch: 5 },
+                    { wch: 5 }
+                ];
+                
+                XLSX.utils.book_append_sheet(workbook, orderSheet, `Pedido ${order.id}`);
+            });
+            
+            // Descargar archivo
+            const today = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(workbook, `Pedidos_Pendientes_${today}.xlsx`);
+        }
+
+        // Cerrar modal al hacer clic en el fondo
+        document.getElementById('order-details-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('order-details-modal')) {
+                closeOrderDetails();
+            }
+        });
+
+        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            checkLogin();
+            // Permitir login con Enter
+            document.getElementById('admin-user').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+
+            document.getElementById('admin-password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+
+            // Cerrar modal al hacer clic en el fondo
+            document.getElementById('order-details-modal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('order-details-modal')) {
+                    closeOrderDetails();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
