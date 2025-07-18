@@ -2,13 +2,1389 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Bienvenido a la Tienda</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market - Tienda de Frutas y Verduras</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!--<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>-->
+    <style>
+        /* Variables y Reset */
+        :root {
+            --primary: #4a7c59;
+            --secondary: #8d9f87;
+            --accent: #d0b49f;
+            --light: #f4f1e9;
+            --dark: #2d3319;
+            --gray: #7d8c7d;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --radius: 8px;
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        /* Navegación */
+        nav {
+            background-color: white;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 1rem 5%;
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .logo i {
+            font-size: 1.8rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            transition: var(--transition);
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+        
+        /* Secciones */
+        section {
+            display: none;
+            padding: 3rem 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        section.active {
+            display: block;
+        }
+        
+        /* Banner de Inicio */
+        .banner {
+            height: 80vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('img/fondo.avif');
+            background-size: cover;
+            background-position: center;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            color: white;
+            margin-bottom: 2rem;
+        }
+        
+        .banner h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .banner p {
+            font-size: 1.5rem;
+            max-width: 800px;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: var(--radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background-color: #a0e1b4;
+            color: #2d3319;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+        
+        /* Tienda - Categorías */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .category-card {
+            height: 250px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+        
+        .category-card:hover .category-image{
+            transform: scale(1.05);
+        }
+        
+        .category-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            color: white;
+            padding: 1.5rem 1rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            text-shadow: 0 3px 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Productos */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .product-card {
+            background-color: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .product-info {
+            padding: 1.5rem;
+        }
+        
+        .product-name {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+        
+        .product-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .quantity-select {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: var(--radius);
+            font-size: 1rem;
+        }
+        
+        .add-to-cart {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .add-to-cart:hover {
+            background-color: #3a6547;
+        }
+        
+        /* Carrito */
+        .cart-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .cart-items {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+        
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .cart-title {
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
+        
+        .empty-cart {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .empty-cart:hover {
+            background-color: #f5c6cb;
+        }
+        
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .item-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .item-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: var(--radius);
+        }
+        
+        .item-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .item-name {
+            font-weight: 600;
+        }
+        
+        .item-quantity {
+            color: var(--gray);
+        }
+        
+        .item-price {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .remove-item {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 1.2rem;
+            margin-left: 1rem;
+        }
+        
+        .cart-summary {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+        
+        .summary-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+        }
+        
+        .summary-label {
+            color: var(--gray);
+        }
+        
+        .summary-value {
+            font-weight: 600;
+        }
+        
+        .total-row {
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .total-value {
+            color: var(--primary);
+            font-weight: 700;
+        }
+        
+        .customer-info {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+        
+        .info-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: var(--radius);
+            font-size: 1rem;
+        }
+        
+        .form-input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        
+        .required::after {
+            content: " *";
+            color: #dc3545;
+        }
+        
+        .checkout-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .checkout-btn:hover {
+            background-color: #3a6547;
+        }
+        
+        .checkout-btn:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 3rem 5%;
+            margin-top: 3rem;
+        }
+        
+        .footer-container {
+            display: grid;
+            /*grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));*/
+            gap: 2rem;
+            max-width: 1400px;
+            justify-content: center;
+            margin: auto;
+        }
+        
+        .footer-section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            justify-content: center;
+            color: var(--accent);
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: var(--light);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+        
+        .contact-info {
+            display: flex;
+            flex-direction:column;
+            gap: 0.8rem;
+            justify-content: center;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        /*.social-icons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }*/
+
+        .whatsapp-float {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            bottom: 40px;
+            right: 40px;
+            background-color: #31b461;
+            color: #ffffff;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 30px;
+            box-shadow: 2px 2px 3px #999;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .fa-whatsapp {
+            color: #ddd;
+            transition: transform 0.3s;
+        }
+
+        .whatsapp-float:hover .fa-whatsapp {
+            transform: scale(1.2);
+        }
+        
+        /*.social-icons a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }*/
+        
+        /*.social-icons a:hover {
+            background-color: var(--primary);
+            transform: translateY(-3px);
+        }*/
+        
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .banner h1 {
+                font-size: 2.8rem;
+            }
+            
+            .banner p {
+                font-size: 1.2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                background-color: white;
+                width: 100%;
+                flex-direction: column;
+                align-items: center;
+                padding: 2rem 0;
+                gap: 1.5rem;
+                box-shadow: var(--shadow);
+                transform: translateY(-150%);
+                transition: var(--transition);
+                z-index: 99;
+            }
+            
+            .nav-links.active {
+                transform: translateY(0);
+            }
+            
+            .banner {
+                height: 60vh;
+            }
+            
+            .banner h1 {
+                font-size: 2.2rem;
+            }
+            
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+
+            .whatsapp-float {
+                width: 50px;
+                height: 50px;
+                bottom: 20px;
+                right: 20px;
+                font-size: 25px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .banner {
+                height: 50vh;
+            }
+            
+            .banner h1 {
+                font-size: 1.8rem;
+            }
+            
+            .banner p {
+                font-size: 1rem;
+            }
+            
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cart-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .item-actions {
+                display: flex;
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
 </head>
-<body class="inicio">
-    <div class="bienvenida">
-        <h1>Bienvenido a la Tienda de Verduras y Frutas</h1>
-        <button onclick="location.href='tienda.html'">Entrar a la Tienda</button>
+<body>
+    <!--Icono de whatsapp-->
+    <div class="whatsapp-float">
+      <a href="https://wa.me/+51907551040" target="_blank"><i class="fab fa-whatsapp"></i></a>
     </div>
+
+    <!-- Navegación -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo" onclick="showSection('home')">
+                <i class="fas fa-leaf"></i>
+                Market
+            </a>
+            <div class="hamburger" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showSection('home')">Inicio</a></li>
+                <li><a href="#" onclick="showSection('store')">Tienda</a></li>
+                <li>
+                    <a href="#" onclick="showSection('cart')" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Sección de Inicio -->
+    <section id="home" class="active">
+        <div class="banner">
+            <h1>Frutas y Verduras Frescas a Tu Puerta</h1>
+            <p style="font-weight: bold;">Selecciona los mejores productos y nosotros los recolectamos y entregamos en tu hogar</p>
+            <button class="btn" onclick="showSection('store')">Ir a la Tienda</button>
+        </div>
+            <div style="background: white; border-radius: var(--radius); padding: 2rem; margin: 3rem 0; box-shadow: var(--shadow);">
+                <h2 style="text-align: center; margin-bottom: 1.5rem; color: var(--primary);">Nuestro Servicio</h2>
+                <p style="text-align: justify; max-width: 800px; margin: 0 auto;">
+                    Somos <span style="font-weight: bold;">tu gestor de compras en el Mercado Mayorista</span>, encargándonos de seleccionar 
+                    frutas y verduras por ti. Nos especializamos en adquirir los productos directamente 
+                    en el mercado y entregarlos en tu puerta en las mismas condiciones en que salen del 
+                    campo: frescos, sin reempaque ni manipulación adicional. Pagas el valor real de la 
+                    mercadería, sin sobreprecios ni costos ocultos, y <span style="font-weight: bold;">transparentamos nuestra gestión 
+                    con un 25% sobre el valor total (mínimo S/ 25)</span>. Con nosotros, puedes acceder a los 
+                    productos más frescos de Lima, directo desde la chacra, y <span style="font-weight: bold;">con el beneficio económico 
+                    de un ahorro hasta del 40%</span>, en comparación con los precios del supermercado.
+                </p>
+            </div>
+            <div style="max-width: 1200px; margin: 0 auto;">
+            <h2 style="text-align: center; margin: 3rem 0 2rem; color: var(--primary);">¿Cómo Funciona?</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div style="text-align: center; padding: 1.5rem; background: white; border-radius: var(--radius); box-shadow: var(--shadow);">
+                    <i class="fas fa-shopping-basket" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 1rem;">1. Selecciona tus productos</h3>
+                    <p>Explora nuestra tienda y elige las frutas y verduras que deseas</p>
+                </div>
+                <div style="text-align: center; padding: 1.5rem; background: white; border-radius: var(--radius); box-shadow: var(--shadow);">
+                    <i class="fas fa-truck" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 1rem;">2. Nosotros compramos</h3>
+                    <p>Recolectamos los productos más frescos según tu selección</p>
+                </div>
+                <div style="text-align: center; padding: 1.5rem; background: white; border-radius: var(--radius); box-shadow: var(--shadow);">
+                    <i class="fas fa-home" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 1rem;">3. Recibe en tu hogar</h3>
+                    <p>Entregamos tus productos frescos directamente a tu puerta</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Tienda -->
+    <section id="store">
+        <h2 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">Nuestras Categorías</h2>
+        <p style="text-align: center; margin-bottom: 2rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+            Selecciona una categoría para ver los productos disponibles
+        </p>
+        
+        <div class="categories-grid" id="categories-container">
+            <!-- Las categorías se generarán dinámicamente con JavaScript -->
+        </div>
+    </section>
+
+    <!-- Sección de Categoría -->
+    <section id="category">
+        <h2 id="category-title" style="text-align: center; margin-bottom: 2rem; color: var(--primary);"></h2>
+        <div class="products-grid" id="products-container">
+            <!-- Los productos se generarán dinámicamente con JavaScript -->
+        </div>
+    </section>
+
+    <!-- Sección de Carrito -->
+    <section id="cart">
+        <div class="cart-container">
+            <div class="cart-items">
+                <div class="cart-header">
+                    <h2 class="cart-title">Resumen de Pedidos</h2>
+                    <button class="empty-cart" onclick="emptyCart()">
+                        <i class="fas fa-trash-alt"></i> Vaciar Carrito
+                    </button>
+                </div>
+                <div id="cart-items-container">
+                    <!-- Los productos del carrito se generarán dinámicamente con JavaScript -->
+                </div>
+            </div>
+            
+            <div class="customer-info">
+                <h2 class="info-title">Información de Entrega</h2>
+                <div class="form-group">
+                    <label class="form-label required" for="customer-name">Nombre Completo</label>
+                    <input type="text" class="form-input" id="customer-name" placeholder="Ingresa tu nombre completo" oninput="validateForm()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required" for="customer-phone">Número Celular</label>
+                    <input type="text" class="form-input" id="customer-phone" placeholder="Ingresa tu número celular" oninput="validateForm()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required" for="customer-address">Dirección de Entrega</label>
+                    <input type="text" class="form-input" id="customer-address" placeholder="Ingresa tu dirección completa" oninput="validateForm()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="customer-notes">Notas adicionales (opcional)</label>
+                    <textarea class="form-input" id="customer-notes" placeholder="Alguna instrucción especial para la entrega" rows="3"></textarea>
+                </div>
+            </div>
+            
+            <div class="cart-summary">
+                <!--
+                <h2 class="summary-title">Resumen de Pedido</h2>
+                <div class="summary-row">
+                    <span class="summary-label">Subtotal:</span>
+                    <span class="summary-value" id="subtotal-value">S/ 0.00</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Servicio (25%):</span>
+                    <span class="summary-value" id="service-value">S/ 0.00</span>
+                </div>
+                <div class="summary-row total-row">
+                    <span class="summary-label">Total:</span>
+                    <span class="summary-value total-value" id="total-value">S/ 0.00</span>
+                </div>
+            -->
+                <p style="font-size: medium; font-weight: bold; text-align: center;">*Verifique que los productos en su carrito sean los correctos antes de enviar su pedido. Gracias.</p>
+                <button class="checkout-btn" id="checkout-btn" disabled onclick="saveOrder()">
+                    <i class="fas fa-paper-plane"></i> Enviar Pedido
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <!--<div class="footer-section">
+                <h3>Market</h3>
+                <p style="text-align: justify;">Tu tienda de frutas y verduras frescas con entrega a domicilio. 
+                  Calidad garantizada directamente del campo a tu hogar.</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>-->
+            
+            <div class="footer-section">
+                <h3>Contacto</h3>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Miraflores, Lima</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <span>(01) 234-5678</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>pedidos@freshgreen.com</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Lun-Sáb: 8:00 AM - 1:00 PM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            <p>&copy; 2025 Market. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Clave de la API para JSONBin.io
+        const MASTER_KEY = '$2a$10$CfialwaKlt.oEV.qHo/IHeu2aUczMtpVkCYXzMgUtZCpjmNU9pIGK';
+        const BIN_ID = '687a974a2de0201b319ca267';
+        const API_URL = `https://api.jsonbin.io/v3/b/`;
+
+        // Datos de las categorías
+        const categories = [
+            { id: 1, name: "Cebolla, tomate, ajo, ajíes, limón, palta", image: "img/cat/onion.jpg" },
+            { id: 2, name: "Papa, camote, otros tubérculos", image: "img/cat/potato.jpg" },
+            { id: 3, name: "Espinacas, lechugas y hierbas", image: "img/cat/espin.jpg" },
+            { id: 4, name: "Arverjitas, vainitas, habas y otras legumbres", image: "img/cat/guisante.jpg" },
+            { id: 5, name: "Choclo, zanahoria, pepinos y beterragas", image: "img/cat/chocloc.jpg" },
+            { id: 6, name: "Apio y pimientos", image: "img/cat/pepper.jpg" },
+            { id: 7, name: "Brócoli, col, coliflor y alcachofas", image: "img/cat/broco.webp" },
+            { id: 8, name: "Berenjenas y caiguas", image: "img/cat/cai.jpg" },
+            { id: 9, name: "Verduras orientales", image: "img/cat/chino.jpg" },
+            { id: 10, name: "Frutas", image: "img/cat/fruit.avif" },
+            { id: 11, name: "Aceitunas y Huevos pardos", image: "img/cat/egg.avif" }
+        ];
+
+        // Datos de los productos
+        const products = [
+            // Categoría 1
+            { id: 101, categoryId: 1, name: "Cebolla", unit: "kilo", image: "img/prod/cat1prod1.jpg" },
+            { id: 102, categoryId: 1, name: "Cebolla Roja", unit: "kilo", image: "img/prod/cat1prod2.jpg" },
+            { id: 103, categoryId: 1, name: "Tomate cherry", unit: "kilo", image: "img/prod/cat1prod3.jpg" },
+            { id: 104, categoryId: 1, name: "Tomate", unit: "kilo", image: "img/prod/cat1prod4.jpg" },
+            { id: 105, categoryId: 1, name: "Ají Amarillo", unit: "kilo", image: "img/prod/cat1prod5.jpg" },
+            { id: 106, categoryId: 1, name: "Ají limo", unit: "kilo", image: "img/prod/cat1prod6.jpg" },
+            { id: 107, categoryId: 1, name: "Rocoto", unit: "kilo", image: "img/prod/cat1prod7.jpg" },
+            { id: 108, categoryId: 1, name: "Ajos enteros", unit: "kilo", image: "img/prod/cat1prod8.jpg" },
+            { id: 109, categoryId: 1, name: "Ajos pelados", unit: "kilo", image: "img/prod/cat1prod9.jpg" },
+            { id: 110, categoryId: 1, name: "Limón", unit: "kilo", image: "img/prod/cat1prod10.jpg" },
+            { id: 111, categoryId: 1, name: "Palta fuerte mediana/grande (sin madurar)", unit: "kilo", image: "img/prod/cat1prod11.jpg" },
+            { id: 112, categoryId: 1, name: "Palta fuerte chica/mediana (sin madurar)", unit: "kilo", image: "img/prod/cat1prod12.jpg" },
+
+            // Categoría 2
+            { id: 201, categoryId: 2, name: "Papa Blanca", price: 2.0, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
+            { id: 202, categoryId: 2, name: "Papa Amarilla", price: 2.8, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
+            { id: 203, categoryId: 2, name: "Camote", price: 3.5, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
+            { id: 204, categoryId: 2, name: "Yuca", price: 3.0, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
+            
+            // Categoría 3
+            { id: 301, categoryId: 3, name: "Espinaca", price: 3.0, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
+            { id: 302, categoryId: 3, name: "Lechuga Crespa", price: 2.5, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
+            { id: 303, categoryId: 3, name: "Lechuga Americana", price: 3.0, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
+            { id: 304, categoryId: 3, name: "Cilantro", price: 1.5, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
+            { id: 305, categoryId: 3, name: "Perejil", price: 1.5, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" }
+        ];
+
+        // Carrito de compras
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        // Función para mostrar una sección específica
+        function showSection(sectionId) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Mostrar la sección solicitada
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Si es la tienda, cargar categorías
+            if (sectionId === 'store') {
+                loadCategories();
+            }
+            
+            // Si es el carrito, actualizar la vista
+            if (sectionId === 'cart') {
+                updateCartView();
+            }
+            
+            // Cerrar menú móvil si está abierto
+            document.querySelector('.nav-links').classList.remove('active');
+        }
+
+        // Función para alternar el menú móvil
+        function toggleMenu() {
+            document.querySelector('.nav-links').classList.toggle('active');
+        }
+
+        // Función para cargar categorías en la tienda
+        function loadCategories() {
+            const container = document.getElementById('categories-container');
+            container.innerHTML = '';
+            
+            categories.forEach(category => {
+                const categoryCard = document.createElement('div');
+                categoryCard.className = 'category-card';
+                categoryCard.innerHTML = `
+                    <img src="${category.image}" alt="${category.name}" class="category-image">
+                    <div class="category-name">${category.name}</div>
+                `;
+                
+                categoryCard.addEventListener('click', () => {
+                    showCategory(category.id);
+                });
+                
+                container.appendChild(categoryCard);
+            });
+        }
+
+        // Función para mostrar los productos de una categoría
+        function showCategory(categoryId) {
+            // Obtener la categoría
+            const category = categories.find(cat => cat.id === categoryId);
+            if (!category) return;
+            
+            // Actualizar título de categoría
+            document.getElementById('category-title').textContent = category.name;
+            
+            // Obtener productos de esta categoría
+            const categoryProducts = products.filter(product => product.categoryId === categoryId);
+            
+            // Cargar productos en el contenedor
+            const container = document.getElementById('products-container');
+            container.innerHTML = '';
+            
+            categoryProducts.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+
+                // Generar opciones según categoría
+                let optionsHTML = '';
+                
+                if (product.unit === 'kilo') {
+                    // Opciones por kilo
+                    optionsHTML = `
+                        <option value=0.5>0.5 kilo</option>
+                        <option value=1>1 kilo</option>
+                        <option value=1.5>1.5 kilos</option>
+                        <option value=2>2 kilos</option>
+                        <option value=3>3 kilos</option>
+                        <option value=4>4 kilos</option>
+                    `;
+                } 
+                else if (product.category === 'tecnologia') {
+                    // Opciones para tecnología (memoria)
+                    optionsHTML = `
+                        <option value="64GB">64GB</option>
+                        <option value="128GB">128GB</option>
+                        <option value="256GB">256GB</option>
+                        <option value="512GB">512GB</option>
+                    `;
+                } 
+                else if (product.category === 'comida') {
+                    // Opciones para comida (porciones)
+                    optionsHTML = `
+                        <option value="individual">Individual</option>
+                        <option value="familiar">Familiar</option>
+                        <option value="pareja">Pareja</option>
+                    `;
+                } 
+                else {
+                    // Opciones por defecto (cantidad)
+                    optionsHTML = `
+                        <option value="1">1 unidad</option>
+                        <option value="2">2 unidades</option>
+                        <option value="3">3 unidades</option>
+                        <option value="4">4 unidades</option>
+                        <option value="5">5 unidades</option>
+                    `;
+                }
+
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">${product.name}</h3>
+                        <p>Cantidad:</p>
+                        <div class="product-actions">
+                            <select class="quantity-select" id="quantity-${product.id}">
+                                ${optionsHTML}
+                            </select>
+                            <button class="add-to-cart" onclick="addToCart(${product.id})">
+                                <i class="fas fa-cart-plus"></i> Agregar
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(productCard);
+            });
+            
+            // Mostrar la sección de categoría
+            showSection('category');
+        }
+        
+        // Función para agregar producto al carrito
+        function addToCart(productId) {
+            // Encontrar el producto
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            // Obtener la cantidad seleccionada
+            const quantitySelect = document.getElementById(`quantity-${productId}`);
+            const quantity = parseFloat(quantitySelect.value);
+            
+            // Verificar si el producto ya está en el carrito
+            const existingItemIndex = cart.findIndex(item => item.id === productId);
+            
+            if (existingItemIndex !== -1) {
+                // Actualizar cantidad si ya existe
+                cart[existingItemIndex].quantity = quantity;
+            } else {
+                // Agregar nuevo item al carrito
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    unit: product.unit,
+                    quantity: quantity,
+                    image: product.image
+                });
+            }
+            
+            // Guardar en localStorage
+            localStorage.setItem('cart', JSON.stringify(cart));
+            
+            // Actualizar contador de carrito
+            updateCartCount();
+            
+            // Mostrar notificación
+            alert(`Se ha agregado ${product.name} al carrito`);
+        }
+
+        // Función para actualizar el contador del carrito
+        function updateCartCount() {
+            const totalItems = cart.reduce((total) => total + 1, 0);
+            document.querySelector('.cart-count').textContent = totalItems;
+        }
+
+        // Función para actualizar la vista del carrito
+        function updateCartView() {
+            const container = document.getElementById('cart-items-container');
+            container.innerHTML = '';
+            
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 2rem;">Tu carrito está vacío</p>';
+                document.getElementById('checkout-btn').disabled = true;
+                return;
+            }
+            
+            // Calcular subtotal
+            // let subtotal = 0;
+            
+            cart.forEach(item => {
+                const itemTotal = item.quantity;
+                // subtotal += itemTotal;
+                
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
+                    <div class="item-info">
+                        <img src="${item.image}" alt="${item.name}" class="item-image">
+                        <div class="item-details">
+                            <span class="item-name">${item.name} (${item.unit})</span>
+                            <!--<span class="item-quantity">Cantidad: ${item.quantity}</span>-->
+                        </div>
+                    </div>
+                    <div class="item-actions">
+                        <span class="item-price">${itemTotal.toFixed(1)}</span>
+                        <button class="remove-item" onclick="removeFromCart(${item.id})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(cartItem);
+            });
+            
+            // Calcular servicio (25%)
+            //const serviceFee = subtotal * 0.25;
+            //const total = subtotal + serviceFee;
+            
+            // Actualizar resumen
+            // document.getElementById('subtotal-value').textContent = `S/ ${subtotal.toFixed(2)}`;
+            // document.getElementById('service-value').textContent = `S/ ${serviceFee.toFixed(2)}`;
+            // document.getElementById('total-value').textContent = subtotal.toFixed(1);
+            
+            // Validar formulario
+            validateForm();
+        }
+
+        // Función para eliminar un producto del carrito
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            updateCartView();
+        }
+
+        // Función para vaciar el carrito
+        function emptyCart() {
+            if (confirm('¿Estás seguro de que deseas vaciar tu carrito?')) {
+                cart = [];
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartCount();
+                updateCartView();
+                document.getElementById('customer-name').value = '';
+                document.getElementById('customer-address').value = '';
+                document.getElementById('customer-phone').value = '';
+                document.getElementById('customer-notes').value = '';
+            }
+        }
+
+        // Función para validar el formulario de compra
+        function validateForm() {
+            const name = document.getElementById('customer-name').value.trim();
+            const phone = document.getElementById('customer-phone').value.trim();
+            const address = document.getElementById('customer-address').value.trim();
+            const checkoutBtn = document.getElementById('checkout-btn');
+            
+            if (name !== '' && address !== '' && phone !== '' && cart.length > 0) {
+                checkoutBtn.disabled = false;
+            } else {
+                checkoutBtn.disabled = true;
+            }
+        }
+
+        // Función para generar Excel y enviar por correo
+        /*function generateExcelAndEmail() {
+            // Obtener datos del cliente
+            const name = document.getElementById('customer-name').value.trim();
+            const address = document.getElementById('customer-address').value.trim();
+            const notes = document.getElementById('customer-notes').value.trim();
+            
+            // Calcular totales
+            let subtotal = 0;
+            cart.forEach(item => {
+                subtotal += item.price * item.quantity;
+            });
+            const serviceFee = subtotal * 0.25;
+            const total = subtotal + serviceFee;
+            
+            // Crear datos para el Excel
+            const excelData = [
+                ['Pedido FreshGreen', '', '', ''],
+                ['Cliente:', name, 'Dirección:', address],
+                ['Notas:', notes, '', ''],
+                ['', '', '', ''],
+                ['Producto', 'Cantidad', 'Precio Unitario', 'Total']
+            ];
+            
+            // Agregar productos
+            cart.forEach(item => {
+                excelData.push([
+                    item.name,
+                    item.quantity,
+                    `S/ ${item.price.toFixed(2)}`,
+                    `S/ ${(item.price * item.quantity).toFixed(2)}`
+                ]);
+            });
+            
+            // Agregar totales
+            excelData.push(['', '', 'Subtotal:', `S/ ${subtotal.toFixed(2)}`]);
+            excelData.push(['', '', 'Servicio (25%):', `S/ ${serviceFee.toFixed(2)}`]);
+            excelData.push(['', '', 'Total:', `S/ ${total.toFixed(2)}`]);
+            
+            // Crear hoja de cálculo
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Pedido");
+            
+            // Generar archivo Excel
+            const fileName = `Pedido_FreshGreen_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            // Preparar correo electrónico
+            const subject = encodeURIComponent(`Nuevo Pedido de ${name}`);
+            const body = encodeURIComponent(`Hola,\n\nAdjunto el pedido de ${name}.\n\nDirección de entrega: ${address}\n\nNotas: ${notes || 'Ninguna'}\n\nPor favor confirmar recepción.`);
+            
+            // Abrir cliente de correo
+            setTimeout(() => {
+                window.open(`mailto:pedidos@freshgreen.com?subject=${subject}&body=${body}`, '_blank');
+            }, 1000);
+        }*/
+
+        // Función para obtener los pedidos desde la nube
+        async function fetchOrders() {
+            try {
+                const response = await fetch(`${API_URL}${BIN_ID}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': MASTER_KEY,
+                        'X-Bin-Meta': 'false' // Solo obtenemos el contenido, sin metadatos
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error en la solicitud: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data.orders || []; // Retornamos el array de pedidos
+            } catch (error) {
+                console.error('Error al obtener pedidos:', error);
+                return [];
+            }
+        }
+
+        // Función para guardar pedidos en la nube
+        async function saveOrdersToCloud(orders) {
+            try {
+                const response = await fetch(`${API_URL}${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': MASTER_KEY
+                    },
+                    body: JSON.stringify({ orders }) // Enviamos como objeto {orders: [...]}
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error al guardar: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Error al guardar pedidos:', error);
+                throw error;
+            }
+        }
+
+        // Función para guardar el pedido
+        async function saveOrder() {
+            // Obtener datos del cliente
+            const name = document.getElementById('customer-name').value.trim();
+            const address = document.getElementById('customer-address').value.trim();
+            const phone = document.getElementById('customer-phone').value.trim();
+            const notes = document.getElementById('customer-notes').value.trim();
+            
+            // Calcular totales
+            let subtotal = 0;
+            cart.forEach(item => {
+                subtotal += item.quantity;
+            });
+            const total = subtotal;
+            
+            // Crear objeto de pedido
+            const now = new Date();
+            const order = {
+                id: Date.now(), // Usamos la marca de tiempo como ID único
+                date: now.toLocaleString('es-PE', { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                }),
+                customer: name,
+                address: address,
+                phone: phone,
+                notes: notes,
+                status: 'Pendiente',
+                items: cart.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity
+                })),
+                total: total,
+                timestamp: now.getTime(), // Guardamos timestamp para filtrado
+            };
+            
+            try {
+                // Obtener pedidos existentes
+                const existingOrders = await fetchOrders();
+                existingOrders.push(order);
+                
+                // Guardar en la nube
+                await saveOrdersToCloud(existingOrders);
+                
+                // Vaciar el carrito
+                cart = [];
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartCount();
+                updateCartView();
+                document.getElementById('customer-name').value = '';
+                document.getElementById('customer-address').value = '';
+                document.getElementById('customer-phone').value = '';
+                document.getElementById('customer-notes').value = '';
+                
+                // Mostrar mensaje de éxito
+                alert('¡Pedido enviado con éxito! Nuestro equipo lo procesará pronto.');
+                
+                // Volver a la página de inicio
+                showSection('home');
+            } catch (error) {
+                console.error('Error al guardar el pedido:', error);
+                alert('Hubo un error al procesar tu pedido. Por favor, inténtalo de nuevo.');
+            }
+        }
+
+        // Inicializar contador del carrito al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCartCount();
+        });
+    </script>
 </body>
 </html>
