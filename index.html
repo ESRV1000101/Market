@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market - Tienda de Frutas y Verduras</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!--<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         /* Variables y Reset */
         :root {
             --primary: #4a7c59;
+            --primary-dark: #3a6547;
             --secondary: #8d9f87;
             --accent: #d0b49f;
             --light: #f4f1e9;
@@ -612,6 +613,206 @@
             color: var(--light);
         }
         
+        /* Nuevos estilos para login/registro */
+        .auth-container {
+            max-width: 500px;
+            margin: 3rem auto;
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+        }
+        
+        .auth-title {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .auth-switch {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        
+        .auth-switch a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .profile-container {
+            max-width: 600px;
+            margin: 3rem auto;
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+        }
+        
+        .profile-actions {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn-logout {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-logout:hover {
+            background-color: #bd2130;
+        }
+        
+        /* Estilos para los pedidos en el perfil */
+        .order-status {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        
+        .status-pendiente {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .status-aceptado {
+            background-color: #0d6efd;
+            color: white;
+        }
+        
+        .status-completado {
+            background-color: #198754;
+            color: white;
+        }
+        
+        .status-rechazado {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .user-orders {
+            margin-top: 2rem;
+        }
+        
+        .order-card {
+            background-color: #f9f9f9;
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .order-date {
+            color: var(--gray);
+        }
+
+        .order-products-list {
+            margin-top: 10px;
+            padding: 0;
+        }
+
+        .order-product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            background-color: #f8f9fa;
+            border-radius: var(--radius);
+            border-left: 3px solid var(--primary);
+        }
+
+        .product-name {
+            flex-grow: 1;
+        }
+
+        .product-quantity {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .profile-navigation {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .profile-tab {
+            background: none;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .profile-tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .profile-tab:hover:not(.active) {
+            background-color: var(--light-gray);
+        }
+
+        .profile-section {
+            padding: 15px;
+            border-radius: var(--radius);
+            background: white;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .order-products-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .order-product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            background-color: #f8f9fa;
+            border-radius: var(--radius);
+            border-left: 3px solid var(--primary);
+        }
+
+        .product-name {
+            flex-grow: 1;
+        }
+
+        .product-quantity {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
         /* Responsive */
         @media (max-width: 992px) {
             .banner h1 {
@@ -667,6 +868,10 @@
                 right: 20px;
                 font-size: 25px;
             }
+            
+            .profile-actions {
+                flex-direction: column;
+            }
         }
         
         @media (max-width: 576px) {
@@ -703,7 +908,7 @@
 <body>
     <!--Icono de whatsapp-->
     <div class="whatsapp-float">
-      <a href="https://wa.me/+51907551040" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://wa.me/+51980717531" target="_blank"><i class="fab fa-whatsapp"></i></a>
     </div>
 
     <!-- Navegación -->
@@ -724,6 +929,9 @@
                         <i class="fas fa-shopping-cart"></i>
                         <span class="cart-count">0</span>
                     </a>
+                </li>
+                <li id="auth-links">
+                    <!-- Enlaces de autenticación se cargarán dinámicamente -->
                 </li>
             </ul>
         </div>
@@ -786,6 +994,12 @@
     <!-- Sección de Categoría -->
     <section id="category">
         <h2 id="category-title" style="text-align: center; margin-bottom: 2rem; color: var(--primary);"></h2>
+        
+        <!-- Agrega este div para los mensajes -->
+        <div id="unit-messages" style="font-weight: bolder; text-align: center; margin-bottom: 1.5rem; max-width: 800px; margin-left: auto; margin-right: auto; font-size: 0.9rem; color: var(--gray);">
+            <!-- Los mensajes se generarán dinámicamente con JavaScript -->
+        </div>
+        
         <div class="products-grid" id="products-container">
             <!-- Los productos se generarán dinámicamente con JavaScript -->
         </div>
@@ -808,40 +1022,12 @@
             
             <div class="customer-info">
                 <h2 class="info-title">Información de Entrega</h2>
-                <div class="form-group">
-                    <label class="form-label required" for="customer-name">Nombre Completo</label>
-                    <input type="text" class="form-input" id="customer-name" placeholder="Ingresa tu nombre completo" oninput="validateForm()">
-                </div>
-                <div class="form-group">
-                    <label class="form-label required" for="customer-phone">Número Celular</label>
-                    <input type="text" class="form-input" id="customer-phone" placeholder="Ingresa tu número celular" oninput="validateForm()">
-                </div>
-                <div class="form-group">
-                    <label class="form-label required" for="customer-address">Dirección de Entrega</label>
-                    <input type="text" class="form-input" id="customer-address" placeholder="Ingresa tu dirección completa" oninput="validateForm()">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="customer-notes">Notas adicionales (opcional)</label>
-                    <textarea class="form-input" id="customer-notes" placeholder="Alguna instrucción especial para la entrega" rows="3"></textarea>
+                <div id="customer-info-content">
+                    <!-- Contenido dinámico basado en estado de autenticación -->
                 </div>
             </div>
             
             <div class="cart-summary">
-                <!--
-                <h2 class="summary-title">Resumen de Pedido</h2>
-                <div class="summary-row">
-                    <span class="summary-label">Subtotal:</span>
-                    <span class="summary-value" id="subtotal-value">S/ 0.00</span>
-                </div>
-                <div class="summary-row">
-                    <span class="summary-label">Servicio (25%):</span>
-                    <span class="summary-value" id="service-value">S/ 0.00</span>
-                </div>
-                <div class="summary-row total-row">
-                    <span class="summary-label">Total:</span>
-                    <span class="summary-value total-value" id="total-value">S/ 0.00</span>
-                </div>
-            -->
                 <p style="font-size: medium; font-weight: bold; text-align: center;">*Verifique que los productos en su carrito sean los correctos antes de enviar su pedido. Gracias.</p>
                 <button class="checkout-btn" id="checkout-btn" disabled onclick="saveOrder()">
                     <i class="fas fa-paper-plane"></i> Enviar Pedido
@@ -850,32 +1036,182 @@
         </div>
     </section>
 
+    <!-- Sección de Login -->
+    <section id="login">
+        <div class="auth-container">
+            <h2 class="auth-title">Iniciar Sesión</h2>
+            <div class="form-group">
+                <label class="form-label" for="login-email">Correo Electrónico</label>
+                <input type="email" class="form-input" id="login-email" placeholder="Ingresa tu correo">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="login-password">Contraseña</label>
+                <input type="password" class="form-input" id="login-password" placeholder="Ingresa tu contraseña">
+            </div>
+            <div class="error-message" id="login-error"></div>
+            <button class="btn" onclick="customerLogin()" style="width: 100%;">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </button>
+            <div class="auth-switch">
+                ¿No tienes cuenta? <a href="#" onclick="showSection('signup')">Regístrate aquí</a>
+                <div style="margin-top: 10px;">
+                    <a href="#" onclick="showSection('forgot-password')">¿Olvidaste tu contraseña?</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Registro -->
+    <section id="signup">
+        <div class="auth-container">
+            <h2 class="auth-title">Crear Cuenta</h2>
+            <div class="form-group">
+                <label class="form-label required" for="signup-name">Nombre Completo</label>
+                <input type="text" class="form-input" id="signup-name" placeholder="Ingresa tu nombre completo">
+            </div>
+            <div class="form-group">
+                <label class="form-label required" for="signup-email">Correo Electrónico</label>
+                <input type="email" class="form-input" id="signup-email" placeholder="Ingresa tu correo">
+            </div>
+            <div class="form-group">
+                <label class="form-label required" for="signup-phone">Número Celular</label>
+                <input type="text" class="form-input" id="signup-phone" placeholder="Ingresa tu número celular">
+            </div>
+            <div class="form-group">
+                <label class="form-label required" for="signup-address">Dirección de Entrega</label>
+                <input type="text" class="form-input" id="signup-address" placeholder="Ingresa tu dirección completa">
+            </div>
+            <div class="form-group">
+                <label class="form-label required" for="signup-password">Contraseña</label>
+                <input type="password" class="form-input" id="signup-password" placeholder="Crea una contraseña">
+            </div>
+            <div class="error-message" id="signup-error"></div>
+            <button class="btn" onclick="customerSignup()" style="width: 100%;">
+                <i class="fas fa-user-plus"></i> Crear Cuenta
+            </button>
+            <div class="auth-switch">
+                ¿Ya tienes cuenta? <a href="#" onclick="showSection('login')">Inicia sesión aquí</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Recuperación de Contraseña -->
+    <section id="forgot-password">
+        <div class="auth-container">
+            <h2 class="auth-title">Recuperar Contraseña</h2>
+            <div class="form-group">
+                <label class="form-label required" for="recovery-name">Nombre Completo</label>
+                <input type="text" class="form-input" id="recovery-name" placeholder="Ingresa tu nombre completo">
+            </div>
+            <div class="form-group">
+                <label class="form-label required" for="recovery-email">Correo Electrónico</label>
+                <input type="email" class="form-input" id="recovery-email" placeholder="Ingresa tu correo">
+            </div>
+            <div class="error-message" id="recovery-error"></div>
+            <button class="btn" onclick="verifyUser()" style="width: 100%;">
+                <i class="fas fa-check-circle"></i> Verificar Datos
+            </button>
+            <div class="auth-switch">
+                <a href="#" onclick="showSection('login')">Volver a Iniciar Sesión</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Nueva Contraseña -->
+    <section id="new-password">
+        <div class="auth-container">
+            <h2 class="auth-title">Establecer Nueva Contraseña</h2>
+            <div class="form-group">
+                <label class="form-label required" for="new-password-input">Nueva Contraseña</label>
+                <input type="password" class="form-input" id="new-password-input" placeholder="Crea una nueva contraseña">
+            </div>
+            <div class="form-group">
+                <label class="form-label required" for="confirm-new-password">Confirmar Nueva Contraseña</label>
+                <input type="password" class="form-input" id="confirm-new-password" placeholder="Repite la nueva contraseña">
+            </div>
+            <div class="error-message" id="new-password-error"></div>
+            <button class="btn" onclick="updatePassword()" style="width: 100%;">
+                <i class="fas fa-sync-alt"></i> Cambiar Contraseña
+            </button>
+        </div>
+    </section>
+
+    <!-- Sección de Perfil -->
+    <section id="profile">
+        <div class="profile-container">
+
+            <!-- Menú de navegación agregado -->
+            <div class="profile-navigation">
+                <button class="profile-tab active" onclick="showProfileTab('update-data')">
+                    <i class="fas fa-user-edit"></i> Actualizar Datos
+                </button>
+                <button class="profile-tab" onclick="showProfileTab('order-history')">
+                    <i class="fas fa-history"></i> Historial de Pedidos
+                </button>
+            </div>
+
+            <!-- Sección de actualización de datos -->
+            <div id="update-data" class="profile-section">
+                <h2 class="auth-title">Mi Perfil</h2>
+                <div class="form-group">
+                    <label class="form-label required" for="profile-name">Nombre Completo</label>
+                    <input type="text" class="form-input" id="profile-name" placeholder="Ingresa tu nombre completo">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required" for="profile-email">Correo Electrónico</label>
+                    <input type="email" class="form-input" id="profile-email" placeholder="Ingresa tu correo" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required" for="profile-phone">Número Celular</label>
+                    <input type="text" class="form-input" id="profile-phone" placeholder="Ingresa tu número celular">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required" for="profile-address">Dirección de Entrega</label>
+                    <input type="text" class="form-input" id="profile-address" placeholder="Ingresa tu dirección completa">
+                </div>
+                <div class="error-message" id="profile-error"></div>
+                
+                <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--primary);">Cambiar Contraseña</h3>
+                <div class="form-group">
+                    <label class="form-label" for="current-password">Contraseña Actual</label>
+                    <input type="password" class="form-input" id="current-password" placeholder="Ingresa tu contraseña actual">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="new-password">Nueva Contraseña</label>
+                    <input type="password" class="form-input" id="new-password" placeholder="Crea una nueva contraseña">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="confirm-password">Confirmar Nueva Contraseña</label>
+                    <input type="password" class="form-input" id="confirm-password" placeholder="Repite la nueva contraseña">
+                </div>
+                <div class="error-message" id="password-error"></div>
+                
+                <div class="profile-actions">
+                    <button class="btn" onclick="updateProfile()">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                    <button class="btn btn-logout" onclick="customerLogout()">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+
+            <div id="order-history" class="profile-section" style="display:none;">
+                <h3 class="auth-title">Mis Pedidos</h3>
+                <div class="user-orders" id="user-orders"></div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer>
         <div class="footer-container">
-            <!--<div class="footer-section">
-                <h3>Market</h3>
-                <p style="text-align: justify;">Tu tienda de frutas y verduras frescas con entrega a domicilio. 
-                  Calidad garantizada directamente del campo a tu hogar.</p>
-                <div class="social-icons">
-                    <a href="#"><i class="fab fa-whatsapp"></i></a>
-                </div>
-            </div>-->
-            
             <div class="footer-section">
                 <h3>Contacto</h3>
                 <div class="contact-info">
                     <div class="contact-item">
                         <i class="fas fa-map-marker-alt"></i>
                         <span>Miraflores, Lima</span>
-                    </div>
-                    <div class="contact-item">
-                        <i class="fas fa-phone"></i>
-                        <span>(01) 234-5678</span>
-                    </div>
-                    <div class="contact-item">
-                        <i class="fas fa-envelope"></i>
-                        <span>pedidos@freshgreen.com</span>
                     </div>
                     <div class="contact-item">
                         <i class="fas fa-clock"></i>
@@ -895,6 +1231,20 @@
         const MASTER_KEY = '$2a$10$CfialwaKlt.oEV.qHo/IHeu2aUczMtpVkCYXzMgUtZCpjmNU9pIGK';
         const BIN_ID = '687a974a2de0201b319ca267';
         const API_URL = `https://api.jsonbin.io/v3/b/`;
+        const USERS_BIN_ID = '687b046c2de0201b319ccf2b'; // Nuevo bin para usuarios
+
+        // Clave secreta para encriptación
+        const SECRET_KEY = "market_secret_key_123!";
+
+        // Funciones de encriptación
+        function encryptData(data) {
+            return CryptoJS.AES.encrypt(data, SECRET_KEY).toString();
+        }
+
+        function decryptData(encryptedData) {
+            const bytes = CryptoJS.AES.decrypt(encryptedData, SECRET_KEY);
+            return bytes.toString(CryptoJS.enc.Utf8);
+        }
 
         // Datos de las categorías
         const categories = [
@@ -928,21 +1278,123 @@
             { id: 112, categoryId: 1, name: "Palta fuerte chica/mediana (sin madurar)", unit: "kilo", image: "img/prod/cat1prod12.jpg" },
 
             // Categoría 2
-            { id: 201, categoryId: 2, name: "Papa Blanca", price: 2.0, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
-            { id: 202, categoryId: 2, name: "Papa Amarilla", price: 2.8, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
-            { id: 203, categoryId: 2, name: "Camote", price: 3.5, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
-            { id: 204, categoryId: 2, name: "Yuca", price: 3.0, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
+            { id: 201, categoryId: 2, name: "Papa Amarilla", unit: "kilo", image: "img/prod/cat2prod1.png" },
+            { id: 202, categoryId: 2, name: "Papa Andina", unit: "kilo", image: "img/prod/cat2prod2.png" },
+            { id: 203, categoryId: 2, name: "Papa Canchan", unit: "kilo", image: "img/prod/cat2prod3.png" },
+            { id: 204, categoryId: 2, name: "Papa Cocktail", unit: "kilo", image: "img/prod/cat2prod4.png" },
+            { id: 205, categoryId: 2, name: "Papa Huamantanga", unit: "kilo", image: "img/prod/cat2prod5.png" },
+            { id: 206, categoryId: 2, name: "Papa Huayro", unit: "kilo", image: "img/prod/cat2prod6.png" },
+            { id: 207, categoryId: 2, name: "Papa Negra", unit: "kilo", image: "img/prod/cat2prod7.png" },
+            { id: 208, categoryId: 2, name: "Papa Peruanita", unit: "kilo", image: "img/prod/cat2prod8.png" },
+            { id: 209, categoryId: 2, name: "Papa Yungay", unit: "kilo", image: "img/prod/cat2prod9.png" },
+            { id: 210, categoryId: 2, name: "Olluco", unit: "kilo", image: "img/prod/cat2prod10.png" },
+            { id: 211, categoryId: 2, name: "Camote Amarillo (Jonathan)", unit: "kilo", image: "img/prod/cat2prod11.png" },
+            { id: 212, categoryId: 2, name: "Camote Morado", unit: "kilo", image: "img/prod/cat2prod12.png" },
+            { id: 213, categoryId: 2, name: "Yuca", unit: "kilo", image: "img/prod/cat2prod13.png" },
             
             // Categoría 3
-            { id: 301, categoryId: 3, name: "Espinaca", price: 3.0, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
-            { id: 302, categoryId: 3, name: "Lechuga Crespa", price: 2.5, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
-            { id: 303, categoryId: 3, name: "Lechuga Americana", price: 3.0, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
-            { id: 304, categoryId: 3, name: "Cilantro", price: 1.5, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" },
-            { id: 305, categoryId: 3, name: "Perejil", price: 1.5, image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80" }
+            { id: 301, categoryId: 3, name: "Espinaca", unit: "kilo", image: "img/prod/cat3prod1.png" },
+            { id: 302, categoryId: 3, name: "Culantro", unit: "atado*", image: "img/prod/cat3prod2.png" },
+            { id: 303, categoryId: 3, name: "Perejil", unit: "atado*", image: "img/prod/cat3prod3.png" },
+            { id: 304, categoryId: 3, name: "Albahaca", unit: "atado*", image: "img/prod/cat3prod4.png" },
+            { id: 305, categoryId: 3, name: "Hierba Luisa", unit: "atado*", image: "img/prod/cat3prod5.jpg" },
+            { id: 306, categoryId: 3, name: "Huacatay", unit: "atado*", image: "img/prod/cat3prod6.png" },
+            { id: 307, categoryId: 3, name: "Lechuga Americana", unit: "unidad", image: "img/prod/cat3prod7.png" },
+            { id: 308, categoryId: 3, name: "Lechuga Romana", unit: "unidad", image: "img/prod/cat3prod8.png" },
+
+            // categoria 4
+            { id: 401, categoryId: 4, name: "Arverjita (con vaina)", unit: "kilo", image: "img/prod/cat4prod1.png" },
+            { id: 402, categoryId: 4, name: "Frejol Verde (con vaina)", unit: "kilo", image: "img/prod/cat4prod2.png" },
+            { id: 403, categoryId: 4, name: "Habas (con vaina)", unit: "kilo", image: "img/prod/cat4prod3.png" },
+            { id: 404, categoryId: 4, name: "Pallar Fresco (con vaina)", unit: "kilo", image: "img/prod/cat4prod4.png" },
+            { id: 405, categoryId: 4, name: "vainitas", unit: "kilo", image: "img/prod/cat4prod5.png" },
+
+            // categoria 5
+            { id: 501, categoryId: 5, name: "Choclo", unit: "mano", image: "img/prod/cat5prod1.png" },
+            { id: 502, categoryId: 5, name: "Maíz Morado", unit: "kilo", image: "img/prod/cat5prod2.png" },
+            { id: 503, categoryId: 5, name: "Pepino Criollo", unit: "unidad", image: "img/prod/cat5prod3.png" },
+            { id: 504, categoryId: 5, name: "Rabanitos", unit: "atado", image: "img/prod/cat5prod4.jpg" },
+            { id: 505, categoryId: 5, name: "Nabo", unit: "atado*", image: "img/prod/cat5prod5.png" },
+            { id: 506, categoryId: 5, name: "Nabo Andino - Redondo", unit: "kilo", image: "img/prod/cat5prod6.png" },
+            { id: 507, categoryId: 5, name: "Poro", unit: "unidad", image: "img/prod/cat5prod7.png" },
+            { id: 508, categoryId: 5, name: "Beterraga", unit: "atado*", image: "img/prod/cat5prod8.jpg" },
+            { id: 509, categoryId: 5, name: "Zanahoria", unit: "kilo", image: "img/prod/cat5prod9.png" },
+            { id: 510, categoryId: 5, name: "Zapallo Macre", unit: "kilo", image: "img/prod/cat5prod10.png" },
+
+            // categoria 6
+            { id: 601, categoryId: 6, name: "Pimiento Verde", unit: "unidad", image: "img/prod/cat6prod1.jpg" },
+            { id: 602, categoryId: 6, name: "Pimiento Rojo", unit: "unidad", image: "img/prod/cat6prod2.png" },
+            { id: 603, categoryId: 6, name: "Pimiento Amarillo", unit: "unidad", image: "img/prod/cat6prod3.png" },
+            { id: 604, categoryId: 6, name: "Apio", unit: "unidad", image: "img/prod/cat6prod4.png" },
+
+            // categoria 7
+            { id: 701, categoryId: 7, name: "Brócoli", unit: "unidad", image: "img/prod/cat7prod1.jpg" },
+            { id: 702, categoryId: 7, name: "Col Corazón (redondo entero)", unit: "unidad", image: "img/prod/cat7prod2.png" },
+            { id: 703, categoryId: 7, name: "Col Corazón (punta entera)", unit: "unidad", image: "img/prod/cat7prod3.png" },
+            { id: 704, categoryId: 7, name: "Col Morada (redondo entero)", unit: "unidad", image: "img/prod/cat7prod4.png" },
+            { id: 705, categoryId: 7, name: "Coliflor", unit: "unidad", image: "img/prod/cat7prod5.jpg" },
+            { id: 706, categoryId: 7, name: "Alcachofa (entera grande)", unit: "unidad", image: "img/prod/cat7prod6.png" },
+            { id: 707, categoryId: 7, name: "Alcachofa (entera mediana)", unit: "unidad", image: "img/prod/cat7prod7.jpg" },
+            { id: 708, categoryId: 7, name: "Alcachofa Corazones", unit: "docena", image: "img/prod/cat7prod8.png" },
+
+            // categoria 8
+            { id: 801, categoryId: 8, name: "Zapallito Italiano (mediano - grande)", unit: "unidad", image: "img/prod/cat8prod1.png" },
+            { id: 802, categoryId: 8, name: "Zapallito Italiano (pequeño - mediano)", unit: "unidad", image: "img/prod/cat8prod2.png" },
+            { id: 803, categoryId: 8, name: "Caigua", unit: "unidad", image: "img/prod/cat8prod3.png" },
+            { id: 804, categoryId: 8, name: "Berenjena", unit: "unidad", image: "img/prod/cat8prod4.png" },
+
+            // categoria 9
+            { id: 901, categoryId: 9, name: "Pepino Japonés", unit: "unidad", image: "img/prod/cat9prod1.png" },
+            { id: 902, categoryId: 9, name: "Cebolla China", unit: "atado*", image: "img/prod/cat9prod2.png" },
+            { id: 903, categoryId: 9, name: "Kión", unit: "kilo", image: "img/prod/cat9prod3.png" },
+            { id: 904, categoryId: 9, name: "Col China (entera)", unit: "unidad", image: "img/prod/cat9prod4.png" },
+            { id: 905, categoryId: 9, name: "Frejolito Chino", unit: "kilo", image: "img/prod/cat9prod5.png" },
+            { id: 906, categoryId: 9, name: "Holantao", unit: "kilo", image: "img/prod/cat9prod6.png" },
+
+            // categoria 10
+            { id: 1001, categoryId: 10, name: "Chirimoya Grande (sin madurar)", unit: "unidad", image: "img/prod/cat10prod1.png" },
+            { id: 1002, categoryId: 10, name: "Chirimoya Mediana (sin madurar)", unit: "unidad", image: "img/prod/cat10prod2.png" },
+            { id: 1003, categoryId: 10, name: "Mango Mediano - Grande (sin madurar)", unit: "unidad", image: "img/prod/cat10prod3.png" },
+            { id: 1004, categoryId: 10, name: "Mango Chico (sin madurar)", unit: "unidad", image: "img/prod/cat10prod4.jpg" },
+            { id: 1005, categoryId: 10, name: "Mandarina", unit: "kilo", image: "img/prod/cat10prod5.png" },
+            { id: 1006, categoryId: 10, name: "Limón Dulce", unit: "kilo", image: "img/prod/cat10prod6.png" },
+            { id: 1007, categoryId: 10, name: "Granadilla", unit: "kilo", image: "img/prod/cat10prod7.png" },
+            { id: 1008, categoryId: 10, name: "Naranja Huando de Mesa", unit: "kilo", image: "img/prod/cat10prod8.png" },
+            { id: 1009, categoryId: 10, name: "Tangelo", unit: "kilo", image: "img/prod/cat10prod9.png" },
+            { id: 1010, categoryId: 10, name: "Naranja de Jugo Valencia", unit: "kilo", image: "img/prod/cat10prod10.png" },
+            { id: 1011, categoryId: 10, name: "Cajón Naranja de Jugo Valencia", unit: "cajón", image: "img/prod/cat10prod11.jpg" },
+            { id: 1012, categoryId: 10, name: "Arandanos Primera Calidad", unit: "kilo", image: "img/prod/cat10prod12.png" },
+            { id: 1013, categoryId: 10, name: "Piña Golden", unit: "unidad", image: "img/prod/cat10prod13.png" },
+            { id: 1014, categoryId: 10, name: "Piña Hawai", unit: "unidad", image: "img/prod/cat10prod14.png" },
+            { id: 1015, categoryId: 10, name: "Papaya Amarilla", unit: "unidad", image: "img/prod/cat10prod15.png" },
+            { id: 1016, categoryId: 10, name: "Papaya Roja Chica", unit: "unidad", image: "img/prod/cat10prod16.jpg" },
+            { id: 1017, categoryId: 10, name: "Manzana Caña", unit: "kilo", image: "img/prod/cat10prod17.png" },
+            { id: 1018, categoryId: 10, name: "Kaki", unit: "kilo", image: "img/prod/cat10prod18.png" },
+            { id: 1019, categoryId: 10, name: "Fresa", unit: "kilo", image: "img/prod/cat10prod19.png" },
+            { id: 1020, categoryId: 10, name: "Pitahaya Amarilla", unit: "kilo", image: "img/prod/cat10prod20.png" },
+            { id: 1021, categoryId: 10, name: "Plátano de Seda", unit: "mano", image: "img/prod/cat10prod21.png" },
+            { id: 1022, categoryId: 10, name: "Plátano Bizcocho", unit: "mano", image: "img/prod/cat10prod22.png" },
+            { id: 1023, categoryId: 10, name: "Plátano Bellaco", unit: "unidad", image: "img/prod/cat10prod23.png" },
+            { id: 1024, categoryId: 10, name: "Kiwi", unit: "kilo", image: "img/prod/cat10prod24.png" },
+            { id: 1025, categoryId: 10, name: "Aguaymando", unit: "kilo", image: "img/prod/cat10prod25.png" },
+            { id: 1026, categoryId: 10, name: "Melón Chico - Mediano", unit: "unidad", image: "img/prod/cat10prod26.png" },
+            { id: 1027, categoryId: 10, name: "Pera", unit: "kilo", image: "img/prod/cat10prod27.png" },
+
+            // categoria 11
+            { id: 1101, categoryId: 11, name: "Aceituna Negra con pepa", unit: "kilo", image: "img/prod/cat11prod1.png" },
+            { id: 1102, categoryId: 11, name: "Aceituna Negra sin pepa", unit: "kilo", image: "img/prod/cat11prod2.png" },
+            { id: 1103, categoryId: 11, name: "Aceituna Verde", unit: "kilo", image: "img/prod/cat11prod3.png" },
+            { id: 1104, categoryId: 11, name: "Aceituns Verdes rellenas con Rocoto", unit: "kilo", image: "img/prod/cat11prod4.png" },
+            { id: 1105, categoryId: 11, name: "Aceitunas Verdes rellenas con Castaña", unit: "kilo", image: "img/prod/cat11prod5.png" },
+            { id: 1106, categoryId: 11, name: "Aceituna Negra seca sin pepa", unit: "kilo", image: "img/prod/cat11prod6.png" },
+            { id: 1107, categoryId: 11, name: "Huevos Pardos", unit: "plancha", image: "img/prod/cat11prod7.png" },
         ];
 
         // Carrito de compras
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        
+        // Usuario actual
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 
         // Función para mostrar una sección específica
         function showSection(sectionId) {
@@ -962,6 +1414,15 @@
             // Si es el carrito, actualizar la vista
             if (sectionId === 'cart') {
                 updateCartView();
+            }
+            
+            // Si es perfil, cargar datos del usuario y sus pedidos
+            if (sectionId === 'profile' && currentUser) {
+                document.getElementById('profile-name').value = currentUser.name;
+                document.getElementById('profile-email').value = currentUser.email;
+                document.getElementById('profile-phone').value = currentUser.phone;
+                document.getElementById('profile-address').value = currentUser.address;
+                loadUserOrders();
             }
             
             // Cerrar menú móvil si está abierto
@@ -1006,6 +1467,35 @@
             // Obtener productos de esta categoría
             const categoryProducts = products.filter(product => product.categoryId === categoryId);
             
+            // Verificar unidades especiales para mostrar mensajes
+            const messagesContainer = document.getElementById('unit-messages');
+            messagesContainer.innerHTML = '';
+            
+            // Detectar unidades especiales
+            const specialUnits = {
+                'atado*': 'Atado*: tamaño mercado granel (6-8 veces más grande que supermercado)',
+                'mano': 'Mano*: equivalente a 5 unidades',
+                'cajón': 'Cajón*: aproximadamente 17 kilos por cajón',
+                'plancha': 'Plancha*: plancha por 30 unidades'
+            };
+            
+            const foundUnits = new Set();
+            
+            categoryProducts.forEach(product => {
+                if (specialUnits[product.unit]) {
+                    foundUnits.add(specialUnits[product.unit]);
+                }
+            });
+            
+            // Mostrar mensajes si se encontraron unidades especiales
+            if (foundUnits.size > 0) {
+                foundUnits.forEach(message => {
+                    const messageEl = document.createElement('p');
+                    messageEl.textContent = message;
+                    messagesContainer.appendChild(messageEl);
+                });
+            }
+            
             // Cargar productos en el contenedor
             const container = document.getElementById('products-container');
             container.innerHTML = '';
@@ -1028,31 +1518,73 @@
                         <option value=4>4 kilos</option>
                     `;
                 } 
-                else if (product.category === 'tecnologia') {
-                    // Opciones para tecnología (memoria)
+                else if (product.unit === 'atado*') {
+                    // Opciones para atado tipo mercado
                     optionsHTML = `
-                        <option value="64GB">64GB</option>
-                        <option value="128GB">128GB</option>
-                        <option value="256GB">256GB</option>
-                        <option value="512GB">512GB</option>
+                        <option value=1>1 atado*</option>
+                        <option value=2>2 atados*</option>
+                        <option value=3>3 atados*</option>
                     `;
                 } 
-                else if (product.category === 'comida') {
-                    // Opciones para comida (porciones)
+                else if (product.unit === 'mano') {
+                    // Opciones para manos de 5 unidades
                     optionsHTML = `
-                        <option value="individual">Individual</option>
-                        <option value="familiar">Familiar</option>
-                        <option value="pareja">Pareja</option>
+                        <option value=1>1 mano</option>
+                        <option value=2>2 manos</option>
+                        <option value=3>3 manos</option>
+                        <option value=4>4 manos</option>
+                        <option value=5>5 manos</option>
+                    `;
+                } else if (product.unit === 'atado') {
+                    // Opciones para atado normal
+                    optionsHTML = `
+                        <option value=1>1 atado</option>
+                        <option value=2>2 atados</option>
+                        <option value=3>3 atados</option>
+                        <option value=4>4 atados</option>
+                        <option value=5>5 atados</option>
+                    `;
+                } else if (product.unit === 'docena') {
+                    // Opciones para docenas
+                    optionsHTML = `
+                        <option value=1>1 docena</option>
+                        <option value=2>2 docenas</option>
+                        <option value=3>3 docenas</option>
+                        <option value=4>4 docenas</option>
+                        <option value=5>5 docenas</option>
+                    `;
+                } else if (product.unit === 'cajón') {
+                    // Opciones para cajones
+                    optionsHTML = `
+                        <option value=1>1 cajón</option>
+                        <option value=2>2 cajones</option>
+                        <option value=3>3 cajones</option>
+                        <option value=4>4 cajones</option>
+                        <option value=5>5 cajones</option>
+                    `;
+                } else if (product.unit === 'plancha') {
+                    // Opciones para planchas de huevos
+                    optionsHTML = `
+                        <option value=1>1 plancha</option>
+                        <option value=2>2 planchas</option>
+                        <option value=3>3 planchas</option>
+                        <option value=4>4 planchas</option>
+                        <option value=5>5 planchas</option>
                     `;
                 } 
-                else {
-                    // Opciones por defecto (cantidad)
+                else if (product.unit === 'unidad') {
+                    // Opciones por unidad
                     optionsHTML = `
-                        <option value="1">1 unidad</option>
-                        <option value="2">2 unidades</option>
-                        <option value="3">3 unidades</option>
-                        <option value="4">4 unidades</option>
-                        <option value="5">5 unidades</option>
+                        <option value=1>1 unidad</option>
+                        <option value=2>2 unidades</option>
+                        <option value=3>3 unidades</option>
+                        <option value=4>4 unidades</option>
+                        <option value=5>5 unidades</option>
+                        <option value=6>6 unidades</option>
+                        <option value=7>7 unidades</option>
+                        <option value=8>8 unidades</option>
+                        <option value=9>9 unidades</option>
+                        <option value=10>10 unidades</option>
                     `;
                 }
 
@@ -1080,6 +1612,12 @@
         
         // Función para agregar producto al carrito
         function addToCart(productId) {
+            if (!currentUser) {
+                alert('Debes iniciar sesión para agregar productos al carrito');
+                showSection('login');
+                return;
+            }
+            
             // Encontrar el producto
             const product = products.find(p => p.id === productId);
             if (!product) return;
@@ -1150,7 +1688,7 @@
                         </div>
                     </div>
                     <div class="item-actions">
-                        <span class="item-price">${itemTotal.toFixed(1)}</span>
+                        <span class="item-price">${itemTotal.toFixed(1)} (${item.unit})</span>
                         <button class="remove-item" onclick="removeFromCart(${item.id})">
                             <i class="fas fa-times"></i>
                         </button>
@@ -1159,14 +1697,34 @@
                 container.appendChild(cartItem);
             });
             
-            // Calcular servicio (25%)
-            //const serviceFee = subtotal * 0.25;
-            //const total = subtotal + serviceFee;
-            
-            // Actualizar resumen
-            // document.getElementById('subtotal-value').textContent = `S/ ${subtotal.toFixed(2)}`;
-            // document.getElementById('service-value').textContent = `S/ ${serviceFee.toFixed(2)}`;
-            // document.getElementById('total-value').textContent = subtotal.toFixed(1);
+            // Actualizar sección de información del cliente
+            const customerContent = document.getElementById('customer-info-content');
+            if (currentUser) {
+                customerContent.innerHTML = `
+                    <div class="form-group">
+                        <label class="form-label required" for="customer-name">Nombre Completo</label>
+                        <input type="text" class="form-input" id="customer-name" placeholder="Ingresa tu nombre completo" value="${currentUser.name}" oninput="validateForm()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required" for="customer-phone">Número Celular</label>
+                        <input type="text" class="form-input" id="customer-phone" placeholder="Ingresa tu número celular" value="${currentUser.phone}" oninput="validateForm()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required" for="customer-address">Dirección de Entrega</label>
+                        <input type="text" class="form-input" id="customer-address" placeholder="Ingresa tu dirección completa" value="${currentUser.address}" oninput="validateForm()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="customer-notes">Notas adicionales (opcional)</label>
+                        <textarea class="form-input" id="customer-notes" placeholder="Alguna instrucción especial para la entrega" rows="3"></textarea>
+                    </div>
+                `;
+            } else {
+                customerContent.innerHTML = `
+                    <p style="text-align: center; padding: 1rem; background: #f8d7da; border-radius: var(--radius);">
+                        Para realizar un pedido, debes <a href="#" style="color: var(--primary);" onclick="showSection('login')">iniciar sesión</a> o <a href="#" style="color: var(--primary);" onclick="showSection('signup')">registrarte</a>.
+                    </p>
+                `;
+            }
             
             // Validar formulario
             validateForm();
@@ -1187,15 +1745,16 @@
                 localStorage.setItem('cart', JSON.stringify(cart));
                 updateCartCount();
                 updateCartView();
-                document.getElementById('customer-name').value = '';
-                document.getElementById('customer-address').value = '';
-                document.getElementById('customer-phone').value = '';
-                document.getElementById('customer-notes').value = '';
             }
         }
 
         // Función para validar el formulario de compra
         function validateForm() {
+            if (!currentUser) {
+                document.getElementById('checkout-btn').disabled = true;
+                return;
+            }
+            
             const name = document.getElementById('customer-name').value.trim();
             const phone = document.getElementById('customer-phone').value.trim();
             const address = document.getElementById('customer-address').value.trim();
@@ -1208,64 +1767,537 @@
             }
         }
 
-        // Función para generar Excel y enviar por correo
-        /*function generateExcelAndEmail() {
-            // Obtener datos del cliente
-            const name = document.getElementById('customer-name').value.trim();
-            const address = document.getElementById('customer-address').value.trim();
-            const notes = document.getElementById('customer-notes').value.trim();
+        // ======== AUTENTICACIÓN DE USUARIOS ======== //
+        
+        // Función para obtener usuarios desde la nube
+        async function fetchUsers() {
+            try {
+                const response = await fetch(`${API_URL}${USERS_BIN_ID}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': MASTER_KEY,
+                        'X-Bin-Meta': 'false' // Solo obtenemos el contenido, sin metadatos
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error en la solicitud: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data.users || []; // Retornamos el array de usuarios
+            } catch (error) {
+                console.error('Error al obtener usuarios:', error);
+                return [];
+            }
+        }
+        
+        // Función para guardar usuarios en la nube
+        async function saveUsersToCloud(users) {
+            try {
+                const response = await fetch(`${API_URL}${USERS_BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': MASTER_KEY
+                    },
+                    body: JSON.stringify({ users }) // Enviamos como objeto {users: [...]}
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error al guardar: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Error al guardar usuarios:', error);
+                throw error;
+            }
+        }
+        
+        // Función para registrar un nuevo usuario
+        async function customerSignup() {
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const phone = document.getElementById('signup-phone').value.trim();
+            const address = document.getElementById('signup-address').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const errorEl = document.getElementById('signup-error');
             
-            // Calcular totales
-            let subtotal = 0;
-            cart.forEach(item => {
-                subtotal += item.price * item.quantity;
-            });
-            const serviceFee = subtotal * 0.25;
-            const total = subtotal + serviceFee;
+            // Validar campos
+            if (!name || !email || !phone || !address || !password) {
+                errorEl.textContent = 'Todos los campos son obligatorios';
+                errorEl.style.display = 'block';
+                return;
+            }
             
-            // Crear datos para el Excel
-            const excelData = [
-                ['Pedido FreshGreen', '', '', ''],
-                ['Cliente:', name, 'Dirección:', address],
-                ['Notas:', notes, '', ''],
-                ['', '', '', ''],
-                ['Producto', 'Cantidad', 'Precio Unitario', 'Total']
-            ];
+            // Validar nombre (solo letras y espacios)
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]{3,}$/.test(name)) {
+                errorEl.textContent = 'El nombre debe contener solo letras y espacios (mínimo 3 caracteres)';
+                errorEl.style.display = 'block';
+                return;
+            }
             
-            // Agregar productos
-            cart.forEach(item => {
-                excelData.push([
-                    item.name,
-                    item.quantity,
-                    `S/ ${item.price.toFixed(2)}`,
-                    `S/ ${(item.price * item.quantity).toFixed(2)}`
-                ]);
-            });
+            // Validar formato de email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                errorEl.textContent = 'Por favor ingresa un correo válido (ejemplo@dominio.com)';
+                errorEl.style.display = 'block';
+                return;
+            }
             
-            // Agregar totales
-            excelData.push(['', '', 'Subtotal:', `S/ ${subtotal.toFixed(2)}`]);
-            excelData.push(['', '', 'Servicio (25%):', `S/ ${serviceFee.toFixed(2)}`]);
-            excelData.push(['', '', 'Total:', `S/ ${total.toFixed(2)}`]);
+            // Validar teléfono (solo números, 9 dígitos)
+            if (!/^\d{9}$/.test(phone)) {
+                errorEl.textContent = 'El teléfono debe tener exactamente 9 dígitos numéricos';
+                errorEl.style.display = 'block';
+                return;
+            }
             
-            // Crear hoja de cálculo
-            const ws = XLSX.utils.aoa_to_sheet(excelData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Pedido");
+            try {
+                // Obtener usuarios existentes
+                const users = await fetchUsers();
+                
+                // Verificar si el correo ya está registrado
+                if (users.some(user => user.email === email)) {
+                    errorEl.textContent = 'Este correo ya está registrado';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+                
+                // Crear nuevo usuario
+                const newUser = {
+                    id: Date.now(), // ID único basado en timestamp
+                    name,
+                    email,
+                    phone,
+                    address,
+                    password: encryptData(password), // Guardar encriptado
+                    createdAt: new Date().toISOString()
+                };
+                
+                // Agregar a la lista de usuarios
+                users.push(newUser);
+                
+                // Guardar en la nube
+                await saveUsersToCloud(users);
+                
+                // Iniciar sesión automáticamente
+                currentUser = newUser;
+                localStorage.setItem('currentUser', JSON.stringify(newUser));
+                updateAuthLinks();
+                
+                // Limpiar formulario
+                document.getElementById('signup-name').value = '';
+                document.getElementById('signup-email').value = '';
+                document.getElementById('signup-phone').value = '';
+                document.getElementById('signup-address').value = '';
+                document.getElementById('signup-password').value = '';
+                
+                // Mostrar mensaje de éxito
+                alert('¡Registro exitoso! Bienvenido a Market');
+                
+                // Redirigir al inicio
+                showSection('home');
+            } catch (error) {
+                console.error('Error al registrar usuario:', error);
+                errorEl.textContent = 'Hubo un error al registrarse. Inténtalo de nuevo.';
+                errorEl.style.display = 'block';
+            }
+        }
+        
+        // Función para iniciar sesión
+        async function customerLogin() {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const errorEl = document.getElementById('login-error');
             
-            // Generar archivo Excel
-            const fileName = `Pedido_FreshGreen_${new Date().toISOString().slice(0, 10)}.xlsx`;
-            XLSX.writeFile(wb, fileName);
+            // Validar campos
+            if (!email || !password) {
+                errorEl.textContent = 'Por favor completa todos los campos';
+                errorEl.style.display = 'block';
+                return;
+            }
             
-            // Preparar correo electrónico
-            const subject = encodeURIComponent(`Nuevo Pedido de ${name}`);
-            const body = encodeURIComponent(`Hola,\n\nAdjunto el pedido de ${name}.\n\nDirección de entrega: ${address}\n\nNotas: ${notes || 'Ninguna'}\n\nPor favor confirmar recepción.`);
+            try {
+                // Obtener usuarios
+                const users = await fetchUsers();
+                
+                // Buscar usuario por email y contraseña
+                const user = users.find(u => 
+                    u.email === email && 
+                    decryptData(u.password) === password
+                );
+                
+                if (user) {
+                    // Iniciar sesión
+                    currentUser = user;
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    updateAuthLinks();
+                    
+                    // Limpiar formulario
+                    document.getElementById('login-email').value = '';
+                    document.getElementById('login-password').value = '';
+                    errorEl.style.display = 'none';
+                    
+                    // Mostrar mensaje de bienvenida
+                    alert(`Bienvenido de nuevo, ${user.name}!`);
+                    
+                    // Redirigir al inicio
+                    showSection('home');
+                } else {
+                    errorEl.textContent = 'Correo o contraseña incorrectos';
+                    errorEl.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al iniciar sesión:', error);
+                errorEl.textContent = 'Hubo un error al iniciar sesión. Inténtalo de nuevo.';
+                errorEl.style.display = 'block';
+            }
+        }
+        
+        // Función para cerrar sesión
+        function customerLogout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            updateAuthLinks();
+            alert('Has cerrado sesión correctamente');
+            showSection('home');
+        }
+        
+        // Función para actualizar el perfil
+        async function updateProfile() {
+            const name = document.getElementById('profile-name').value.trim();
+            const phone = document.getElementById('profile-phone').value.trim();
+            const address = document.getElementById('profile-address').value.trim();
+            const errorEl = document.getElementById('profile-error');
             
-            // Abrir cliente de correo
-            setTimeout(() => {
-                window.open(`mailto:pedidos@freshgreen.com?subject=${subject}&body=${body}`, '_blank');
-            }, 1000);
-        }*/
+            // Validar campos
+            if (!name || !phone || !address) {
+                errorEl.textContent = 'Todos los campos son obligatorios';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            try {
+                // Obtener usuarios
+                const users = await fetchUsers();
+                
+                // Buscar usuario actual
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                
+                if (userIndex !== -1) {
+                    // Actualizar datos del usuario
+                    users[userIndex].name = name;
+                    users[userIndex].phone = phone;
+                    users[userIndex].address = address;
+                    
+                    // Guardar en la nube
+                    await saveUsersToCloud(users);
+                    
+                    // Actualizar usuario en localStorage
+                    currentUser = users[userIndex];
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    
+                    // Mostrar mensaje de éxito
+                    alert('Perfil actualizado correctamente');
+                    errorEl.style.display = 'none';
+                } else {
+                    errorEl.textContent = 'Usuario no encontrado';
+                    errorEl.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al actualizar perfil:', error);
+                errorEl.textContent = 'Hubo un error al actualizar el perfil. Inténtalo de nuevo.';
+                errorEl.style.display = 'block';
+            }
+        }
+        
+        // Función para cambiar contraseña
+        async function changePassword() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const errorEl = document.getElementById('password-error');
+            
+            // Validar campos
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                errorEl.textContent = 'Todos los campos son obligatorios';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            // Validar que la nueva contraseña coincida
+            if (newPassword !== confirmPassword) {
+                errorEl.textContent = 'Las contraseñas no coinciden';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            // Validar que la nueva contraseña sea diferente
+            if (currentPassword === newPassword) {
+                errorEl.textContent = 'La nueva contraseña debe ser diferente a la actual';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            try {
+                // Obtener usuarios
+                const users = await fetchUsers();
+                
+                // Buscar usuario actual
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                
+                if (userIndex !== -1) {
+                    // Verificar contraseña actual
+                    if (decryptData(users[userIndex].password) !== currentPassword) {
+                        errorEl.textContent = 'Contraseña actual incorrecta';
+                        errorEl.style.display = 'block';
+                        return;
+                    }
+                    
+                    // Actualizar contraseña
+                    users[userIndex].password = encryptData(newPassword);
+                    
+                    // Guardar en la nube
+                    await saveUsersToCloud(users);
+                    
+                    // Actualizar usuario en localStorage
+                    currentUser = users[userIndex];
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    
+                    // Limpiar campos
+                    document.getElementById('current-password').value = '';
+                    document.getElementById('new-password').value = '';
+                    document.getElementById('confirm-password').value = '';
+                    
+                    // Mostrar mensaje de éxito
+                    alert('Contraseña cambiada correctamente');
+                    errorEl.style.display = 'none';
+                } else {
+                    errorEl.textContent = 'Usuario no encontrado';
+                    errorEl.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al cambiar contraseña:', error);
+                errorEl.textContent = 'Hubo un error al cambiar la contraseña. Inténtalo de nuevo.';
+                errorEl.style.display = 'block';
+            }
+        }
+        
+        // Función para verificar usuario antes de cambiar contraseña
+        async function verifyUser() {
+            const name = document.getElementById('recovery-name').value.trim();
+            const email = document.getElementById('recovery-email').value.trim();
+            const errorEl = document.getElementById('recovery-error');
+            
+            // Validar campos
+            if (!name || !email) {
+                errorEl.textContent = 'Por favor completa todos los campos';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            // Validar formato de email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                errorEl.textContent = 'Por favor ingresa un correo válido';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            try {
+                // Obtener usuarios
+                const users = await fetchUsers();
+                
+                // Buscar usuario por nombre y correo
+                const user = users.find(u => u.name === name && u.email === email);
+                
+                if (user) {
+                    // Guardar temporalmente el ID del usuario
+                    sessionStorage.setItem('recoveryUserId', user.id);
+                    
+                    // Mostrar sección de nueva contraseña
+                    showSection('new-password');
+                } else {
+                    errorEl.textContent = 'No se encontró un usuario con esos datos. Por favor verifica.';
+                    errorEl.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al verificar usuario:', error);
+                errorEl.textContent = 'Hubo un error al verificar. Inténtalo de nuevo.';
+                errorEl.style.display = 'block';
+            }
+        }
+        
+        // Función para actualizar la contraseña después de verificar
+        async function updatePassword() {
+            const newPassword = document.getElementById('new-password-input').value;
+            const confirmPassword = document.getElementById('confirm-new-password').value;
+            const errorEl = document.getElementById('new-password-error');
+            const userId = sessionStorage.getItem('recoveryUserId');
+            
+            if (!userId) {
+                errorEl.textContent = 'Sesión expirada. Por favor inicia el proceso de nuevo.';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            if (!newPassword || !confirmPassword) {
+                errorEl.textContent = 'Por favor completa todos los campos';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                errorEl.textContent = 'Las contraseñas no coinciden';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            try {
+                // Obtener usuarios
+                const users = await fetchUsers();
+                
+                // Buscar usuario
+                const userIndex = users.findIndex(u => u.id == userId);
+                
+                if (userIndex !== -1) {
+                    // Actualizar contraseña
+                    users[userIndex].password = encryptData(newPassword);
+                    
+                    // Guardar en la nube
+                    await saveUsersToCloud(users);
+                    
+                    // Limpiar sesión
+                    sessionStorage.removeItem('recoveryUserId');
+                    
+                    // Mostrar mensaje de éxito
+                    alert('Contraseña actualizada correctamente. Ahora puedes iniciar sesión.');
+                    
+                    // Redirigir al login
+                    showSection('login');
+                } else {
+                    errorEl.textContent = 'Usuario no encontrado';
+                    errorEl.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al actualizar contraseña:', error);
+                errorEl.textContent = 'Hubo un error al actualizar. Inténtalo de nuevo.';
+                errorEl.style.display = 'block';
+            }
+        }
+        
+        // Función para actualizar enlaces de autenticación
+        function updateAuthLinks() {
+            const authLinks = document.getElementById('auth-links');
+            
+            if (currentUser) {
+                authLinks.innerHTML = `
+                    <li><a href="#" onclick="showSection('profile')">Perfil</a></li>
+                    <li><a href="#" onclick="customerLogout()">Cerrar Sesión</a></li>
+                `;
+            } else {
+                authLinks.innerHTML = `
+                    <li><a href="#" onclick="showSection('login')">Iniciar Sesión</a></li>
+                    <li><a href="#" onclick="showSection('signup')">Registrarse</a></li>
+                `;
+            }
+        }
+        
+        // Función para cargar los pedidos del usuario
+        async function loadUserOrders() {
 
+            const container = document.getElementById('user-orders');
+            // Solo cargar si la sección está visible
+            if (container.closest('.profile-section').style.display !== 'none') {
+
+                const container = document.getElementById('user-orders');
+                container.innerHTML = '<p>Cargando pedidos...</p>';
+                
+                try {
+                    // Obtener todos los pedidos
+                    const orders = await fetchOrders();
+                    
+                    // Filtrar pedidos del usuario actual
+                    const userOrders = orders.filter(order => order.userId == currentUser.id);
+                    
+                    if (userOrders.length === 0) {
+                        container.innerHTML = '<p>No has realizado ningún pedido aún.</p>';
+                        return;
+                    }
+                    
+                    // Ordenar pedidos por fecha (más recientes primero)
+                    userOrders.sort((a, b) => b.timestamp - a.timestamp);
+                    
+                    let ordersHTML = '';
+                    userOrders.forEach(order => {
+                        // Determinar clase CSS según estado
+                        let statusClass = 'order-status ';
+                        switch(order.status) {
+                            case 'Pendiente':
+                                statusClass += 'status-pendiente';
+                                break;
+                            case 'Aceptado':
+                                statusClass += 'status-aceptado';
+                                break;
+                            case 'Completado':
+                                statusClass += 'status-completado';
+                                break;
+                            case 'Rechazado':
+                                statusClass += 'status-rechazado';
+                                break;
+                            default:
+                                statusClass += 'status-pendiente';
+                        }
+                        
+                        // Generar lista de productos
+                        let productsList = '';
+                        if (order.items && order.items.length > 0) {
+                            productsList = '<ul class="order-products-list">';
+                            order.items.forEach(item => {
+                                productsList += `
+                                    <li class="order-product-item">
+                                        <span class="product-name">${item.name}</span>
+                                        <span class="product-quantity">${item.quantity} ${item.unit}</span>
+                                    </li>
+                                `;
+                            });
+                            productsList += '</ul>';
+                        } else {
+                            productsList = '<p>No hay productos en este pedido.</p>';
+                        }
+                        
+                        ordersHTML += `
+                            <div class="order-card">
+                                <div class="order-header">
+                                    <h4>Pedido #${order.id}</h4>
+                                    <span class="order-date">${order.date}</span>
+                                </div>
+                                <div class="order-status-container">
+                                    <span class="${statusClass}">${order.status}</span>
+                                </div>
+                                <p><strong>Productos pedidos:</strong> ${order.total}</p>
+                                <p><strong>Dirección de envío:</strong> ${order.address}</p>
+                                <p><strong>Notas:</strong> ${order.notes || 'Ninguna'}</p>
+                                
+                                <div style="margin-top: 10px;">
+                                    <h5 style="color: var(--primary);">Productos comprados:</h5>
+                                    ${productsList}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    container.innerHTML = ordersHTML;
+                } catch (error) {
+                    console.error('Error al cargar pedidos:', error);
+                    container.innerHTML = '<p>Error al cargar los pedidos. Inténtalo de nuevo más tarde.</p>';
+                }
+            }
+        }
+
+        // ======== FUNCIONES DE PEDIDOS ======== //
+        
         // Función para obtener los pedidos desde la nube
         async function fetchOrders() {
             try {
@@ -1288,7 +2320,7 @@
                 return [];
             }
         }
-
+        
         // Función para guardar pedidos en la nube
         async function saveOrdersToCloud(orders) {
             try {
@@ -1343,7 +2375,7 @@
                 address: address,
                 phone: phone,
                 notes: notes,
-                status: 'Pendiente',
+                status: 'Pendiente', // Estado inicial
                 items: cart.map(item => ({
                     name: item.name,
                     unit: item.unit,
@@ -1351,7 +2383,27 @@
                 })),
                 total: total,
                 timestamp: now.getTime(), // Guardamos timestamp para filtrado
+                userId: currentUser.id // Asociar pedido con usuario
             };
+
+            // Calcular totales
+            let productsList = [];
+            
+            let subtotal2 = 0;
+            cart.forEach(item => {
+                subtotal2 += 1;
+            });
+            const total2 = subtotal2;
+
+            cart.forEach(item => {
+                // Guardar detalles del producto
+                productsList.push({
+                    name: item.name,
+                    unit: item.unit,
+                    quantity: item.quantity,
+                    total: total2
+                });
+            });
             
             try {
                 // Obtener pedidos existentes
@@ -1366,12 +2418,8 @@
                 localStorage.setItem('cart', JSON.stringify(cart));
                 updateCartCount();
                 updateCartView();
-                document.getElementById('customer-name').value = '';
-                document.getElementById('customer-address').value = '';
-                document.getElementById('customer-phone').value = '';
-                document.getElementById('customer-notes').value = '';
                 
-                // Mostrar mensaje de éxito
+                // Mostrar notificación
                 alert('¡Pedido enviado con éxito! Nuestro equipo lo procesará pronto.');
                 
                 // Volver a la página de inicio
@@ -1382,9 +2430,39 @@
             }
         }
 
-        // Inicializar contador del carrito al cargar la página
+        // Función para cambiar entre pestañas
+        function showProfileTab(tabId) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.profile-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Quitar clase activa de todos los botones
+            document.querySelectorAll('.profile-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostrar sección seleccionada
+            document.getElementById(tabId).style.display = 'block';
+            
+            // Marcar botón como activo
+            event.currentTarget.classList.add('active');
+            
+            // Si es la sección de pedidos, cargarlos
+            if (tabId === 'order-history') {
+                loadUserOrders();
+            }
+        }
+
+        // Inicializar contador del carrito y enlaces de autenticación
         document.addEventListener('DOMContentLoaded', () => {
             updateCartCount();
+            updateAuthLinks();
+            document.getElementById('login-password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    customerLogin();
+                }
+            });
         });
     </script>
 </body>
