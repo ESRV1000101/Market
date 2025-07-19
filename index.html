@@ -207,6 +207,19 @@
             cursor: pointer;
             transition: var(--transition);
         }
+
+        /* Agrega esto en la sección de estilos */
+        .product-count {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--primary);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
         
         .category-card:hover {
             transform: translateY(-5px);
@@ -812,6 +825,15 @@
             font-weight: 600;
             color: var(--primary);
         }
+
+        /* Agrega esto en la sección de estilos */
+        button {
+            transition: var(--transition);
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
         
         /* Responsive */
         @media (max-width: 992px) {
@@ -985,7 +1007,17 @@
         <p style="text-align: center; margin-bottom: 2rem; max-width: 800px; margin-left: auto; margin-right: auto;">
             Selecciona una categoría para ver los productos disponibles
         </p>
-        
+        <!-- Dentro de <section id="store"> -->
+        <div style="max-width: 600px; margin: 0 auto 2rem auto;">
+            <div class="form-group" style="position: relative;">
+                <input type="text" id="search-input" class="form-input" placeholder="Buscar productos..." style="padding-right: 40px;">
+                <i class="fas fa-search" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
+            </div>
+        </div>
+        <!-- Dentro de <section id="store"> después del buscador -->
+        <div class="products-grid" id="search-products-container" style="display: none;">
+            <!-- Los productos de búsqueda aparecerán aquí -->
+        </div>
         <div class="categories-grid" id="categories-container">
             <!-- Las categorías se generarán dinámicamente con JavaScript -->
         </div>
@@ -993,6 +1025,14 @@
 
     <!-- Sección de Categoría -->
     <section id="category">
+        <!-- Dentro de <section id="category"> -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <button onclick="showSection('store')" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; color: var(--primary);">
+                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Volver
+            </button>
+            <h2 id="category-title" style="margin: 0; color: var(--primary);"></h2>
+            <div style="width: 40px;"></div> <!-- Espaciador para centrar el título -->
+        </div>
         <h2 id="category-title" style="text-align: center; margin-bottom: 2rem; color: var(--primary);"></h2>
         
         <!-- Agrega este div para los mensajes -->
@@ -1207,7 +1247,7 @@
     <footer>
         <div class="footer-container">
             <div class="footer-section">
-                <h3>Ubicación y Horarios</h3>
+                <h3>Contacto</h3>
                 <div class="contact-info">
                     <div class="contact-item">
                         <i class="fas fa-map-marker-alt"></i>
@@ -2454,6 +2494,153 @@
             }
         }
 
+// Función para buscar productos (muestra productos directamente)
+        function searchProducts() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const allProducts = products; // Todos los productos
+            
+            // Obtener contenedores
+            const categoriesContainer = document.getElementById('categories-container');
+            const productsContainer = document.getElementById('search-products-container');
+            
+            // Mostrar contenedor de resultados de búsqueda
+            productsContainer.style.display = 'grid';
+            categoriesContainer.style.display = 'none';
+            
+            // Limpiar resultados anteriores
+            productsContainer.innerHTML = '';
+            
+            if (!searchTerm) {
+                // Si no hay término, mostrar categorías
+                productsContainer.style.display = 'none';
+                categoriesContainer.style.display = 'grid';
+                return;
+            }
+            
+            // Filtrar productos que coincidan
+            const filteredProducts = allProducts.filter(product => 
+                product.name.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filteredProducts.length === 0) {
+                productsContainer.innerHTML = '<p style="text-align: center; padding: 2rem; grid-column: 1 / -1;">No se encontraron productos</p>';
+                return;
+            }
+            
+            // Mostrar productos encontrados
+            filteredProducts.forEach(product => {
+                // Generar opciones según unidad (igual que en showCategory)
+                let optionsHTML = '';
+                
+                if (product.unit === 'kilo') {
+                    // Opciones por kilo
+                    optionsHTML = `
+                        <option value=0.5>0.5 kilo</option>
+                        <option value=1>1 kilo</option>
+                        <option value=1.5>1.5 kilos</option>
+                        <option value=2>2 kilos</option>
+                        <option value=3>3 kilos</option>
+                        <option value=4>4 kilos</option>
+                    `;
+                } 
+                else if (product.unit === 'atado*') {
+                    // Opciones para atado tipo mercado
+                    optionsHTML = `
+                        <option value=1>1 atado*</option>
+                        <option value=2>2 atados*</option>
+                        <option value=3>3 atados*</option>
+                    `;
+                } 
+                else if (product.unit === 'mano') {
+                    // Opciones para manos de 5 unidades
+                    optionsHTML = `
+                        <option value=1>1 mano</option>
+                        <option value=2>2 manos</option>
+                        <option value=3>3 manos</option>
+                        <option value=4>4 manos</option>
+                        <option value=5>5 manos</option>
+                    `;
+                } else if (product.unit === 'atado') {
+                    // Opciones para atado normal
+                    optionsHTML = `
+                        <option value=1>1 atado</option>
+                        <option value=2>2 atados</option>
+                        <option value=3>3 atados</option>
+                        <option value=4>4 atados</option>
+                        <option value=5>5 atados</option>
+                    `;
+                } else if (product.unit === 'docena') {
+                    // Opciones para docenas
+                    optionsHTML = `
+                        <option value=1>1 docena</option>
+                        <option value=2>2 docenas</option>
+                        <option value=3>3 docenas</option>
+                        <option value=4>4 docenas</option>
+                        <option value=5>5 docenas</option>
+                    `;
+                } else if (product.unit === 'cajón') {
+                    // Opciones para cajones
+                    optionsHTML = `
+                        <option value=1>1 cajón</option>
+                        <option value=2>2 cajones</option>
+                        <option value=3>3 cajones</option>
+                        <option value=4>4 cajones</option>
+                        <option value=5>5 cajones</option>
+                    `;
+                } else if (product.unit === 'plancha') {
+                    // Opciones para planchas de huevos
+                    optionsHTML = `
+                        <option value=1>1 plancha</option>
+                        <option value=2>2 planchas</option>
+                        <option value=3>3 planchas</option>
+                        <option value=4>4 planchas</option>
+                        <option value=5>5 planchas</option>
+                    `;
+                } 
+                else if (product.unit === 'unidad') {
+                    // Opciones por unidad
+                    optionsHTML = `
+                        <option value=1>1 unidad</option>
+                        <option value=2>2 unidades</option>
+                        <option value=3>3 unidades</option>
+                        <option value=4>4 unidades</option>
+                        <option value=5>5 unidades</option>
+                        <option value=6>6 unidades</option>
+                        <option value=7>7 unidades</option>
+                        <option value=8>8 unidades</option>
+                        <option value=9>9 unidades</option>
+                        <option value=10>10 unidades</option>
+                    `;
+                }
+                
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="product-image">
+                    <div class="product-info">
+                        <h3 class="product-name">${product.name}</h3>
+                        <p>Cantidad:</p>
+                        <div class="product-actions">
+                            <select class="quantity-select" id="quantity-${product.id}">
+                                ${optionsHTML}
+                            </select>
+                            <button class="add-to-cart" onclick="addToCart(${product.id})">
+                                <i class="fas fa-cart-plus"></i> Agregar
+                            </button>
+                        </div>
+                    </div>
+                `;
+                productsContainer.appendChild(productCard);
+            });
+        }
+
+        // Función para limpiar búsqueda
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('search-products-container').style.display = 'none';
+            document.getElementById('categories-container').style.display = 'grid';
+        }
+
         // Inicializar contador del carrito y enlaces de autenticación
         document.addEventListener('DOMContentLoaded', () => {
             updateCartCount();
@@ -2463,6 +2650,7 @@
                     customerLogin();
                 }
             });
+            document.getElementById('search-input').addEventListener('input', searchProducts);
         });
     </script>
 </body>
