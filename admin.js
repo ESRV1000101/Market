@@ -1574,7 +1574,7 @@ async function deleteProduct(id) {
 }
 
 // Agregar estas constantes con tus credenciales
-const GITHUB_TOKEN = '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'; // Este valor será reemplazado por el workflow
+const GITHUB_TOKEN = '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'; // Este valor será reemplazado por el workflow
 const GITHUB_USER = 'ESRV1000101';
 const GITHUB_REPO = 'Market';
 const GITHUB_BRANCH = 'main';
