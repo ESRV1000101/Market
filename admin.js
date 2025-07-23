@@ -1472,27 +1472,22 @@ async function updateProductVisibility(id, visible) {
 }
 
 async function deleteCloudinaryImage(imageUrl) {
-    const publicId = imageUrl.split('/').pop().split('.')[0];
-    const folder = imageUrl.includes('categorias') ? 'categorias' : 'productos';
-    const fullPublicId = `market_images/${folder}/${publicId}`;
+    // Extraer public_id completo
+    const urlParts = imageUrl.split('/');
+    const publicId = urlParts.slice(urlParts.indexOf('upload') + 1).join('/').split('.')[0];
     
     try {
         const response = await fetch(
             `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/destroy`,
             {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    public_id: fullPublicId,
-                    signature: '', // No necesario para unsigned
-                    api_key: '',   // No necesario para unsigned
+                    public_id: publicId,
                     timestamp: Math.floor(Date.now() / 1000)
                 })
             }
         );
-        
         return response.ok;
     } catch (error) {
         console.error('Error eliminando imagen:', error);
@@ -1585,11 +1580,20 @@ async function uploadImageToCloudinary() {
 
     statusDiv.innerHTML = '<p>Subiendo imagen...</p>';
     
+    // Determinar ruta exacta
+    let folderPath = 'yufoods_img/';
+    if (currentEditItem.type === 'category') {
+        folderPath += 'categorias/';
+    } else {
+        folderPath += 'productos/';
+    }
+    
     // Configurar FormData
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', currentEditItem.type === 'category' ? `${CLOUDINARY_UPLOAD_PRESET}/categorias` : `${CLOUDINARY_UPLOAD_PRESET}/productos`);
-    formData.append('public_id', filenameInput);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('folder', folderPath); // Especificar carpeta
+    formData.append('public_id', filenameInput); // Solo nombre del archivo
 
     try {
         // Subir a Cloudinary
@@ -1607,7 +1611,7 @@ async function uploadImageToCloudinary() {
         }
 
         const data = await response.json();
-        const imageUrl = data.secure_url;
+        const imageUrl = `${data.secure_url}`;
 
         // Actualizar campo de imagen
         const imageField = currentEditItem.type === 'category' 
