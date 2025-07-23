@@ -12,6 +12,10 @@ const PRODUCTS_API_URL = `https://api.jsonbin.io/v3/b/${PRODUCTS_BIN_ID}`;
 const ADMIN_USER = "admin";
 const ADMIN_PASSWORD = "nomura25";
 
+// Agrega estas constantes al inicio del archivo admin.js
+const CLOUDINARY_CLOUD_NAME = 'dgxjjabov'; // Reemplaza con tu cloud name
+const CLOUDINARY_UPLOAD_PRESET = 'yufoods_preset'; // Nombre que creaste
+
 // Estado global
 let ordersChart = null;
 let currentOrders = [];
@@ -21,19 +25,6 @@ let orderHistoryMap = {}; // Historial de cambios de estado (solo en memoria)
 // Paginación: variables de estado
 let ordersCurrentPage = 1;
 const ordersPageSize = 10; // Cambia este valor para más/menos filas por página
-
-// Solucionar CORS para GitHub API
-if (window.location.origin.includes('github.io')) {
-  const originalFetch = window.fetch;
-  window.fetch = function(url, options) {
-    if (url.includes('api.github.com')) {
-      options = options || {};
-      options.mode = 'cors';
-      options.credentials = 'omit';
-    }
-    return originalFetch.call(this, url, options);
-  };
-}
 
 // Toast notifications
 function showToast(message, type = 'info') {
@@ -1480,48 +1471,31 @@ async function updateProductVisibility(id, visible) {
     }
 }
 
-async function deleteFileFromGitHub(filePath) {
+async function deleteCloudinaryImage(imageUrl) {
+    const publicId = imageUrl.split('/').pop().split('.')[0];
+    const folder = imageUrl.includes('categorias') ? 'categorias' : 'productos';
+    const fullPublicId = `market_images/${folder}/${publicId}`;
+    
     try {
-        // 1. Obtener el SHA del archivo existente
-        const getResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${filePath}`,
+        const response = await fetch(
+            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/destroy`,
             {
+                method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            }
-        );
-
-        if (!getResponse.ok) return; // Si no existe, no hay nada que borrar
-
-        const fileData = await getResponse.json();
-
-        // 2. Hacer solicitud DELETE
-        const deleteResponse = await fetch(
-            `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${filePath}`,
-            {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/vnd.github.v3+json'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    message: `Eliminar imagen: ${filePath.split('/').pop()}`,
-                    sha: fileData.sha,
-                    branch: GITHUB_BRANCH
+                    public_id: fullPublicId,
+                    signature: '', // No necesario para unsigned
+                    api_key: '',   // No necesario para unsigned
+                    timestamp: Math.floor(Date.now() / 1000)
                 })
             }
         );
-
-        if (!deleteResponse.ok) {
-            throw new Error('Error al eliminar archivo');
-        }
-
-        return true;
+        
+        return response.ok;
     } catch (error) {
-        console.error('Error deleting file:', error);
+        console.error('Error eliminando imagen:', error);
         return false;
     }
 }
@@ -1537,9 +1511,8 @@ async function deleteCategory(id) {
         // Eliminar productos asociados
         editorProducts = editorProducts.filter(p => p.categoryId !== id);
 
-        if (editorCategories && editorCategories.image.includes('githubusercontent.com')) {
-            const filePath = editorCategories.image.split(`${GITHUB_REPO}/${GITHUB_BRANCH}/`)[1];
-            await deleteFileFromGitHub(filePath);
+        if (editorCategories.image.includes('res.cloudinary.com')) {
+            await deleteCloudinaryImage(editorCategories.image);
         }
 
         await Promise.all([
@@ -1560,11 +1533,12 @@ async function deleteProduct(id) {
     if (!confirm('¿Eliminar este producto permanentemente?')) return;
     
     try {
+        // Eliminar producto
         editorProducts = editorProducts.filter(p => p.id !== id);
-        if (editorProducts && editorProducts.image.includes('githubusercontent.com')) {
-            const filePath = editorProducts.image.split(`${GITHUB_REPO}/${GITHUB_BRANCH}/`)[1];
-            await deleteFileFromGitHub(filePath);
+        if (editorProducts.image.includes('res.cloudinary.com')) {
+            await deleteCloudinaryImage(editorProducts.image);
         }
+
         await saveProductsToCloud(editorProducts);
         renderProductsEditor();
         showToast('Producto eliminado', 'success');
@@ -1572,12 +1546,6 @@ async function deleteProduct(id) {
         showToast('Error al eliminar: ' + error.message, 'error');
     }
 }
-
-// Agregar estas constantes con tus credenciales
-const GITHUB_TOKEN = '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'; // Este valor será reemplazado por el workflow
-const GITHUB_USER = 'ESRV1000101';
-const GITHUB_REPO = 'Market';
-const GITHUB_BRANCH = 'main';
 
 // Funciones para manejo de imágenes
 function openImageUploadModal() {
@@ -1591,215 +1559,77 @@ function closeImageUploadModal() {
     document.getElementById('image-upload-modal').style.display = 'none';
 }
 
-async function uploadImageToGitHub() {
+async function uploadImageToCloudinary() {
     const fileInput = document.getElementById('image-file-input');
     const filenameInput = document.getElementById('image-filename').value.trim();
     const statusDiv = document.getElementById('image-upload-status');
     
-    // Validaciones básicas
+    // Validaciones
     if (!fileInput.files.length) {
         statusDiv.innerHTML = '<p class="error">Selecciona un archivo</p>';
         return;
     }
     if (!filenameInput) {
-        statusDiv.innerHTML = '<p class="error">Escribe un nombre para el archivo</p>';
+        statusDiv.innerHTML = '<p class="error">Escribe un nombre para la imagen</p>';
         return;
     }
 
     const file = fileInput.files[0];
+    const validExtensions = ['jpg', 'jpeg', 'png', 'avif', 'webp'];
     const extension = file.name.split('.').pop().toLowerCase();
-    const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     
     if (!validExtensions.includes(extension)) {
-        statusDiv.innerHTML = '<p class="error">Formato no válido. Usa JPG, PNG, GIF o WEBP</p>';
+        statusDiv.innerHTML = '<p class="error">Formato no válido. Usa JPG, PNG, AVIF o WEBP</p>';
         return;
     }
 
-   /*     
-    // 1. Determinar ruta según tipo (categoría/producto)
-    const folder = currentEditItem.type === 'category' ? 'img/cat/' : 'img/prod/';
-    const filePath = `${folder}${filenameInput}.${extension}`;
-
-    // 2. Convertir a Base64 correctamente
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-try {
-    // Método más confiable para Base64
-    const base64Content = arrayBufferToBase64(e.target.result);
-
-    // 3. Verificar si el archivo ya existe para actualización
-    let sha = null;
-    try {
-const existingFile = await fetch(
-    `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${filePath}`,
-    {
-headers: {
-    'Authorization': `Bearer ${GITHUB_TOKEN}`,
-    'Accept': 'application/vnd.github.v3+json'
-}
-    }
-);
-
-if (existingFile.ok) {
-    const data = await existingFile.json();
-    sha = data.sha; // Necesario para actualizar archivo existente
-}
-    } catch (e) {} // Ignorar si el archivo no existe
-
-    // 4. Configurar payload correctamente
-    const payload = {
-message: `Subir imagen ${filenameInput} (${currentEditItem.type})`,
-content: base64Content,
-branch: GITHUB_BRANCH
-    };
-
-    if (sha) payload.sha = sha; // Incluir SHA si es actualización
-
-    // 5. Hacer la solicitud PUT con todos los headers necesarios
-    const response = await fetch(
-`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${filePath}`,
-{
-    method: 'PUT',
-    headers: {
-'Authorization': `Bearer ${GITHUB_TOKEN}`,
-'Content-Type': 'application/json',
-'Accept': 'application/vnd.github.v3+json',
-'X-GitHub-Api-Version': '2022-11-28'
-    },
-    body: JSON.stringify(payload)
-}
-    );
-
-    // 6. Manejar respuesta
-    if (!response.ok) {
-const errorData = await response.json();
-throw new Error(errorData.message || `Error ${response.status}`);
-    }
-
-    const data = await response.json();
-    const rawUrl = data.content.download_url;
-
-    // Actualizar campo de imagen en el formulario
-    const imageField = currentEditItem.type === 'category' 
-? document.getElementById('edit-cat-image')
-: document.getElementById('edit-prod-image');
-    imageField.value = rawUrl;
-
-    statusDiv.innerHTML = `
-<p class="success">¡Imagen subida correctamente!</p>
-<p>URL: <a href="${rawUrl}" target="_blank">${rawUrl}</a></p>
-<button class="btn" onclick="copyToClipboard('${rawUrl}')">
-    <i class="fas fa-copy"></i> Copiar URL
-</button>
-    `;
-} catch (error) {
-    console.error('Error al subir imagen:', error);
-    statusDiv.innerHTML = `
-<p class="error">Error al subir imagen</p>
-<p>${error.message}</p>
-${error.response ? `<pre>${JSON.stringify(error.response, null, 2)}</pre>` : ''}
-    `;
-}
-    };
-    
-    reader.readAsArrayBuffer(file);*/
-    
     statusDiv.innerHTML = '<p>Subiendo imagen...</p>';
-    const reader = new FileReader();
     
+    // Configurar FormData
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('public_id', filenameInput);
+    formData.append('folder', currentEditItem.type === 'category' ? 'categorias' : 'productos');
+
     try {
-        const folder = currentEditItem.type === 'category' ? 'img/cat/' : 'img/prod/';
-        const filePath = `${folder}${filenameInput}.${extension}`;
-
-        // 2. Convertir a Base64 correctamente
-        reader.onload = async function(e) {
-            // Método más confiable para Base64
-            const base64Content = arrayBufferToBase64(e.target.result);
-
-            // 3. Verificar si el archivo ya existe para actualización
-            let sha = null;
-            try {
-                const existingFile = await fetch(
-                    `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${filePath}`,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${GITHUB_TOKEN}`,
-                            'Accept': 'application/vnd.github.v3+json'
-                        }
-                    }
-                );
-
-                if (existingFile.ok) {
-                    const data = await existingFile.json();
-                    sha = data.sha; // Necesario para actualizar archivo existente
-                }
-            } catch (e) {} // Ignorar si el archivo no existe
-            // 4. Configurar payload correctamente
-            const payload = {
-                message: `Subir imagen ${filenameInput} (${currentEditItem.type})`,
-                content: base64Content,
-                branch: GITHUB_BRANCH
-            };
-
-            if (sha) payload.sha = sha; // Incluir SHA si es actualización
-            
-            const response = await fetch(
-                `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${filePath}`,
-                {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${GITHUB_TOKEN}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github.v3+json',
-                        'X-GitHub-Api-Version': '2022-11-28'
-                    },
-                    body: JSON.stringify(payload)
-                }
-            );
-
-            // Manejar respuesta
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `Error ${response.status}`);
+        // Subir a Cloudinary
+        const response = await fetch(
+            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+            {
+                method: 'POST',
+                body: formData
             }
+        );
 
-            const data = await response.json();
-            const rawUrl = data.content.download_url;
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error.message || 'Error en la subida');
+        }
 
-            // Actualizar campo de imagen
-            const imageField = currentEditItem.type === 'category' 
+        const data = await response.json();
+        const imageUrl = data.secure_url;
+
+        // Actualizar campo de imagen
+        const imageField = currentEditItem.type === 'category' 
             ? document.getElementById('edit-cat-image')
             : document.getElementById('edit-prod-image');
-            imageField.value = rawUrl;
+            
+        imageField.value = imageUrl;
 
-            // Mostrar éxito
-            statusDiv.innerHTML = `
-                <p class="success">¡Imagen subida correctamente!</p>
-                <p>URL: <a href="${rawUrl}" target="_blank">${rawUrl}</a></p>
-                <button class="btn" onclick="copyToClipboard('${rawUrl}')">
-                <i class="fas fa-copy"></i> Copiar URL
-                </button>
-            `;
-        }
-    } catch (error) {
-        console.error('Error al subir imagen:', error);
         statusDiv.innerHTML = `
-        <p class="error">Error en la subida</p>
-        <p>${error.message || 'Verifica la consola para más detalles'}</p>
+            <p class="success">¡Imagen subida correctamente!</p>
+            <p>URL: <a href="${imageUrl}" target="_blank">${imageUrl}</a></p>
+            <button class="btn" onclick="copyToClipboard('${imageUrl}')">
+                <i class="fas fa-copy"></i> Copiar URL
+            </button>
+        `;
+    } catch (error) {
+        console.error('Error Cloudinary:', error);
+        statusDiv.innerHTML = `
+            <p class="error">Error en la subida</p>
         `;
     }
-    
-    reader.readAsArrayBuffer(file);
-}
-
-// Función auxiliar para convertir ArrayBuffer a Base64
-function arrayBufferToBase64(buffer) {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
 }
 
 function copyToClipboard(text) {
