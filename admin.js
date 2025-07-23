@@ -1588,9 +1588,8 @@ async function uploadImageToCloudinary() {
     // Configurar FormData
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('upload_preset', currentEditItem.type === 'category' ? `${CLOUDINARY_UPLOAD_PRESET}/categorias` : `${CLOUDINARY_UPLOAD_PRESET}/productos`);
     formData.append('public_id', filenameInput);
-    formData.append('folder', currentEditItem.type === 'category' ? 'categorias' : 'productos');
 
     try {
         // Subir a Cloudinary
