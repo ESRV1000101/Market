@@ -22,6 +22,19 @@
         let ordersCurrentPage = 1;
         const ordersPageSize = 10; // Cambia este valor para más/menos filas por página
 
+        // Solucionar CORS para GitHub API
+        if (window.location.origin.includes('github.io')) {
+          const originalFetch = window.fetch;
+          window.fetch = function(url, options) {
+            if (url.includes('api.github.com')) {
+              options = options || {};
+              options.mode = 'cors';
+              options.credentials = 'omit';
+            }
+            return originalFetch.call(this, url, options);
+          };
+        }
+
         // Toast notifications
         function showToast(message, type = 'info') {
             let container = document.getElementById('toast-container');
@@ -1564,10 +1577,10 @@
         }
 
         // Agregar estas constantes con tus credenciales
-        const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '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';
-        const GITHUB_USER = process.env.GITHUB_USER || 'ESRV1000101';
-        const GITHUB_REPO = process.env.GITHUB_REPO || 'Market';
-        const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
+        const GITHUB_TOKEN = 'ghp_placeholder'; // Este valor será reemplazado por el workflow
+        const GITHUB_USER = 'ESRV1000101';
+        const GITHUB_REPO = 'Market';
+        const GITHUB_BRANCH = 'main';
 
         // Funciones para manejo de imágenes
         function openImageUploadModal() {
@@ -1605,6 +1618,7 @@
                 return;
             }
 
+           /*     
             // 1. Determinar ruta según tipo (categoría/producto)
             const folder = currentEditItem.type === 'category' ? 'img/cat/' : 'img/prod/';
             const filePath = `${folder}${filenameInput}.${extension}`;
@@ -1691,7 +1705,62 @@
                 }
             };
             
-            reader.readAsArrayBuffer(file);
+            reader.readAsArrayBuffer(file);*/
+        statusDiv.innerHTML = '<p>Subiendo imagen...</p>';
+
+                  try {
+                    const folder = currentEditItem.type === 'category' ? 'img/cat/' : 'img/prod/';
+                    const filePath = `${folder}${filenameInput}.${extension}`;
+                    
+                    const response = await fetch(
+                      `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${filePath}`,
+                      {
+                        method: 'PUT',
+                        headers: {
+                          'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                          'Content-Type': 'application/json',
+                          'Accept': 'application/vnd.github.v3+json',
+                          'X-GitHub-Api-Version': '2022-11-28'
+                        },
+                        body: JSON.stringify({
+                          message: `Subir imagen: ${filenameInput}`,
+                          content: base64Content,
+                          branch: GITHUB_BRANCH
+                        })
+                      }
+                    );
+                
+                    // Manejar respuesta
+                    if (!response.ok) {
+                      const errorData = await response.json();
+                      throw new Error(errorData.message || `Error ${response.status}`);
+                    }
+                
+                    const data = await response.json();
+                    const rawUrl = data.content.download_url;
+                
+                    // Actualizar campo de imagen
+                    const imageField = currentEditItem.type === 'category' 
+                      ? document.getElementById('edit-cat-image')
+                      : document.getElementById('edit-prod-image');
+                    imageField.value = rawUrl;
+                
+                    // Mostrar éxito
+                    statusDiv.innerHTML = `
+                      <p class="success">¡Imagen subida correctamente!</p>
+                      <p>URL: <a href="${rawUrl}" target="_blank">${rawUrl}</a></p>
+                      <button class="btn" onclick="copyToClipboard('${rawUrl}')">
+                        <i class="fas fa-copy"></i> Copiar URL
+                      </button>
+                    `;
+                
+                  } catch (error) {
+                    console.error('Error al subir imagen:', error);
+                    statusDiv.innerHTML = `
+                      <p class="error">Error en la subida</p>
+                      <p>${error.message || 'Verifica la consola para más detalles'}</p>
+                    `;
+                  }
         }
 
         // Función auxiliar para convertir ArrayBuffer a Base64
