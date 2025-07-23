@@ -1479,7 +1479,7 @@ async function deleteCloudinaryImage(imageUrl) {
             .slice(urlParts.indexOf('yufoods_img') + 1) // Saltar hasta "upload"
             .join('/')                            // Unir partes
             .split('.')[0];                       // Quitar extensión
-        
+        console.log('Eliminando imagen con public_id:', publicId);
         // Hacer solicitud de eliminación
         const response = await fetch(
             `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/destroy`,
