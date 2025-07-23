@@ -1,0 +1,41 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]  # Cambia si usas otra rama
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Replace environment variables
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        GITHUB_USER: ${{ secrets.GH_USER }}
+        GITHUB_REPO: ${{ secrets.GH_REPO }}
+        GITHUB_BRANCH: ${{ secrets.GH_BRANCH }}
+      run: |
+        # Reemplazar variables en admin.js
+        sed -i "s|process.env.GITHUB_TOKEN|\"$GITHUB_TOKEN\"|g" admin.js
+        sed -i "s|process.env.GITHUB_USER|\"$GITHUB_USER\"|g" admin.js
+        sed -i "s|process.env.GITHUB_REPO|\"$GITHUB_REPO\"|g" admin.js
+        sed -i "s|process.env.GITHUB_BRANCH|\"$GITHUB_BRANCH\"|g" admin.js
+        
+        # Listar archivos modificados (para depuración)
+        ls -la
+        cat admin.js | head -n 20
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GH_TOKEN }}
+        publish_dir: ./
