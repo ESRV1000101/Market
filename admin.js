@@ -1705,13 +1705,13 @@ ${error.response ? `<pre>${JSON.stringify(error.response, null, 2)}</pre>` : ''}
     reader.readAsArrayBuffer(file);*/
     
     statusDiv.innerHTML = '<p>Subiendo imagen...</p>';
-
+    const reader = new FileReader();
+    
     try {
         const folder = currentEditItem.type === 'category' ? 'img/cat/' : 'img/prod/';
         const filePath = `${folder}${filenameInput}.${extension}`;
 
         // 2. Convertir a Base64 correctamente
-        const reader = new FileReader();
         reader.onload = async function(e) {
             // Método más confiable para Base64
             const base64Content = arrayBufferToBase64(e.target.result);
