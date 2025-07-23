@@ -1476,7 +1476,7 @@ async function deleteCloudinaryImage(imageUrl) {
         // Extraer public_id de la URL
         const urlParts = imageUrl.split('/');
         const publicId = urlParts
-            .slice(urlParts.indexOf('upload') + 1) // Saltar hasta "upload"
+            .slice(urlParts.indexOf('yufoods_img') + 1) // Saltar hasta "upload"
             .join('/')                            // Unir partes
             .split('.')[0];                       // Quitar extensión
         
