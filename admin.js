@@ -1574,7 +1574,7 @@ async function deleteProduct(id) {
 }
 
 // Agregar estas constantes con tus credenciales
-const GITHUB_TOKEN = 'ghp_placeholder'; // Este valor será reemplazado por el workflow
+const GITHUB_TOKEN = '${ secrets.GH_TOKEN }'; // Este valor será reemplazado por el workflow
 const GITHUB_USER = 'ESRV1000101';
 const GITHUB_REPO = 'Market';
 const GITHUB_BRANCH = 'main';
