@@ -1564,7 +1564,7 @@
         }
 
         // Agregar estas constantes con tus credenciales
-        const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
+        const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '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';
         const GITHUB_USER = process.env.GITHUB_USER || 'ESRV1000101';
         const GITHUB_REPO = process.env.GITHUB_REPO || 'Market';
         const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
