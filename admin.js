@@ -1564,10 +1564,10 @@
         }
 
         // Agregar estas constantes con tus credenciales
-        const GITHUB_TOKEN = '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';
-        const GITHUB_USER = 'ESRV1000101';
-        const GITHUB_REPO = 'Market';
-        const GITHUB_BRANCH = 'main'; // o la rama que uses
+        const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
+        const GITHUB_USER = process.env.GITHUB_USER || 'ESRV1000101';
+        const GITHUB_REPO = process.env.GITHUB_REPO || 'Market';
+        const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 
         // Funciones para manejo de imágenes
         function openImageUploadModal() {
