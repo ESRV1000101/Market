@@ -1472,11 +1472,15 @@ async function updateProductVisibility(id, visible) {
 }
 
 async function deleteCloudinaryImage(imageUrl) {
-    // Extraer public_id completo
-    const urlParts = imageUrl.split('/');
-    const publicId = urlParts.slice(urlParts.indexOf('upload') + 1).join('/').split('.')[0];
-    
     try {
+        // Extraer public_id de la URL
+        const urlParts = imageUrl.split('/');
+        const publicId = urlParts
+            .slice(urlParts.indexOf('upload') + 1) // Saltar hasta "upload"
+            .join('/')                            // Unir partes
+            .split('.')[0];                       // Quitar extensión
+        
+        // Hacer solicitud de eliminación
         const response = await fetch(
             `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/destroy`,
             {
@@ -1488,6 +1492,7 @@ async function deleteCloudinaryImage(imageUrl) {
                 })
             }
         );
+        
         return response.ok;
     } catch (error) {
         console.error('Error eliminando imagen:', error);
@@ -1500,14 +1505,16 @@ async function deleteCategory(id) {
     if (!confirm('¿Eliminar esta categoría y todos sus productos?')) return;
     
     try {
-        // Eliminar categoría
+        // 1. Encontrar la categoría antes de eliminarla
+        const category = editorCategories.find(c => c.id === id);
+        
+        // 2. Eliminar categoría y productos
         editorCategories = editorCategories.filter(c => c.id !== id);
-
-        // Eliminar productos asociados
         editorProducts = editorProducts.filter(p => p.categoryId !== id);
 
-        if (editorCategories.image.includes('res.cloudinary.com')) {
-            await deleteCloudinaryImage(editorCategories.image);
+        // 3. Verificar SI LA CATEGORÍA EXISTE y tiene imagen
+        if (category && category.image && category.image.includes('res.cloudinary.com')) {
+            await deleteCloudinaryImage(category.image);
         }
 
         await Promise.all([
@@ -1528,10 +1535,15 @@ async function deleteProduct(id) {
     if (!confirm('¿Eliminar este producto permanentemente?')) return;
     
     try {
-        // Eliminar producto
+        // 1. Encontrar el producto antes de eliminarlo
+        const product = editorProducts.find(p => p.id === id);
+        
+        // 2. Eliminar producto
         editorProducts = editorProducts.filter(p => p.id !== id);
-        if (editorProducts.image.includes('res.cloudinary.com')) {
-            await deleteCloudinaryImage(editorProducts.image);
+
+        // 3. Verificar SI EL PRODUCTO EXISTE y tiene imagen
+        if (product && product.image && product.image.includes('res.cloudinary.com')) {
+            await deleteCloudinaryImage(product.image);
         }
 
         await saveProductsToCloud(editorProducts);
@@ -1582,10 +1594,11 @@ async function uploadImageToCloudinary() {
     
     // Determinar ruta exacta
     let folderPath = 'yufoods_img/';
+    
     if (currentEditItem.type === 'category') {
-        folderPath += 'categorias/';
+        filenameInput += '_cat';
     } else {
-        folderPath += 'productos/';
+        filenameInput += '_prod';
     }
     
     // Configurar FormData
