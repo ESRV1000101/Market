@@ -1595,12 +1595,6 @@ async function uploadImageToCloudinary() {
     // Determinar ruta exacta
     let folderPath = 'yufoods_img/';
     
-    if (currentEditItem.type === 'category') {
-        filenameInput += '_cat';
-    } else {
-        filenameInput += '_prod';
-    }
-    
     // Configurar FormData
     const formData = new FormData();
     formData.append('file', file);
