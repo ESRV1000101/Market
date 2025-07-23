@@ -10,7 +10,7 @@ const PRODUCTS_API_URL = `https://api.jsonbin.io/v3/b/${PRODUCTS_BIN_ID}`;
 
 // Credenciales de administrador
 const ADMIN_USER = "admin";
-const ADMIN_PASSWORD = "nomura25";
+const ADMIN_PASSWORD = "nomura25"; 
 
 // Agrega estas constantes al inicio del archivo admin.js
 const CLOUDINARY_CLOUD_NAME = 'dgxjjabov'; // Reemplaza con tu cloud name
