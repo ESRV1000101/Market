@@ -1706,12 +1706,47 @@
             };
             
             reader.readAsArrayBuffer(file);*/
-        statusDiv.innerHTML = '<p>Subiendo imagen...</p>';
+                statusDiv.innerHTML = '<p>Subiendo imagen...</p>';
 
                   try {
                     const folder = currentEditItem.type === 'category' ? 'img/cat/' : 'img/prod/';
                     const filePath = `${folder}${filenameInput}.${extension}`;
-                    
+
+                        // 2. Convertir a Base64 correctamente
+                    const reader = new FileReader();
+                    reader.onload = async function(e) {
+                            try {
+                    // Método más confiable para Base64
+                    const base64Content = arrayBufferToBase64(e.target.result);
+
+                    // 3. Verificar si el archivo ya existe para actualización
+                    let sha = null;
+                    try {
+                        const existingFile = await fetch(
+                            `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${filePath}`,
+                            {
+                                headers: {
+                                    'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                                    'Accept': 'application/vnd.github.v3+json'
+                                }
+                            }
+                        );
+                        
+                        if (existingFile.ok) {
+                            const data = await existingFile.json();
+                            sha = data.sha; // Necesario para actualizar archivo existente
+                        }
+                    } catch (e) {} // Ignorar si el archivo no existe
+
+                    // 4. Configurar payload correctamente
+                    const payload = {
+                        message: `Subir imagen ${filenameInput} (${currentEditItem.type})`,
+                        content: base64Content,
+                        branch: GITHUB_BRANCH
+                    };
+
+                    if (sha) payload.sha = sha; // Incluir SHA si es actualización
+                                    
                     const response = await fetch(
                       `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${filePath}`,
                       {
@@ -1722,11 +1757,7 @@
                           'Accept': 'application/vnd.github.v3+json',
                           'X-GitHub-Api-Version': '2022-11-28'
                         },
-                        body: JSON.stringify({
-                          message: `Subir imagen: ${filenameInput}`,
-                          content: base64Content,
-                          branch: GITHUB_BRANCH
-                        })
+                        body: JSON.stringify(payload)
                       }
                     );
                 
@@ -1760,7 +1791,8 @@
                       <p class="error">Error en la subida</p>
                       <p>${error.message || 'Verifica la consola para más detalles'}</p>
                     `;
-                  }
+                  };
+                reader.readAsArrayBuffer(file);
         }
 
         // Función auxiliar para convertir ArrayBuffer a Base64
