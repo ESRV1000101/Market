@@ -1233,34 +1233,34 @@ function openEditorModal(type, id = null) {
         modalBody.innerHTML = `
             <h3>${id ? 'Editar' : 'Nueva'} Categoría</h3>
             <div class="form-group">
-        <label class="form-label">Nombre</label>
-        <input type="text" id="edit-cat-name" class="form-input" 
-            value="${category ? category.name : ''}" required>
+                <label class="form-label">Nombre</label>
+                <input type="text" id="edit-cat-name" class="form-input" 
+                    value="${category ? category.name : ''}" required>
             </div>
             <div class="form-group">
-        <label class="form-label">URL de la Imagen</label>
-        <div class="image-input-container">
-            <input type="text" id="edit-cat-image" class="form-input" 
-        value="${category ? category.image : ''}" required>
-            <button class="btn btn-upload" onclick="openImageUploadModal()">
-        <i class="fas fa-cloud-upload-alt"></i> Subir
-            </button>
-        </div>
+                <label class="form-label">URL de la Imagen</label>
+                <div class="image-input-container">
+                    <input type="text" id="edit-cat-image" class="form-input" 
+                        value="${category ? category.image : ''}" required>
+                    <button class="btn btn-upload" onclick="openImageUploadModal()">
+                        <i class="fas fa-cloud-upload-alt"></i> Subir
+                    </button>
+                </div>
             </div>
             <div class="form-group">
-        <label class="visibility-label">
-            Visible al público:
-            <label class="visibility-toggle">
-        <input type="checkbox" id="edit-cat-visible" 
-            ${category ? (category.visible ? 'checked' : '') : 'checked'}>
-        <span class="visibility-slider"></span>
-            </label>
-        </label>
+                <label class="visibility-label">
+                    Visible al público:
+                    <label class="visibility-toggle">
+                        <input type="checkbox" id="edit-cat-visible" 
+                            ${category ? (category.visible ? 'checked' : '') : 'checked'}>
+                        <span class="visibility-slider"></span>
+                    </label>
+                </label>
             </div>
             <div class="form-group">
-        <button class="btn" onclick="saveCategory()">
-            <i class="fas fa-save"></i> Guardar
-        </button>
+                <button class="btn" onclick="saveCategory()">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
             </div>
         `;
     } 
@@ -1271,52 +1271,52 @@ function openEditorModal(type, id = null) {
         modalBody.innerHTML = `
             <h3>${id ? 'Editar' : 'Nuevo'} Producto</h3>
             <div class="form-group">
-        <label class="form-label">Nombre</label>
-        <input type="text" id="edit-prod-name" class="form-input" 
-            value="${product ? product.name : ''}" required>
+                <label class="form-label">Nombre</label>
+                <input type="text" id="edit-prod-name" class="form-input" 
+                    value="${product ? product.name : ''}" required>
             </div>
             <div class="form-group">
-        <label class="form-label">Categoría</label>
-        <select id="edit-prod-category" class="form-input" required>
-            ${editorCategories.map(cat => `
-        <option value="${cat.id}" ${product && product.categoryId === cat.id ? 'selected' : ''}>
-            ${cat.name}
-        </option>
-            `).join('')}
-        </select>
+                <label class="form-label">Categoría</label>
+                <select id="edit-prod-category" class="form-input" required>
+                    ${editorCategories.map(cat => `
+                        <option value="${cat.id}" ${product && product.categoryId === cat.id ? 'selected' : ''}>
+                        ${cat.name}
+                        </option>
+                    `).join('')}
+                </select>
             </div>
             <div class="form-group">
-        <label class="form-label">Unidad</label>
-        <select id="edit-prod-unit" class="form-input" required>
-            ${unitOptions.map(unit => `
-        <option value="${unit}" ${product && product.unit === unit ? 'selected' : ''}>
-            ${unit}
-        </option>
-            `).join('')}
-        </select>
+                <label class="form-label">Unidad</label>
+                <select id="edit-prod-unit" class="form-input" required>
+                    ${unitOptions.map(unit => `
+                        <option value="${unit}" ${product && product.unit === unit ? 'selected' : ''}>
+                        ${unit}
+                        </option>
+                    `).join('')}
+                </select>
             </div>
             <div class="form-group">
-        <label class="form-label">URL de la Imagen</label>
-        <input type="text" id="edit-prod-image" class="form-input" 
-            value="${product ? product.image : ''}" required>
-        <button class="btn btn-upload" onclick="openImageUploadModal()">
-            <i class="fas fa-cloud-upload-alt"></i> Subir
-        </button>
+                <label class="form-label">URL de la Imagen</label>
+                <input type="text" id="edit-prod-image" class="form-input" 
+                    value="${product ? product.image : ''}" required>
+                <button class="btn btn-upload" onclick="openImageUploadModal()">
+                    <i class="fas fa-cloud-upload-alt"></i> Subir
+                </button>
             </div>
             <div class="form-group">
-        <label class="visibility-label">
-            Visible al público:
-            <label class="visibility-toggle">
-        <input type="checkbox" id="edit-prod-visible" 
-            ${product ? (product.visible ? 'checked' : '') : 'checked'}>
-        <span class="visibility-slider"></span>
-            </label>
-        </label>
+                <label class="visibility-label">
+                    Visible al público:
+                    <label class="visibility-toggle">
+                        <input type="checkbox" id="edit-prod-visible" 
+                            ${product ? (product.visible ? 'checked' : '') : 'checked'}>
+                        <span class="visibility-slider"></span>
+                    </label>
+                </label>
             </div>
             <div class="form-group">
-        <button class="btn" onclick="saveProduct()">
-            <i class="fas fa-save"></i> Guardar
-        </button>
+                <button class="btn" onclick="saveProduct()">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
             </div>
         `;
     }
@@ -1549,10 +1549,10 @@ async function deleteProduct(id) {
 
 // Funciones para manejo de imágenes
 function openImageUploadModal() {
+    document.getElementById('image-upload-modal').style.display = 'flex';
     document.getElementById('image-file-input').value = '';
     document.getElementById('image-filename').value = '';
     document.getElementById('image-upload-status').innerHTML = '';
-    document.getElementById('image-upload-modal').style.display = 'flex';
 }
 
 function closeImageUploadModal() {
