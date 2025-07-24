@@ -1487,7 +1487,7 @@ async function deleteCloudinaryImage(imageUrl) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    public_id: 'yufoods_img/' + publicId,
+                    public_id: `yufoods_img/${publicId}`,
                     timestamp: Math.floor(Date.now() / 1000)
                 })
             }
