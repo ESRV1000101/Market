@@ -417,7 +417,7 @@
                         <input type="text" class="form-input" id="customer-address" placeholder="Ingresa tu dirección completa" value="${currentUser.address}" oninput="validateForm()">
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="customer-notes">Notas adicionales (opcional)</label>
+                        <label class="form-label" for="customer-notes">Agregue productos adicionales:</label>
                         <textarea class="form-input" id="customer-notes" placeholder="Alguna instrucción especial para la entrega" rows="3"></textarea>
                     </div>
                 `;
