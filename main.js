@@ -130,7 +130,7 @@
         // Función para mostrar una sección específica
         async function showSection(sectionId) {
             // Guardar la sección activa en localStorage
-            localStorage.setItem('activeSection', sectionId);
+            //localStorage.setItem('activeSection', sectionId);
 
             window.scrollTo({
                 top: 0,
@@ -1214,11 +1214,11 @@
                 window.scrollTo(0, 0);
             });
             
-            const sectionToLoad = loadSavedSection();
-            showSection(sectionToLoad);
+            /*const sectionToLoad = loadSavedSection();
+            showSection(sectionToLoad);*/
         });
 
-        function loadSavedSection() {
+        /*function loadSavedSection() {
             const savedSection = localStorage.getItem('activeSection');
             const mainSections = ['home', 'store', 'cart', 'login', 'signup', 'profile'];
             
@@ -1233,4 +1233,4 @@
             }
             
             return savedSection;
-        }
+        }*/
