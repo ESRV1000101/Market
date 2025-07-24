@@ -58,20 +58,25 @@ function login() {
         errorMessage.style.display = 'block';
         showToast('Credenciales incorrectas', 'error');
     }
+
+    if (valid) {
+        localStorage.setItem('adminLoggedIn', 'true');
+        saveActiveSection('admin-panel'); // Siempre inicia en panel admin después de login
+        showActiveSection();
+    }
 }
 
 // Función para cerrar sesión
 function logout() {
     localStorage.removeItem('adminLoggedIn');
+    sessionStorage.removeItem('activeSection'); // Limpiar sección activa al salir
     location.reload();
 }
 
 // Comprobar si el administrador ya está logueado
 function checkLogin() {
     if (localStorage.getItem('adminLoggedIn') === 'true') {
-        document.getElementById('login-section').style.display = 'none';
-        document.getElementById('admin-panel').style.display = 'block';
-        loadOrders();  // Cargar pedidos automáticamente al iniciar
+        showActiveSection();
     }
 }
 
@@ -696,25 +701,28 @@ async function loadProductsReport() {
 
 // Cargar los pedidos
 async function loadOrders() {
-    showLoader();
-    
-    try {
-        const orders = await fetchOrders();
-        currentOrders = orders;
-        renderOrders(orders);
-        updateStats(orders);
-        createOrdersChart(orders);
-        loadProductsReport(); // Cargar reporte de productos
-        hideLoader();
+    // Solo cargar si estamos en el panel de admin
+    if (document.getElementById('admin-panel').style.display === 'block') {
+        showLoader();
+        
+        try {
+            const orders = await fetchOrders();
+            currentOrders = orders;
+            renderOrders(orders);
+            updateStats(orders);
+            createOrdersChart(orders);
+            loadProductsReport(); // Cargar reporte de productos
+            hideLoader();
 
-        if (orders.length > 0) {
-            document.getElementById('download-excel-btn').style.display = 'inline-block';
-        } else {
-            document.getElementById('empty-orders').style.display = 'block';
+            if (orders.length > 0) {
+                document.getElementById('download-excel-btn').style.display = 'inline-block';
+            } else {
+                document.getElementById('empty-orders').style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error al cargar pedidos:', error);
+            hideLoader();
         }
-    } catch (error) {
-        console.error('Error al cargar pedidos:', error);
-        hideLoader();
     }
 }
 
@@ -1007,6 +1015,12 @@ document.getElementById('order-details-modal').addEventListener('click', (e) => 
 
 // Inicializar al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
+    // Limpiar sección activa si es una nueva sesión
+    if (!sessionStorage.getItem('sessionStart')) {
+        sessionStorage.setItem('sessionStart', 'true');
+        sessionStorage.removeItem('activeSection');
+    }
+    
     checkLogin();
     // Permitir login con Enter
     document.getElementById('admin-user').addEventListener('keypress', function(e) {
@@ -1094,15 +1108,14 @@ let currentUploadType = null; // 'category' o 'product'
 // Mostrar/ocultar editor
 document.getElementById('edit-store-link').addEventListener('click', function(e) {
     e.preventDefault();
-    document.getElementById('admin-panel').style.display = 'none';
-    document.getElementById('store-editor-page').style.display = 'block';
-    loadStoreEditor();
+    saveActiveSection('store-editor');
+    showActiveSection();
 });
 
 document.getElementById('back-to-admin-btn').addEventListener('click', function(e) {
     e.preventDefault();
-    document.getElementById('admin-panel').style.display = 'block';
-    document.getElementById('store-editor-page').style.display = 'none';
+    saveActiveSection('admin-panel');
+    showActiveSection();
 });
 
 // Cargar datos de tienda
@@ -1471,7 +1484,7 @@ async function updateProductVisibility(id, visible) {
     }
 }
 
-async function deleteCloudinaryImage(imageUrl) {
+/*async function deleteCloudinaryImage(imageUrl) {
     try {
         // Extraer public_id de la URL
         const urlParts = imageUrl.split('/');
@@ -1498,7 +1511,7 @@ async function deleteCloudinaryImage(imageUrl) {
         console.error('Error eliminando imagen:', error);
         return false;
     }
-}
+}*/
 
 // Eliminar elementos
 async function deleteCategory(id) {
@@ -1506,16 +1519,16 @@ async function deleteCategory(id) {
     
     try {
         // 1. Encontrar la categoría antes de eliminarla
-        const category = editorCategories.find(c => c.id === id);
+        //const category = editorCategories.find(c => c.id === id);
         
         // 2. Eliminar categoría y productos
         editorCategories = editorCategories.filter(c => c.id !== id);
         editorProducts = editorProducts.filter(p => p.categoryId !== id);
 
         // 3. Verificar SI LA CATEGORÍA EXISTE y tiene imagen
-        if (category && category.image && category.image.includes('res.cloudinary.com')) {
+       /* if (category && category.image && category.image.includes('res.cloudinary.com')) {
             await deleteCloudinaryImage(category.image);
-        }
+        }*/
 
         await Promise.all([
             saveCategoriesToCloud(editorCategories),
@@ -1536,15 +1549,15 @@ async function deleteProduct(id) {
     
     try {
         // 1. Encontrar el producto antes de eliminarlo
-        const product = editorProducts.find(p => p.id === id);
+        //const product = editorProducts.find(p => p.id === id);
         
         // 2. Eliminar producto
         editorProducts = editorProducts.filter(p => p.id !== id);
 
         // 3. Verificar SI EL PRODUCTO EXISTE y tiene imagen
-        if (product && product.image && product.image.includes('res.cloudinary.com')) {
+        /*if (product && product.image && product.image.includes('res.cloudinary.com')) {
             await deleteCloudinaryImage(product.image);
-        }
+        }*/
 
         await saveProductsToCloud(editorProducts);
         renderProductsEditor();
@@ -1558,7 +1571,7 @@ async function deleteProduct(id) {
 function openImageUploadModal() {
     document.getElementById('image-upload-modal').style.display = 'flex';
     document.getElementById('image-file-input').value = '';
-    document.getElementById('image-filename').value = '';
+    document.getElementById('image-filename').value = document.getElementById('edit-prod-name').value.trim();
     document.getElementById('image-upload-status').innerHTML = '';
 }
 
@@ -1669,4 +1682,35 @@ if (e.target === document.getElementById('image-upload-modal')) {
     closeImageUploadModal();
 }
     });
+}
+
+// Función para guardar la sección activa
+function saveActiveSection(section) {
+    sessionStorage.setItem('activeSection', section);
+}
+
+// Función para cargar la sección activa
+function loadActiveSection() {
+    return sessionStorage.getItem('activeSection') || 'admin-panel';
+}
+
+// Función para mostrar la sección correcta
+function showActiveSection() {
+    const activeSection = loadActiveSection();
+    
+    // Ocultar todas las secciones
+    document.getElementById('login-section').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'none';
+    document.getElementById('store-editor-page').style.display = 'none';
+    
+    // Mostrar sección activa
+    if (activeSection === 'store-editor') {
+        document.getElementById('store-editor-page').style.display = 'block';
+        loadStoreEditor();
+    } else if (activeSection === 'admin-panel') {
+        document.getElementById('admin-panel').style.display = 'block';
+        loadOrders();
+    } else {
+        document.getElementById('login-section').style.display = 'block';
+    }
 }

@@ -129,6 +129,9 @@
 
         // Función para mostrar una sección específica
         async function showSection(sectionId) {
+            // Guardar la sección activa en localStorage
+            localStorage.setItem('activeSection', sectionId);
+
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
@@ -154,8 +157,13 @@
                 updateCartView();
             }
             
-            // Si es perfil, cargar datos del usuario y sus pedidos
-            if (sectionId === 'profile' && currentUser) {
+            if (sectionId === 'profile') {
+                if (!currentUser) {
+                    showToast('Debes iniciar sesión para ver el perfil');
+                    showSection('login');
+                    return;
+                }
+                // Si es perfil, cargar datos del usuario y sus pedidos
                 document.getElementById('profile-name').value = currentUser.name;
                 document.getElementById('profile-email').value = currentUser.email;
                 document.getElementById('profile-phone').value = currentUser.phone;
@@ -1193,13 +1201,36 @@
         document.addEventListener('DOMContentLoaded', () => {
             updateCartCount();
             updateAuthLinks();
+            
             document.getElementById('login-password').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     customerLogin();
                 }
             });
+            
             document.getElementById('search-input').addEventListener('input', searchProducts);
+            
             window.addEventListener('load', () => {
                 window.scrollTo(0, 0);
             });
+            
+            const sectionToLoad = loadSavedSection();
+            showSection(sectionToLoad);
         });
+
+        function loadSavedSection() {
+            const savedSection = localStorage.getItem('activeSection');
+            const mainSections = ['home', 'store', 'cart', 'login', 'signup', 'profile'];
+            
+            // Si es la primera carga o no hay sección válida guardada
+            if (!savedSection || !mainSections.includes(savedSection)) {
+                return 'home'; // Sección por defecto
+            }
+            
+            // Validar si se puede mostrar el perfil (requiere usuario logueado)
+            if (savedSection === 'profile' && !currentUser) {
+                return 'home';
+            }
+            
+            return savedSection;
+        }
