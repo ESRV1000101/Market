@@ -952,3 +952,42 @@
                 justify-content: space-between;
             }
         }
+
+        /* Agregar en tu archivo CSS */
+        .quantity-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .quantity-select {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .quantity-or {
+            font-size: 12px;
+            color: #777;
+        }
+
+        .quantity-custom {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* Para que el input numérico no muestre flechas en algunos navegadores */
+        .quantity-custom::-webkit-outer-spin-button,
+        .quantity-custom::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .quantity-custom {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }

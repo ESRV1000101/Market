@@ -61,7 +61,7 @@
         }
 
         // Opciones de cantidad según unidad
-        function getQuantityOptions(unit) {
+        function getSelectOptions(unit) {
             switch (unit) {
                 case 'kilo':
                     return [1, 2, 3, 4, 5].map(v => `<option value="${v}">${v} kilo${v > 1 ? 's' : ''}</option>`).join('');
@@ -84,6 +84,21 @@
                 default:
                     return `<option value="1">1</option>`;
             }
+        }
+
+        function getQuantityOptions(unit, productId) {
+            const selectOptions = getSelectOptions(unit);
+            
+            return `
+                <div class="quantity-container">
+                    <select class="quantity-select" id="quantity-select-${productId}">
+                        ${selectOptions}
+                    </select>
+                    <div class="quantity-or">o</div>
+                    <input type="number" class="quantity-custom" id="quantity-custom-${productId}" 
+                        min="0.1" step="0.1" placeholder="Cantidad personalizada">
+                </div>
+            `;
         }
 
         //CARGAR DATOS DE LA TIENDA DESDE API
@@ -269,9 +284,7 @@
                         <h3 class="product-name">${product.name}</h3>
                         <p>Cantidad:</p>
                         <div class="product-actions">
-                            <select class="quantity-select" id="quantity-${product.id}">
-                                ${getQuantityOptions(product.unit)}
-                            </select>
+                            ${getQuantityOptions(product.unit, product.id)}
                             <button class="add-to-cart" onclick="addToCart(${product.id})">
                                 <i class="fas fa-cart-plus"></i> Agregar
                             </button>
@@ -298,8 +311,17 @@
             if (!product) return;
             
             // Obtener la cantidad seleccionada
-            const quantitySelect = document.getElementById(`quantity-${productId}`);
-            const quantity = parseFloat(quantitySelect.value);
+            const customQuantity = document.getElementById(`quantity-custom-${productId}`).value;
+            let quantity;
+            
+            if (customQuantity && parseFloat(customQuantity) > 0) {
+                // Usar la cantidad personalizada si el usuario la ingresó
+                quantity = parseFloat(customQuantity);
+            } else {
+                // Usar la opción del combobox
+                const quantitySelect = document.getElementById(`quantity-select-${productId}`);
+                quantity = parseFloat(quantitySelect.value);
+            }
             
             // Verificar si el producto ya está en el carrito
             const existingItemIndex = cart.findIndex(item => item.id === productId);
@@ -319,7 +341,7 @@
             }
             
             // Guardar en localStorage
-            localStorage.setItem('cart', JSON.stringify(cart));
+            //localStorage.setItem('cart', JSON.stringify(cart));
             
             // Actualizar contador de carrito
             updateCartCount();
@@ -1179,9 +1201,7 @@
                         <h3 class="product-name">${product.name}</h3>
                         <p>Cantidad:</p>
                         <div class="product-actions">
-                            <select class="quantity-select" id="quantity-${product.id}">
-                                ${getQuantityOptions(product.unit)}
-                            </select>
+                            ${getQuantityOptions(product.unit, product.id)}
                             <button class="add-to-cart" onclick="addToCart(${product.id})">
                                 <i class="fas fa-cart-plus"></i> Agregar
                             </button>
