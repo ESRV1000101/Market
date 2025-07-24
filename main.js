@@ -94,7 +94,7 @@
                     <select class="quantity-select" id="quantity-select-${productId}">
                         ${selectOptions}
                     </select>
-                    <div class="quantity-or"><br></div>
+                    <div class="quantity-or">o</div>
                     <input type="number" class="quantity-custom" id="quantity-custom-${productId}" 
                         min="0.1" step="0.1" placeholder="Cantidad personalizada">
                 </div>
@@ -285,6 +285,11 @@
                         <p>Cantidad:</p>
                         <div class="product-actions">
                             ${getQuantityOptions(product.unit, product.id)}
+                            <!--<button class="add-to-cart" onclick="addToCart(${product.id})">
+                                <i class="fas fa-cart-plus"></i> Agregar
+                            </button>-->
+                        </div>
+                        <div style="text-align: center; margin-top: 1rem;">
                             <button class="add-to-cart" onclick="addToCart(${product.id})">
                                 <i class="fas fa-cart-plus"></i> Agregar
                             </button>
