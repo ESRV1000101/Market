@@ -79,6 +79,8 @@
                     return [1, 2, 3, 4, 5].map(v => `<option value="${v}">${v} plancha${v > 1 ? 's' : ''}</option>`).join('');
                 case 'unidad':
                     return Array.from({length: 10}, (_, i) => `<option value="${i+1}">${i+1} unidad${i > 0 ? 'es' : ''}</option>`).join('');
+                case 'bandeja':
+                    return [1, 2, 3, 4, 5].map(v => `<option value="${v}">${v} bandeja${v > 1 ? 's' : ''}</option>`).join('');
                 default:
                     return `<option value="1">1</option>`;
             }
