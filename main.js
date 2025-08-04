@@ -1,4 +1,4 @@
-// Clave de la API para JSONBin.io
+        // Clave de la API para JSONBin.io
         const MASTER_KEY = '$2a$10$CfialwaKlt.oEV.qHo/IHeu2aUczMtpVkCYXzMgUtZCpjmNU9pIGK';
         const BIN_ID = '687a974a2de0201b319ca267';
         const API_URL = `https://api.jsonbin.io/v3/b/`;
@@ -67,8 +67,12 @@
                     return [1, 2, 3, 4, 5].map(v => `<option value="${v}">${v} kilo${v > 1 ? 's' : ''}</option>`).join('');
                 case 'atado*':
                     return [1, 2, 3, 4, 5].map(v => `<option value="${v}">${v} atado*</option>`).join('');
+                case 'atado**':
+                    return [1, 2, 3, 4, 5].map(v => `<option value="${v}">${v} atado**</option>`).join('');
                 case 'mano':
                     return [1, 2, 3, 4, 5].map(v => `<option value="${v}">${v} mano${v > 1 ? 's' : ''}</option>`).join('');
+                case 'bolsa':
+                    return [1, 2, 3, 4, 5].map(v => `<option value="${v}">${v} bolsa${v > 1 ? 's' : ''}</option>`).join('');
                 case 'atado':
                     return [1, 2, 3, 4, 5].map(v => `<option value="${v}">${v} atado${v > 1 ? 's' : ''}</option>`).join('');
                 case 'docena':
@@ -248,7 +252,9 @@
             // Detectar unidades especiales
             const specialUnits = {
                 'atado*': 'Atado*: tamaño mercado granel (6-8 veces más grande que supermercado)',
+                'atado**': 'Atado**: atado de 6 unidades',
                 'mano': 'Mano: equivalente a 5 unidades',
+                'bolsa': 'Bolsa: 160g por bolsa',
                 'cajón': 'Cajón: aproximadamente 17 kilos por cajón',
                 'plancha': 'Plancha: plancha por 30 unidades'
             };
