@@ -1,6 +1,6 @@
-        // Clave de la API para JSONBin.io
+// Clave de la API para JSONBin.io
         const MASTER_KEY = '$2a$10$CfialwaKlt.oEV.qHo/IHeu2aUczMtpVkCYXzMgUtZCpjmNU9pIGK';
-        const BIN_ID = '687a974a2de0201b319ca267';
+        const BIN_ID = '68a3b7e7d0ea881f405ce22b';
         const API_URL = `https://api.jsonbin.io/v3/b/`;
         const USERS_BIN_ID = '687b046c2de0201b319ccf2b'; // Nuevo bin para usuarios
 
@@ -288,12 +288,10 @@
                     <img src="${product.image}" alt="${product.name}" class="product-image">
                     <div class="product-info">
                         <h3 class="product-name">${product.name}</h3>
+                        <div class="product-price">S/ ${product.price.toFixed(2)} por ${product.unit}</div>
                         <p>Cantidad:</p>
                         <div class="product-actions">
                             ${getQuantityOptions(product.unit, product.id)}
-                            <!--<button class="add-to-cart" onclick="addToCart(${product.id})">
-                                <i class="fas fa-cart-plus"></i> Agregar
-                            </button>-->
                         </div>
                         <div style="text-align: center; margin-top: 1rem;">
                             <button class="add-to-cart" onclick="addToCart(${product.id})">
@@ -347,7 +345,8 @@
                     name: product.name,
                     unit: product.unit,
                     quantity: quantity,
-                    image: product.image
+                    image: product.image,
+                    price: product.price
                 });
             }
             
@@ -379,17 +378,17 @@
             }
             
             // Calcular subtotal
-            // let subtotal = 0;
+            let subtotal = 0;
 
             // Filtrar productos que podrían haber sido ocultados
             cart = cart.filter(item => {
                 const product = products.find(p => p.id === item.id);
                 return product && product.visible;
             });
-            
+
             cart.forEach(item => {
-                const itemTotal = item.quantity;
-                // subtotal += itemTotal;
+                const itemTotal = item.quantity * item.price;
+                subtotal += itemTotal;
                 
                 const cartItem = document.createElement('div');
                 cartItem.className = 'cart-item';
@@ -398,11 +397,11 @@
                         <img src="${item.image}" alt="${item.name}" class="item-image">
                         <div class="item-details">
                             <span class="item-name">${item.name}</span>
-                            <!--<span class="item-quantity">Cantidad: ${item.quantity} (${item.unit})</span>-->
+                            <span class="item-quantity">${item.quantity} ${item.unit} × S/ ${item.price.toFixed(2)}</span>
                         </div>
                     </div>
                     <div class="item-actions">
-                        <span class="item-price">${itemTotal.toFixed(1)} (${item.unit})</span>
+                        <span class="item-price">S/ ${itemTotal.toFixed(2)}</span>
                         <button class="remove-item" onclick="removeFromCart(${item.id})">
                             <i class="fas fa-times"></i>
                         </button>
@@ -410,6 +409,29 @@
                 `;
                 container.appendChild(cartItem);
             });
+
+            // Calcular costo del servicio y total
+            const serviceCost = subtotal * 0.25;
+            const total = subtotal + serviceCost;
+
+            // Agregar resumen de precios al final del contenedor
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'cart-price-summary';
+            summaryDiv.innerHTML = `
+                <div class="price-row">
+                    <span>Subtotal:</span>
+                    <span>S/ ${subtotal.toFixed(2)}</span>
+                </div>
+                <div class="price-row">
+                    <span>Costo del servicio (25%):</span>
+                    <span>S/ ${serviceCost.toFixed(2)}</span>
+                </div>
+                <div class="price-row total-row">
+                    <span><strong>Total:</strong></span>
+                    <span><strong>S/ ${total.toFixed(2)}</strong></span>
+                </div>
+            `;
+            container.appendChild(summaryDiv);
             
             // Actualizar sección de información del cliente
             const customerContent = document.getElementById('customer-info-content');
@@ -985,10 +1007,16 @@
                         if (order.items && order.items.length > 0) {
                             productsList = '<ul class="order-products-list">';
                             order.items.forEach(item => {
+                                const itemPrice = item.price ? `S/ ${item.price.toFixed(2)}` : 'Sin precio';
+                                const itemTotal = item.itemTotal ? `S/ ${item.itemTotal.toFixed(2)}` : (item.price && item.quantity ? `S/ ${(item.price * item.quantity).toFixed(2)}` : '');
+                                
                                 productsList += `
                                     <li class="order-product-item">
-                                        <span class="product-name">${item.name}</span>
-                                        <span class="product-quantity">${item.quantity} ${item.unit}</span>
+                                        <div class="product-info-row">
+                                            <span class="product-name">${item.name}</span>
+                                            <span class="product-details">${item.quantity} ${item.unit} × ${itemPrice}</span>
+                                        </div>
+                                        ${itemTotal ? `<span class="product-total">${itemTotal}</span>` : ''}
                                     </li>
                                 `;
                             });
@@ -997,6 +1025,22 @@
                             productsList = '<p>No hay productos en este pedido.</p>';
                         }
                         
+                        // Calcular totales para pedidos antiguos sin estructura de precios
+                        let orderSubtotal = order.subtotal || 0;
+                        let orderServiceCost = order.serviceCost || 0;
+                        let orderTotal = order.total || 0;
+
+                        // Si el pedido no tiene estructura de precios, intentar calcular
+                        if (!order.subtotal && order.items) {
+                            order.items.forEach(item => {
+                                if (item.price && item.quantity) {
+                                    orderSubtotal += (item.quantity * item.price);
+                                }
+                            });
+                            orderServiceCost = orderSubtotal * 0.25;
+                            orderTotal = orderSubtotal + orderServiceCost;
+                        }
+
                         ordersHTML += `
                             <div class="order-card">
                                 <div class="order-header">
@@ -1006,13 +1050,31 @@
                                 <div class="order-status-container">
                                     <span class="${statusClass}">${order.status}</span>
                                 </div>
-                                <p><strong>Productos pedidos:</strong> ${order.total}</p>
-                                <p><strong>Dirección de envío:</strong> ${order.address}</p>
-                                <p><strong>Notas:</strong> ${order.notes || 'Ninguna'}</p>
+                                <div class="order-summary">
+                                    <p><strong>Dirección de envío:</strong> ${order.address}</p>
+                                    <p><strong>Notas:</strong> ${order.notes || 'Ninguna'}</p>
+                                </div>
                                 
-                                <div style="margin-top: 10px;">
+                                <div style="margin-top: 15px;">
                                     <h5 style="color: var(--primary);">Productos comprados:</h5>
                                     ${productsList}
+                                </div>
+                                
+                                <div class="order-totals">
+                                    ${orderSubtotal > 0 ? `
+                                        <div class="order-total-row">
+                                            <span>Subtotal:</span>
+                                            <span>S/ ${orderSubtotal.toFixed(2)}</span>
+                                        </div>
+                                        <div class="order-total-row">
+                                            <span>Costo del servicio (25%):</span>
+                                            <span>S/ ${orderServiceCost.toFixed(2)}</span>
+                                        </div>
+                                    ` : ''}
+                                    <div class="order-total-row total-row">
+                                        <span><strong>Total pagado:</strong></span>
+                                        <span><strong>S/ ${orderTotal.toFixed(2)}</strong></span>
+                                    </div>
                                 </div>
                             </div>
                         `;
@@ -1085,28 +1147,29 @@
             // Calcular totales
             let subtotal = 0;
             cart.forEach(item => {
-                subtotal += 1;
+                subtotal += (item.quantity * item.price);
             });
-            const total = subtotal;
-            
+            const serviceCost = subtotal * 0.25;
+            const total = subtotal + serviceCost;
+
             // Crear objeto de pedido
             const now = new Date();
             
             // Generar nuevo ID consecutivo para el pedido
             const existingOrders = await fetchOrders();
-            let newOrderId = 'P00001'; // ID por defecto si no hay pedidos
+            let newOrderId = 'C00001'; // ID por defecto si no hay pedidos
 
             if (existingOrders.length > 0) {
                 // Encontrar el último número de pedido
                 const lastOrder = existingOrders
                     .map(order => {
-                        const match = order.id.toString().match(/P(\d+)/);
+                        const match = order.id.toString().match(/C(\d+)/);
                         return match ? parseInt(match[1]) : 0;
                     })
                     .reduce((max, current) => Math.max(max, current), 0);
                 
                 const nextNumber = lastOrder + 1;
-                newOrderId = `P${nextNumber.toString().padStart(5, '0')}`;
+                newOrderId = `C${nextNumber.toString().padStart(5, '0')}`;
             }
 
             const order = {
@@ -1123,35 +1186,20 @@
                 address: address,
                 phone: phone,
                 notes: notes,
-                status: 'Pendiente', // Estado inicial
+                status: 'Pendiente',
                 items: cart.map(item => ({
                     name: item.name,
                     unit: item.unit,
-                    quantity: item.quantity
+                    quantity: item.quantity,
+                    price: item.price,
+                    itemTotal: (item.quantity * item.price)
                 })),
+                subtotal: subtotal,
+                serviceCost: serviceCost,
                 total: total,
-                timestamp: now.getTime(), // Guardamos timestamp para filtrado
+                timestamp: now.getTime(),
                 userId: currentUser.id.toString() // Asociar pedido con usuario
             };
-
-            // Calcular totales
-            let productsList = [];
-            
-            let subtotal2 = 0;
-            cart.forEach(item => {
-                subtotal2 += 1;
-            });
-            const total2 = subtotal2;
-
-            cart.forEach(item => {
-                // Guardar detalles del producto
-                productsList.push({
-                    name: item.name,
-                    unit: item.unit,
-                    quantity: item.quantity,
-                    total: total2
-                });
-            });
             
             try {
                 // Ya obtuvimos los pedidos existentes arriba para generar el ID
@@ -1243,6 +1291,7 @@
                     <img src="${product.image}" alt="${product.name}" class="product-image">
                     <div class="product-info">
                         <h3 class="product-name">${product.name}</h3>
+                        <div class="product-price">S/ ${product.price.toFixed(2)} por ${product.unit}</div>
                         <p>Cantidad:</p>
                         <div class="product-actions">
                             ${getQuantityOptions(product.unit, product.id)}

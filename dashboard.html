@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yü foods - Panel Principal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4a7c59;
+            --primary-dark: #3a6547;
+            --secondary: #8d9f87;
+            --accent: #d0b49f;
+            --light: #f4f1e9;
+            --dark: #2d3319;
+            --gray: #7d8c7d;
+            --light-gray: #e9ecef;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --radius: 8px;
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .admin-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 5%;
+            box-shadow: var(--shadow);
+        }
+        
+        .admin-header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .logout-btn {
+            background-color: white;
+            color: var(--primary);
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .logout-btn:hover {
+            background-color: var(--light);
+            transform: translateY(-2px);
+        }
+        
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .dashboard-title {
+            text-align: center;
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .cards-grid {
+            display: grid;
+            align-content: center;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            text-align: center;
+            transition: var(--transition);
+            border: 3px solid transparent;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            border-color: var(--accent);
+        }
+        
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .card-description {
+            color: var(--gray);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.8rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--gray);
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 5rem auto;
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .login-title {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: var(--radius);
+            font-size: 1rem;
+        }
+        
+        .form-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1);
+        }
+        
+        .error-message {
+            color: #dc3545;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .login-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-actions {
+                flex-direction: column;
+            }
+            
+            .dashboard-title {
+                font-size: 2rem;
+            }
+        }
+        
+        .stats-summary {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            border-radius: var(--radius);
+            background: var(--light);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sistema de autenticación -->
+    <div id="login-section">
+        <div class="login-container">
+            <h2 class="login-title">Panel de Administración</h2>
+            <div class="form-group">
+                <label class="form-label" for="admin-user">Usuario</label>
+                <input type="text" class="form-input" id="admin-user" placeholder="Ingresa tu usuario">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="admin-password">Contraseña</label>
+                <input type="password" class="form-input" id="admin-password" placeholder="Ingresa tu contraseña">
+            </div>
+            <div class="error-message" id="login-error">Credenciales incorrectas</div>
+            <button class="login-btn" onclick="login()">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </button>
+        </div>
+    </div>
+    
+    <!-- Dashboard Principal -->
+    <div id="dashboard" style="display: none;">
+        <div class="admin-header">
+            <div class="admin-header-container">
+                <div class="admin-logo">
+                    <a href="https://market.yufoods.free.nf"><img src="img/logo.jpeg" alt="yü foods Logo" style="width: 40px; height: 40px; border-radius: 50%;"></a>
+                    <span>Dashboard Principal</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </div>
+        
+        <div class="dashboard-container">
+            <h1 class="dashboard-title">Panel de Administración yü foods</h1>
+            
+            <!-- Resumen de estadísticas -->
+            <div class="stats-summary">
+                <h3 style="color: var(--primary); margin-bottom: 1.5rem; text-align: center;">
+                    <i class="fas fa-chart-bar"></i> Resumen General
+                </h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="total-orders-basic">-</div>
+                        <div class="stat-label">Pedidos sin precio</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="total-orders-pricing">-</div>
+                        <div class="stat-label">Pedidos con precio</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="total-categories">-</div>
+                        <div class="stat-label">Categorías totales</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="total-products">-</div>
+                        <div class="stat-label">Productos totales</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tarjetas de navegación -->
+            <div class="cards-grid">
+                <!-- Tienda Sin Precios -->
+                <div class="dashboard-card">
+                    <div class="card-icon">
+                        <i class="fas fa-list-ul"></i>
+                    </div>
+                    <h3 class="card-title">Tienda Sin Precios</h3>
+                    <p class="card-description">
+                        Administra los pedidos de la tienda básica donde los clientes solicitan productos por cantidad únicamente.
+                    </p>
+                    <div class="card-actions">
+                        <a href="admin-basic-orders.html" class="btn">
+                            <i class="fas fa-clipboard-list"></i> Ver Pedidos
+                        </a>
+                        <a href="admin-basic-editor.html" class="btn btn-secondary">
+                            <i class="fas fa-edit"></i> Editar Tienda
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Tienda Con Precios -->
+                <div class="dashboard-card">
+                    <div class="card-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <h3 class="card-title">Tienda Con Precios</h3>
+                    <p class="card-description">
+                        Administra los pedidos de la tienda con precios, incluyendo cálculos de subtotales y comisiones de servicio.
+                    </p>
+                    <div class="card-actions">
+                        <a href="admin-pricing-orders.html" class="btn">
+                            <i class="fas fa-receipt"></i> Ver Pedidos
+                        </a>
+                        <a href="admin-pricing-editor.html" class="btn btn-secondary">
+                            <i class="fas fa-tags"></i> Editar Precios
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Credenciales de administrador
+        const ADMIN_USER = "admin";
+        const ADMIN_PASSWORD = "nomura25";
+        
+        // URLs de las APIs
+        const API_URLS = {
+            basic: 'https://api.jsonbin.io/v3/b/687a974a2de0201b319ca267',
+            pricing: 'https://api.jsonbin.io/v3/b/68a3b7e7d0ea881f405ce22b',
+            categories: 'https://api.jsonbin.io/v3/b/687f2380ae596e708fb99af7',
+            products: 'https://api.jsonbin.io/v3/b/687f2362f7e7a370d1ebcc73',
+            users: 'https://api.jsonbin.io/v3/b/687b046c2de0201b319ccf2b'
+        };
+        const MASTER_KEY = '$2a$10$CfialwaKlt.oEV.qHo/IHeu2aUczMtpVkCYXzMgUtZCpjmNU9pIGK';
+        
+        // Función de login
+        function login() {
+            const user = document.getElementById('admin-user').value;
+            const password = document.getElementById('admin-password').value;
+            const errorMessage = document.getElementById('login-error');
+            
+            if (user === ADMIN_USER && password === ADMIN_PASSWORD) {
+                localStorage.setItem('adminLoggedIn', 'true');
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                loadDashboardStats();
+            } else {
+                errorMessage.style.display = 'block';
+            }
+        }
+        
+        // Función de logout
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            location.reload();
+        }
+        
+        // Verificar si ya está logueado
+        function checkLogin() {
+            if (localStorage.getItem('adminLoggedIn') === 'true') {
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                loadDashboardStats();
+            }
+        }
+        
+        // Cargar estadísticas del dashboard
+        async function loadDashboardStats() {
+            try {
+                // Cargar pedidos básicos
+                const basicResponse = await fetch(API_URLS.basic, {
+                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                });
+                const basicData = await basicResponse.json();
+                document.getElementById('total-orders-basic').textContent = (basicData.orders || []).length;
+                
+                // Cargar pedidos con precios
+                const pricingResponse = await fetch(API_URLS.pricing, {
+                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                });
+                const pricingData = await pricingResponse.json();
+                document.getElementById('total-orders-pricing').textContent = (pricingData.orders || []).length;
+                
+                // Cargar categorías
+                const categoriesResponse = await fetch(API_URLS.categories, {
+                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                });
+                const categoriesData = await categoriesResponse.json();
+                document.getElementById('total-categories').textContent = (categoriesData.categories || []).length;
+                
+                // Cargar productos
+                const productsResponse = await fetch(API_URLS.products, {
+                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                });
+                const productsData = await productsResponse.json();
+                document.getElementById('total-products').textContent = (productsData.products || []).length;
+                
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+                // Mostrar valores por defecto si hay error
+                document.getElementById('total-orders-basic').textContent = '0';
+                document.getElementById('total-orders-pricing').textContent = '0';
+                document.getElementById('total-categories').textContent = '0';
+                document.getElementById('total-products').textContent = '0';
+            }
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            checkLogin();
+            
+            // Permitir login con Enter
+            document.getElementById('admin-user').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') login();
+            });
+            
+            document.getElementById('admin-password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') login();
+            });
+        });
+    </script>
+</body>
+</html>
