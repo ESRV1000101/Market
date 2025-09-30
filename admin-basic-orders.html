@@ -421,13 +421,13 @@
                         </select>
                     </td>
                     <td>
-                        <button class="action-btn" onclick="viewOrderDetails(${order.id})" aria-label="Ver detalles del pedido">
+                        <button class="action-btn" onclick="viewOrderDetails('${order.id}')" aria-label="Ver detalles del pedido">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="action-btn" onclick="saveOrderStatus(${order.id})" aria-label="Guardar estado del pedido">
+                        <button class="action-btn" onclick="saveOrderStatus('${order.id}')" aria-label="Guardar estado del pedido">
                             <i class="fas fa-save"></i>
                         </button>
-                        <button class="action-btn" onclick="deleteOrder(${order.id})" aria-label="Eliminar pedido">
+                        <button class="action-btn" onclick="deleteOrder('${order.id}')" aria-label="Eliminar pedido">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -517,7 +517,7 @@
             }
             
             const orders = await fetchOrders();
-            const order = orders.find(o => o.id === orderId);
+            const order = orders.find(o => o.id.toString() === orderId.toString());
             
             if (!order) return;
             

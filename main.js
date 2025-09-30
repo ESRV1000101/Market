@@ -1051,6 +1051,41 @@
             }
         }
         
+        // Función para enviar notificación por WhatsApp
+        function sendWhatsAppNotification(orderData) {
+            // Número de WhatsApp del negocio (debe incluir código de país sin +, espacios ni guiones)
+            // Ejemplo: Para Perú (+51) y número 987654321, sería: 51987654321
+            const BUSINESS_PHONE = '51968747222';
+            
+            // Construir el mensaje
+            let message = `🛒 *NUEVO PEDIDO - Market*\n\n`;
+            message += `📋 *Pedido:* ${orderData.id}\n`;
+            message += `👤 *Cliente:* ${orderData.customer}\n`;
+            message += `📱 *Teléfono:* ${orderData.phone}\n`;
+            message += `📍 *Dirección:* ${orderData.address}\n`;
+            message += `📦 *Cantidad de productos:* ${orderData.total}\n\n`;
+            
+            // Agregar lista de productos
+            message += `*Productos:*\n`;
+            orderData.items.forEach((item, index) => {
+                message += `${index + 1}. ${item.name} - ${item.quantity} ${item.unit}\n`;
+            });
+            
+            // Agregar notas si existen
+            if (orderData.notes) {
+                message += `\n📝 *Notas:* ${orderData.notes}`;
+            }
+            
+            // Codificar el mensaje para URL
+            const encodedMessage = encodeURIComponent(message);
+            
+            // Crear URL de WhatsApp
+            const whatsappURL = `https://wa.me/${BUSINESS_PHONE}?text=${encodedMessage}`;
+            
+            // Abrir WhatsApp en nueva pestaña
+            window.open(whatsappURL, '_blank');
+        }
+
         // Función para guardar pedidos en la nube
         async function saveOrdersToCloud(orders) {
             try {
@@ -1169,6 +1204,9 @@
                 // Mostrar notificación
                 showToast('¡Pedido enviado con éxito! Nuestro equipo lo procesará pronto.');
                 
+                // Enviar notificación por WhatsApp
+                sendWhatsAppNotification(order);
+
                 // Volver a la página de inicio
                 showSection('home');
             } catch (error) {
