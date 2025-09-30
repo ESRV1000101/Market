@@ -211,6 +211,8 @@
         let orderHistoryMap = {};
         let ordersCurrentPage = 1;
         const ordersPageSize = 10;
+        let productsCurrentPage = 1;
+        const productsPageSize = 10;
         
         // Verificar acceso
         function checkAccess() {
@@ -649,8 +651,8 @@
                 loadProductsReport();
             }
         }
-        
-        // Cargar reporte de productos
+
+        // Cargar reporte de productos con paginación
         async function loadProductsReport() {
             const startDateInput = document.getElementById('filter-start-date').value;
             const endDateInput = document.getElementById('filter-end-date').value;
@@ -702,6 +704,13 @@
                     return;
                 }
 
+                // Calcular paginación
+                const totalPages = Math.ceil(reportData.length / productsPageSize);
+                if (productsCurrentPage > totalPages) productsCurrentPage = 1;
+                const startIdx = (productsCurrentPage - 1) * productsPageSize;
+                const endIdx = startIdx + productsPageSize;
+                const pageProducts = reportData.slice(startIdx, endIdx);
+
                 let reportHTML = `
                     <div style="overflow-x: auto;">
                         <table class="orders-table">
@@ -715,7 +724,7 @@
                             <tbody>
                 `;
 
-                reportData.forEach(item => {
+                pageProducts.forEach(item => {
                     reportHTML += `
                         <tr>
                             <td>${item.name}</td>
@@ -733,8 +742,30 @@
                     <div style="margin-top: 1.5rem; text-align: center;">
                         <p>Total de productos distintos: ${reportData.length}</p>
                         <p>Total de pedidos aceptados: ${acceptedOrders.length}</p>
+                        <p>Mostrando ${startIdx + 1} - ${Math.min(endIdx, reportData.length)} de ${reportData.length} productos</p>
                     </div>
                 `;
+
+                // Agregar paginación si hay más de una página
+                if (totalPages > 1) {
+                    reportHTML += '<div id="products-pagination" class="pagination-container">';
+                    reportHTML += `<button class="pagination-btn" onclick="goToProductsPage(1)" ${productsCurrentPage === 1 ? 'disabled' : ''}>&laquo;</button>`;
+                    reportHTML += `<button class="pagination-btn" onclick="goToProductsPage(${productsCurrentPage - 1})" ${productsCurrentPage === 1 ? 'disabled' : ''}>&lsaquo;</button>`;
+                    
+                    let start = Math.max(1, productsCurrentPage - 2);
+                    let end = Math.min(totalPages, productsCurrentPage + 2);
+                    
+                    if (productsCurrentPage <= 3) end = Math.min(5, totalPages);
+                    if (productsCurrentPage >= totalPages - 2) start = Math.max(1, totalPages - 4);
+                    
+                    for (let i = start; i <= end; i++) {
+                        reportHTML += `<button class="pagination-btn${i === productsCurrentPage ? ' active' : ''}" onclick="goToProductsPage(${i})">${i}</button>`;
+                    }
+                    
+                    reportHTML += `<button class="pagination-btn" onclick="goToProductsPage(${productsCurrentPage + 1})" ${productsCurrentPage === totalPages ? 'disabled' : ''}>&rsaquo;</button>`;
+                    reportHTML += `<button class="pagination-btn" onclick="goToProductsPage(${totalPages})" ${productsCurrentPage === totalPages ? 'disabled' : ''}>&raquo;</button>`;
+                    reportHTML += '</div>';
+                }
 
                 container.innerHTML = reportHTML;
 
@@ -744,6 +775,12 @@
             }
         }
         
+        // Función para navegar entre páginas de productos
+        function goToProductsPage(page) {
+            productsCurrentPage = page;
+            loadProductsReport();
+        }
+
         // Funciones de filtros
         function applyFilters() {
             loadFilteredOrders();
@@ -791,7 +828,7 @@
         }
         
         // Descargar Excel
-        function downloadExcel() {
+        /*function downloadExcel() {
             const acceptedOrders = currentOrders.filter(order => order.status === 'Aceptado');
             
             if (acceptedOrders.length === 0) {
@@ -877,8 +914,152 @@
             
             const today = new Date().toISOString().slice(0, 10);
             XLSX.writeFile(workbook, `Pedidos_Basicos_${today}.xlsx`);
-        }
+        }*/
         
+        // Descargar Excel
+        function downloadExcel() {
+            const acceptedOrders = currentOrders.filter(order => order.status === 'Aceptado');
+            
+            if (acceptedOrders.length === 0) {
+                alert('No hay pedidos aceptados para exportar');
+                return;
+            }
+            
+            // Ordenar pedidos por ID
+            acceptedOrders.sort((a, b) => a.id.localeCompare(b.id));
+            
+            // Crear objeto para almacenar productos y sus cantidades por pedido
+            const productsByOrder = {};
+            const allProducts = new Set();
+            
+            // Recopilar todos los productos y sus cantidades por pedido
+            acceptedOrders.forEach(order => {
+                order.items.forEach(item => {
+                    const productKey = `${item.name}|||${item.unit}`; // Usar ||| como separador
+                    allProducts.add(productKey);
+                    
+                    if (!productsByOrder[productKey]) {
+                        productsByOrder[productKey] = {};
+                    }
+                    
+                    if (!productsByOrder[productKey][order.id]) {
+                        productsByOrder[productKey][order.id] = 0;
+                    }
+                    
+                    productsByOrder[productKey][order.id] += item.quantity;
+                });
+            });
+            
+            // Convertir Set a Array y ordenar alfabéticamente
+            const sortedProducts = Array.from(allProducts).sort();
+            
+            // Crear datos para la hoja de resumen
+            const summaryData = [
+                ['RESUMEN DE PRODUCTOS POR PEDIDO - TIENDA BÁSICA'],
+                []
+            ];
+            
+            // Crear encabezados
+            const headers = ['Producto', 'Unidad'];
+            acceptedOrders.forEach(order => {
+                headers.push(order.id);
+            });
+            headers.push('TOTAL');
+            summaryData.push(headers);
+            
+            // Llenar datos de productos
+            sortedProducts.forEach(productKey => {
+                const [productName, productUnit] = productKey.split('|||');
+                const row = [productName, productUnit];
+                let totalQuantity = 0;
+                
+                acceptedOrders.forEach(order => {
+                    const quantity = productsByOrder[productKey][order.id] || 0;
+                    row.push(quantity > 0 ? quantity : '');
+                    totalQuantity += quantity;
+                });
+                
+                row.push(totalQuantity);
+                summaryData.push(row);
+            });
+            
+            // Agregar fila de totales por pedido
+            summaryData.push([]);
+            const totalsRow = ['TOTAL DE PRODUCTOS', ''];
+            acceptedOrders.forEach(order => {
+                let orderTotal = 0;
+                sortedProducts.forEach(productKey => {
+                    orderTotal += productsByOrder[productKey][order.id] || 0;
+                });
+                totalsRow.push(orderTotal);
+            });
+            
+            // Calcular gran total
+            let grandTotal = 0;
+            acceptedOrders.forEach(order => {
+                order.items.forEach(item => {
+                    grandTotal += item.quantity;
+                });
+            });
+            totalsRow.push(grandTotal);
+            summaryData.push(totalsRow);
+            
+            const workbook = XLSX.utils.book_new();
+            const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+            
+            // Configurar merge de la primera celda (título)
+            summarySheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }];
+            
+            // Configurar anchos de columna
+            const colWidths = [{ wch: 30 }, { wch: 12 }];
+            acceptedOrders.forEach(() => {
+                colWidths.push({ wch: 12 });
+            });
+            colWidths.push({ wch: 12 }); // Columna TOTAL
+            summarySheet['!cols'] = colWidths;
+            
+            XLSX.utils.book_append_sheet(workbook, summarySheet, "Resumen");
+            
+            // Crear hojas individuales para cada pedido (sin cambios)
+            acceptedOrders.forEach(order => {
+                const orderData = [
+                    [`PEDIDO #${order.id} - ${order.customer}`],
+                    ['Fecha:', order.date],
+                    ['Dirección:', order.address],
+                    ['Teléfono:', order.phone || 'No especificado'],
+                    ['Notas:', order.notes || 'Ninguna'],
+                    ['Estado:', order.status],
+                    ['ID Usuario:', order.userId || 'No registrado'],
+                    [],
+                    ['Producto', 'Unidad', 'Cantidad'],
+                ];
+
+                order.items.forEach(item => {
+                    orderData.push([
+                        item.name, 
+                        item.unit || 'unidad', 
+                        item.quantity
+                    ]);
+                });
+
+                orderData.push([]);
+                orderData.push(['Total de productos distintos:', '', order.items.length]);
+
+                const orderSheet = XLSX.utils.aoa_to_sheet(orderData);
+                orderSheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 2 } }];
+                orderSheet['!cols'] = [
+                    { wch: 30 },
+                    { wch: 20 },
+                    { wch: 15 }
+                ];
+
+                XLSX.utils.book_append_sheet(workbook, orderSheet, `Pedido ${order.id}`);
+            });
+            
+            const today = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(workbook, `Pedidos_Basicos_${today}.xlsx`);
+        }
+
         // Funciones de acción masiva
         async function acceptAllPending() {
             if (!confirm('¿Está seguro de cambiar todos los pedidos PENDIENTES a ACEPTADOS?')) {
