@@ -283,17 +283,19 @@
             categoryProducts.forEach(product => {
                 const productCard = document.createElement('div');
                 productCard.className = 'product-card';
+                
+                // Verificar si el producto está en el carrito
+                const isInCart = cart.some(item => item.id === product.id);
+                const cartBadge = isInCart ? '<div class="in-cart-badge"><i class="fas fa-check-circle"></i> En carrito</div>' : '';
 
                 productCard.innerHTML = `
+                    ${cartBadge}
                     <img src="${product.image}" alt="${product.name}" class="product-image">
                     <div class="product-info">
                         <h3 class="product-name">${product.name}</h3>
                         <p>Cantidad:</p>
                         <div class="product-actions">
                             ${getQuantityOptions(product.unit, product.id)}
-                            <!--<button class="add-to-cart" onclick="addToCart(${product.id})">
-                                <i class="fas fa-cart-plus"></i> Agregar
-                            </button>-->
                         </div>
                         <div style="text-align: center; margin-top: 1rem;">
                             <button class="add-to-cart" onclick="addToCart(${product.id})">
@@ -309,8 +311,8 @@
             showSection('category');
         }
         
-        // Función para agregar producto al carrito
-        function addToCart(productId) {
+        // Función para agregar producto al carrito -- antiguo
+        /*function addToCart(productId) {
             if (!currentUser) {
                 showToast('Debes iniciar sesión para agregar productos al carrito');
                 showSection('login');
@@ -359,6 +361,89 @@
             
             // Mostrar notificación
             showToast(`Se ha agregado ${product.name} al carrito`);
+
+            // Recargar la vista actual para mostrar el badge
+            const categorySection = document.getElementById('category');
+            const storeSection = document.getElementById('store');
+
+            if (categorySection.classList.contains('active')) {
+                // Si estamos en una categoría, recargar esa categoría
+                const categoryTitle = document.getElementById('category-title').textContent;
+                const currentCategory = categories.find(cat => cat.name === categoryTitle);
+                if (currentCategory) {
+                    showCategory(currentCategory.id);
+                }
+            } else if (storeSection.classList.contains('active')) {
+                // Si estamos en búsqueda, recargar búsqueda
+                const searchInput = document.getElementById('search-input');
+                if (searchInput.value) {
+                    searchProducts();
+                }
+            }
+        }*/
+
+        // Función para agregar producto al carrito
+        function addToCart(productId) {
+            if (!currentUser) {
+                showToast('Debes iniciar sesión para agregar productos al carrito');
+                showSection('login');
+                return;
+            }
+            
+            // Encontrar el producto
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            // Obtener la cantidad seleccionada
+            const customQuantity = document.getElementById(`quantity-custom-${productId}`).value;
+            let quantity;
+            
+            if (customQuantity && parseFloat(customQuantity) > 0) {
+                // Usar la cantidad personalizada si el usuario la ingresó
+                quantity = parseFloat(customQuantity);
+            } else {
+                // Usar la opción del combobox
+                const quantitySelect = document.getElementById(`quantity-select-${productId}`);
+                quantity = parseFloat(quantitySelect.value);
+            }
+            
+            // Generar un ID único para cada entrada del carrito
+            const cartItemId = Date.now() + Math.random();
+            
+            // Siempre agregar como nuevo item al carrito
+            cart.push({
+                cartItemId: cartItemId, // ID único para cada entrada
+                id: product.id,
+                name: product.name,
+                unit: product.unit,
+                quantity: quantity,
+                image: product.image
+            });
+            
+            // Actualizar contador de carrito
+            updateCartCount();
+            
+            // Mostrar notificación
+            showToast(`Se ha agregado ${product.name} al carrito`);
+
+            // Recargar la vista actual para mostrar el badge
+            const categorySection = document.getElementById('category');
+            const storeSection = document.getElementById('store');
+
+            if (categorySection.classList.contains('active')) {
+                // Si estamos en una categoría, recargar esa categoría
+                const categoryTitle = document.getElementById('category-title').textContent;
+                const currentCategory = categories.find(cat => cat.name === categoryTitle);
+                if (currentCategory) {
+                    showCategory(currentCategory.id);
+                }
+            } else if (storeSection.classList.contains('active')) {
+                // Si estamos en búsqueda, recargar búsqueda
+                const searchInput = document.getElementById('search-input');
+                if (searchInput.value) {
+                    searchProducts();
+                }
+            }
         }
 
         // Función para actualizar el contador del carrito
@@ -403,7 +488,7 @@
                     </div>
                     <div class="item-actions">
                         <span class="item-price">${itemTotal.toFixed(1)} (${item.unit})</span>
-                        <button class="remove-item" onclick="removeFromCart(${item.id})">
+                        <button class="remove-item" onclick="removeFromCart(${item.cartItemId})">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
@@ -445,8 +530,8 @@
         }
 
         // Función para eliminar un producto del carrito
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.id !== productId);
+        function removeFromCart(cartItemId) {
+            cart = cart.filter(item => item.cartItemId !== cartItemId);
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartCount();
             updateCartView();
@@ -1239,7 +1324,7 @@
             }
         }
 
-// Función para buscar productos (muestra productos directamente)
+        // Función para buscar productos (muestra productos directamente)
         function searchProducts() {
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             const allProducts = products; // Todos los productos
@@ -1274,10 +1359,14 @@
             
             // Mostrar productos encontrados
             filteredProducts.forEach(product => {
-                // Generar opciones según unidad (igual que en showCategory)
+                // Verificar si el producto está en el carrito
+                const isInCart = cart.some(item => item.id === product.id);
+                const cartBadge = isInCart ? '<div class="in-cart-badge"><i class="fas fa-check-circle"></i> En carrito</div>' : '';
+                
                 const productCard = document.createElement('div');
                 productCard.className = 'product-card';
                 productCard.innerHTML = `
+                    ${cartBadge}
                     <img src="${product.image}" alt="${product.name}" class="product-image">
                     <div class="product-info">
                         <h3 class="product-name">${product.name}</h3>

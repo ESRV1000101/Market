@@ -132,7 +132,7 @@
         
         /* Banner de Inicio */
         .banner {
-            height: 80vh;
+            height: 50vh;
             background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('img/fondo.avif');
             background-size: cover;
             background-position: center;
@@ -256,6 +256,7 @@
             overflow: hidden;
             box-shadow: var(--shadow);
             transition: var(--transition);
+            position: relative; /* Asegura que el badge se posicione correctamente */
         }
         
         .product-card:hover {
@@ -291,6 +292,24 @@
             border: 1px solid #ddd;
             border-radius: var(--radius);
             font-size: 1rem;
+        }
+
+        /* Indicador de producto en carrito */
+        .in-cart-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10;
         }
         
         .add-to-cart {
@@ -920,6 +939,10 @@
             
             .profile-actions {
                 flex-direction: column;
+            }
+
+            .horarios-container {
+                grid-template-columns: 1fr !important;
             }
         }
         
