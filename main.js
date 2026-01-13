@@ -1,5 +1,5 @@
         // Clave de la API para JSONBin.io
-        const MASTER_KEY = '$2a$10$EXzKu5AnMdzNOgAfu8Fx2.SvsmKJmqlwriEoW96bMKnEEX5WMH0Ra';
+        const MASTER_KEY = '$2a$10$R7OLDLbAbTNkdQUNQjNZ7ekB1FeLfKRHqKt0DCyTm8XL/9GcpCyYW';
         const BIN_ID = '687a974a2de0201b319ca267';
         const API_URL = `https://api.jsonbin.io/v3/b/`;
         const USERS_BIN_ID = '687b046c2de0201b319ccf2b'; // Nuevo bin para usuarios
