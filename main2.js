@@ -1,5 +1,5 @@
 // Clave de la API para JSONBin.io
-        const MASTER_KEY = '$2a$10$EXzKu5AnMdzNOgAfu8Fx2.SvsmKJmqlwriEoW96bMKnEEX5WMH0Ra';
+        const ACCESS_KEY = '$2a$10$R7OLDLbAbTNkdQUNQjNZ7ekB1FeLfKRHqKt0DCyTm8XL/9GcpCyYW';
         const BIN_ID = '68a3b7e7d0ea881f405ce22b';
         const API_URL = `https://api.jsonbin.io/v3/b/`;
         const USERS_BIN_ID = '687b046c2de0201b319ccf2b'; // Nuevo bin para usuarios
@@ -111,7 +111,7 @@
                 const response = await fetch(CATEGORIES_API_URL, {
                     method: 'GET',
                     headers: {
-                        'X-Master-Key': MASTER_KEY,
+                        'X-Access-Key': ACCESS_KEY,
                         'X-Bin-Meta': 'false'
                     }
                 });
@@ -132,7 +132,7 @@
                 const response = await fetch(PRODUCTS_API_URL, {
                     method: 'GET',
                     headers: {
-                        'X-Master-Key': MASTER_KEY,
+                        'X-Access-Key': ACCESS_KEY,
                         'X-Bin-Meta': 'false'
                     }
                 });
@@ -513,7 +513,7 @@
                 const response = await fetch(`${API_URL}${USERS_BIN_ID}`, {
                     method: 'GET',
                     headers: {
-                        'X-Master-Key': MASTER_KEY,
+                        'X-Access-Key': ACCESS_KEY,
                         'X-Bin-Meta': 'false' // Solo obtenemos el contenido, sin metadatos
                     }
                 });
@@ -537,7 +537,7 @@
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Master-Key': MASTER_KEY
+                        'X-Access-Key': ACCESS_KEY
                     },
                     body: JSON.stringify({ users }) // Enviamos como objeto {users: [...]}
                 });
@@ -1096,7 +1096,7 @@
                 const response = await fetch(`${API_URL}${BIN_ID}`, {
                     method: 'GET',
                     headers: {
-                        'X-Master-Key': MASTER_KEY,
+                        'X-Access-Key': ACCESS_KEY,
                         'X-Bin-Meta': 'false' // Solo obtenemos el contenido, sin metadatos
                     }
                 });
@@ -1120,7 +1120,7 @@
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Master-Key': MASTER_KEY
+                        'X-Access-Key': ACCESS_KEY
                     },
                     body: JSON.stringify({ orders }) // Enviamos como objeto {orders: [...]}
                 });
