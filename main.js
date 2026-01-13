@@ -3,7 +3,7 @@
 // ==========================================
 
 // USAMOS LA MASTER KEY (La que tiene acceso total y nunca falla por permisos)
-const API_KEY = '$2a$10$EXzKu5AnMdzNOgAfu8Fx2.SvsmKJmqlwriEoW96bMKnEEX5WMH0Ra'; 
+const API_KEY = '$2a$10$NO91Pt1srnp11wC08sJT..VzgaXv8IKFs7AhxtjlBn2K.p9ZIHcKi'; 
 
 // IDs de tus Bins
 const BIN_ID = '687a974a2de0201b319ca267'; // Pedidos
@@ -107,7 +107,7 @@ async function loadCategoriesData() {
         const response = await fetch(CATEGORIES_API_URL, {
             method: 'GET',
             headers: {
-                'X-Master-Key': API_KEY, // Volvemos a Master Key
+                'X-Access-Key': API_KEY, // Volvemos a Master Key
                 'X-Bin-Meta': 'false'
             }
         });
@@ -126,7 +126,7 @@ async function loadProductsData() {
         const response = await fetch(PRODUCTS_API_URL, {
             method: 'GET',
             headers: {
-                'X-Master-Key': API_KEY, // Volvemos a Master Key
+                'X-Access-Key': API_KEY, // Volvemos a Master Key
                 'X-Bin-Meta': 'false'
             }
         });
@@ -442,7 +442,7 @@ async function fetchUsers() {
         const response = await fetch(`${API_URL}${USERS_BIN_ID}`, {
             method: 'GET',
             headers: {
-                'X-Master-Key': API_KEY, // Volvemos a Master Key
+                'X-Access-Key': API_KEY, // Volvemos a Master Key
                 'X-Bin-Meta': 'false'
             }
         });
@@ -465,7 +465,7 @@ async function saveUsersToCloud(users) {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Master-Key': API_KEY // Volvemos a Master Key
+                'X-Access-Key': API_KEY // Volvemos a Master Key
             },
             body: JSON.stringify({ users })
         });
@@ -764,7 +764,7 @@ async function fetchOrders() {
         const response = await fetch(`${API_URL}${BIN_ID}`, {
             method: 'GET',
             headers: {
-                'X-Master-Key': API_KEY, // Volvemos a Master Key
+                'X-Access-Key': API_KEY, // Volvemos a Master Key
                 'X-Bin-Meta': 'false'
             }
         });
@@ -787,7 +787,7 @@ async function saveOrdersToCloud(orders) {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Master-Key': API_KEY // Volvemos a Master Key
+                'X-Access-Key': API_KEY // Volvemos a Master Key
             },
             body: JSON.stringify({ orders })
         });
