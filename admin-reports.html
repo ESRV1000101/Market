@@ -468,7 +468,7 @@
         const BASIC_ORDERS_API_URL = 'https://api.jsonbin.io/v3/b/687a974a2de0201b319ca267'; // Tienda básica
         const PRODUCTS_API_URL = 'https://api.jsonbin.io/v3/b/687f2362f7e7a370d1ebcc73'; // Productos
         const USERS_API_URL = 'https://api.jsonbin.io/v3/b/687b046c2de0201b319ccf2b'; // Usuarios
-        const MASTER_KEY = '$2a$10$EXzKu5AnMdzNOgAfu8Fx2.SvsmKJmqlwriEoW96bMKnEEX5WMH0Ra';
+        const ACCESS_KEY = '$2a$10$R7OLDLbAbTNkdQUNQjNZ7ekB1FeLfKRHqKt0DCyTm8XL/9GcpCyYW';
 
         // Variables globales
         let orders = [];
@@ -486,28 +486,28 @@
             try {
                 // Cargar pedidos con precios
                 const ordersResponse = await fetch(ORDERS_API_URL, {
-                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
                 });
                 orders = await ordersResponse.json();
                 orders = orders.orders || [];
                 
                 // Cargar pedidos básicos
                 const basicOrdersResponse = await fetch(BASIC_ORDERS_API_URL, {
-                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
                 });
                 basicOrders = await basicOrdersResponse.json();
                 basicOrders = basicOrders.orders || [];
                 
                 // Cargar productos
                 const productsResponse = await fetch(PRODUCTS_API_URL, {
-                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
                 });
                 products = await productsResponse.json();
                 products = products.products || [];
                 
                 // Cargar usuarios
                 const usersResponse = await fetch(USERS_API_URL, {
-                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
                 });
                 users = await usersResponse.json();
                 users = users.users || [];

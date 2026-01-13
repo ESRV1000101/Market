@@ -481,7 +481,7 @@
     
     <script>
         // Configuración de API
-        const MASTER_KEY = '$2a$10$EXzKu5AnMdzNOgAfu8Fx2.SvsmKJmqlwriEoW96bMKnEEX5WMH0Ra';
+        const ACCESS_KEY = '$2a$10$R7OLDLbAbTNkdQUNQjNZ7ekB1FeLfKRHqKt0DCyTm8XL/9GcpCyYW';
         const CATEGORIES_BIN_ID = '687f2380ae596e708fb99af7';
         const PRODUCTS_BIN_ID = '687f2362f7e7a370d1ebcc73'; 
         const CATEGORIES_API_URL = `https://api.jsonbin.io/v3/b/${CATEGORIES_BIN_ID}`;
@@ -520,7 +520,7 @@
         async function fetchCategories() {
             try {
                 const response = await fetch(CATEGORIES_API_URL, {
-                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
                 });
                 const data = await response.json();
                 return data.categories || [];
@@ -535,7 +535,7 @@
                 await fetch(CATEGORIES_API_URL, {
                     method: 'PUT',
                     headers: { 
-                        'X-Master-Key': MASTER_KEY, 
+                        'X-Access-Key': ACCESS_KEY, 
                         'Content-Type': 'application/json' 
                     },
                     body: JSON.stringify({ categories })
@@ -549,7 +549,7 @@
         async function fetchProducts() {
             try {
                 const response = await fetch(PRODUCTS_API_URL, {
-                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
                 });
                 const data = await response.json();
                 return data.products || [];
@@ -564,7 +564,7 @@
                 await fetch(PRODUCTS_API_URL, {
                     method: 'PUT',
                     headers: { 
-                        'X-Master-Key': MASTER_KEY, 
+                        'X-Access-Key': ACCESS_KEY, 
                         'Content-Type': 'application/json' 
                     },
                     body: JSON.stringify({ products })

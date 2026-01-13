@@ -397,7 +397,7 @@
             products: 'https://api.jsonbin.io/v3/b/687f2362f7e7a370d1ebcc73',
             users: 'https://api.jsonbin.io/v3/b/687b046c2de0201b319ccf2b'
         };
-        const MASTER_KEY = '$2a$10$EXzKu5AnMdzNOgAfu8Fx2.SvsmKJmqlwriEoW96bMKnEEX5WMH0Ra';
+        const ACCESS_KEY = '$2a$10$R7OLDLbAbTNkdQUNQjNZ7ekB1FeLfKRHqKt0DCyTm8XL/9GcpCyYW';
         
         // Función de login
         function login() {
@@ -435,28 +435,28 @@
             try {
                 // Cargar pedidos básicos
                 const basicResponse = await fetch(API_URLS.basic, {
-                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
                 });
                 const basicData = await basicResponse.json();
                 document.getElementById('total-orders-basic').textContent = (basicData.orders || []).length;
                 
                 // Cargar pedidos con precios
                 const pricingResponse = await fetch(API_URLS.pricing, {
-                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
                 });
                 const pricingData = await pricingResponse.json();
                 document.getElementById('total-orders-pricing').textContent = (pricingData.orders || []).length;
                 
                 // Cargar categorías
                 const categoriesResponse = await fetch(API_URLS.categories, {
-                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
                 });
                 const categoriesData = await categoriesResponse.json();
                 document.getElementById('total-categories').textContent = (categoriesData.categories || []).length;
                 
                 // Cargar productos
                 const productsResponse = await fetch(API_URLS.products, {
-                    headers: { 'X-Master-Key': MASTER_KEY, 'X-Bin-Meta': 'false' }
+                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
                 });
                 const productsData = await productsResponse.json();
                 document.getElementById('total-products').textContent = (productsData.products || []).length;

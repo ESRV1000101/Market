@@ -215,7 +215,7 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <script>
         // Configuración
-        const MASTER_KEY = '$2a$10$EXzKu5AnMdzNOgAfu8Fx2.SvsmKJmqlwriEoW96bMKnEEX5WMH0Ra';
+        const ACCESS_KEY = '$2a$10$R7OLDLbAbTNkdQUNQjNZ7ekB1FeLfKRHqKt0DCyTm8XL/9GcpCyYW';
         const BIN_ID = '68a3b7e7d0ea881f405ce22b'; // API para pedidos con precios
         const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
         
@@ -282,7 +282,7 @@
                 const response = await fetch(API_URL, {
                     method: 'GET',
                     headers: {
-                        'X-Master-Key': MASTER_KEY,
+                        'X-Access-Key': ACCESS_KEY,
                         'X-Bin-Meta': 'false'
                     }
                 });
@@ -305,7 +305,7 @@
                 const response = await fetch(API_URL, {
                     method: 'PUT',
                     headers: {
-                        'X-Master-Key': MASTER_KEY,
+                        'X-Access-Key': ACCESS_KEY,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ orders })
