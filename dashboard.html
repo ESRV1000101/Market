@@ -280,7 +280,6 @@
     </style>
 </head>
 <body>
-    <!-- Sistema de autenticación -->
     <div id="login-section">
         <div class="login-container">
             <h2 class="login-title">Panel de Administración</h2>
@@ -299,7 +298,6 @@
         </div>
     </div>
     
-    <!-- Dashboard Principal -->
     <div id="dashboard" style="display: none;">
         <div class="admin-header">
             <div class="admin-header-container">
@@ -316,7 +314,6 @@
         <div class="dashboard-container">
             <h1 class="dashboard-title">Panel de Administración yü foods</h1>
             
-            <!-- Resumen de estadísticas -->
             <div class="stats-summary">
                 <h3 style="color: var(--primary); margin-bottom: 1.5rem; text-align: center;">
                     <i class="fas fa-chart-bar"></i> Resumen General
@@ -325,10 +322,6 @@
                     <div class="stat-item">
                         <div class="stat-number" id="total-orders-basic">-</div>
                         <div class="stat-label">Pedidos sin precio</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number" id="total-orders-pricing">-</div>
-                        <div class="stat-label">Pedidos con precio</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-number" id="total-categories">-</div>
@@ -341,16 +334,14 @@
                 </div>
             </div>
             
-            <!-- Tarjetas de navegación -->
             <div class="cards-grid">
-                <!-- Tienda Sin Precios -->
                 <div class="dashboard-card">
                     <div class="card-icon">
                         <i class="fas fa-list-ul"></i>
                     </div>
-                    <h3 class="card-title">Tienda Sin Precios</h3>
+                    <h3 class="card-title">Tienda Básica</h3>
                     <p class="card-description">
-                        Administra los pedidos de la tienda básica donde los clientes solicitan productos por cantidad únicamente.
+                        Administra los pedidos de la tienda donde los clientes solicitan productos por cantidad únicamente.
                     </p>
                     <div class="card-actions">
                         <a href="admin-basic-orders.html" class="btn">
@@ -362,21 +353,17 @@
                     </div>
                 </div>
                 
-                <!-- Tienda Con Precios -->
                 <div class="dashboard-card">
                     <div class="card-icon">
-                        <i class="fas fa-dollar-sign"></i>
+                        <i class="fas fa-chart-pie"></i>
                     </div>
-                    <h3 class="card-title">Tienda Con Precios</h3>
+                    <h3 class="card-title">Reportes</h3>
                     <p class="card-description">
-                        Administra los pedidos de la tienda con precios, incluyendo cálculos de subtotales y comisiones de servicio.
+                        Visualiza gráficas y estadísticas de ventas, productos populares y actividad.
                     </p>
                     <div class="card-actions">
-                        <a href="admin-pricing-orders.html" class="btn">
-                            <i class="fas fa-receipt"></i> Ver Pedidos
-                        </a>
-                        <a href="admin-pricing-editor.html" class="btn btn-secondary">
-                            <i class="fas fa-tags"></i> Editar Precios
+                        <a href="admin-reports.html" class="btn">
+                            <i class="fas fa-chart-line"></i> Ver Reportes
                         </a>
                     </div>
                 </div>
@@ -389,15 +376,15 @@
         const ADMIN_USER = "admin";
         const ADMIN_PASSWORD = "nomura25";
         
-        // URLs de las APIs
-        const API_URLS = {
-            basic: 'https://api.jsonbin.io/v3/b/687a974a2de0201b319ca267',
-            pricing: 'https://api.jsonbin.io/v3/b/68a3b7e7d0ea881f405ce22b',
-            categories: 'https://api.jsonbin.io/v3/b/687f2380ae596e708fb99af7',
-            products: 'https://api.jsonbin.io/v3/b/687f2362f7e7a370d1ebcc73',
-            users: 'https://api.jsonbin.io/v3/b/687b046c2de0201b319ccf2b'
+        // CONFIGURACIÓN PANTRY
+        const PANTRY_ID = '18fe8ca9-204c-47d1-b0eb-b48cdd2d87aa';
+        const API_URL = `https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/`;
+        
+        const BASKETS = {
+            orders: 'carritoCompra',
+            categories: 'categorias',
+            products: 'productos'
         };
-        const ACCESS_KEY = '$2a$10$R7OLDLbAbTNkdQUNQjNZ7ekB1FeLfKRHqKt0DCyTm8XL/9GcpCyYW';
         
         // Función de login
         function login() {
@@ -434,40 +421,37 @@
         async function loadDashboardStats() {
             try {
                 // Cargar pedidos básicos
-                const basicResponse = await fetch(API_URLS.basic, {
-                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
-                });
-                const basicData = await basicResponse.json();
-                document.getElementById('total-orders-basic').textContent = (basicData.orders || []).length;
-                
-                // Cargar pedidos con precios
-                const pricingResponse = await fetch(API_URLS.pricing, {
-                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
-                });
-                const pricingData = await pricingResponse.json();
-                document.getElementById('total-orders-pricing').textContent = (pricingData.orders || []).length;
+                const basicResponse = await fetch(`${API_URL}${BASKETS.orders}`);
+                if (basicResponse.ok) {
+                    const basicData = await basicResponse.json();
+                    document.getElementById('total-orders-basic').textContent = (basicData.orders || []).length;
+                } else {
+                    document.getElementById('total-orders-basic').textContent = '0';
+                }
                 
                 // Cargar categorías
-                const categoriesResponse = await fetch(API_URLS.categories, {
-                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
-                });
-                const categoriesData = await categoriesResponse.json();
-                document.getElementById('total-categories').textContent = (categoriesData.categories || []).length;
+                const categoriesResponse = await fetch(`${API_URL}${BASKETS.categories}`);
+                if (categoriesResponse.ok) {
+                    const categoriesData = await categoriesResponse.json();
+                    document.getElementById('total-categories').textContent = (categoriesData.categories || []).length;
+                } else {
+                    document.getElementById('total-categories').textContent = '0';
+                }
                 
                 // Cargar productos
-                const productsResponse = await fetch(API_URLS.products, {
-                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
-                });
-                const productsData = await productsResponse.json();
-                document.getElementById('total-products').textContent = (productsData.products || []).length;
+                const productsResponse = await fetch(`${API_URL}${BASKETS.products}`);
+                if (productsResponse.ok) {
+                    const productsData = await productsResponse.json();
+                    document.getElementById('total-products').textContent = (productsData.products || []).length;
+                } else {
+                    document.getElementById('total-products').textContent = '0';
+                }
                 
             } catch (error) {
                 console.error('Error loading dashboard stats:', error);
-                // Mostrar valores por defecto si hay error
-                document.getElementById('total-orders-basic').textContent = '0';
-                document.getElementById('total-orders-pricing').textContent = '0';
-                document.getElementById('total-categories').textContent = '0';
-                document.getElementById('total-products').textContent = '0';
+                document.getElementById('total-orders-basic').textContent = '-';
+                document.getElementById('total-categories').textContent = '-';
+                document.getElementById('total-products').textContent = '-';
             }
         }
         

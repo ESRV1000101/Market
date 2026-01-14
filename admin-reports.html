@@ -3,1062 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>yü foods - Reportes y Análisis</title>
+    <title>yü foods - Reportes</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --primary: #4a7c59;
-            --primary-dark: #3a6547;
-            --secondary: #8d9f87;
-            --accent: #d0b49f;
-            --light: #f4f1e9;
-            --dark: #2d3319;
-            --gray: #7d8c7d;
-            --light-gray: #e9ecef;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            --radius: 8px;
-            --transition: all 0.3s ease;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background-color: var(--light);
-            color: var(--dark);
-            line-height: 1.6;
-        }
-        
-        .admin-header {
-            background-color: var(--primary);
-            color: white;
-            padding: 1rem 5%;
-            box-shadow: var(--shadow);
-        }
-        
-        .admin-header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        .admin-logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: white;
-            text-decoration: none;
-        }
-        
-        .logout-btn {
-            background-color: white;
-            color: var(--primary);
-            border: none;
-            padding: 0.5rem 1.5rem;
-            border-radius: var(--radius);
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .logout-btn:hover {
-            background-color: var(--light);
-            transform: translateY(-2px);
-        }
-        
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        
-        .dashboard-title {
-            text-align: center;
-            color: var(--primary);
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-        }
-        
-        .report-filters {
-            background: white;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .filter-title {
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-        
-        .filter-form {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-        }
-        
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ddd;
-            border-radius: var(--radius);
-            font-size: 1rem;
-        }
-        
-        .form-input:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1);
-        }
-        
-        .btn {
-            padding: 0.8rem 1.5rem;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: var(--radius);
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            align-self: flex-end;
-        }
-        
-        .btn:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-        
-        .report-section {
-            background: white;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        .section-title {
-            color: var(--primary);
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .kpi-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .kpi-card {
-            background: var(--light);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            text-align: center;
-        }
-        
-        .kpi-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-        }
-        
-        .kpi-label {
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-        
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin-bottom: 2rem;
-        }
-        
-        .table-container {
-            overflow-x: auto;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th, td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid var(--light-gray);
-        }
-        
-        th {
-            background-color: var(--light);
-            color: var(--primary);
-            font-weight: 600;
-        }
-        
-        tr:hover {
-            background-color: rgba(74, 124, 89, 0.05);
-        }
-        
-        .empty-message {
-            text-align: center;
-            padding: 2rem;
-            color: var(--gray);
-        }
-        
-        .tabs {
-            display: flex;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid var(--light-gray);
-        }
-        
-        .tab {
-            padding: 0.8rem 1.5rem;
-            cursor: pointer;
-            transition: var(--transition);
-            border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
-        }
-        
-        .tab.active {
-            border-color: var(--primary);
-            color: var(--primary);
-            font-weight: 600;
-        }
-        
-        .tab:hover:not(.active) {
-            background-color: rgba(74, 124, 89, 0.1);
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        @media (max-width: 768px) {
-            .filter-form {
-                grid-template-columns: 1fr;
-            }
-            
-            .dashboard-title {
-                font-size: 2rem;
-            }
-        }
+        /* Estilos originales mantenidos */
+        :root { --primary: #4a7c59; --primary-dark: #3a6547; --secondary: #8d9f87; --light: #f4f1e9; --dark: #2d3319; --gray: #7d8c7d; --radius: 8px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--light); color: var(--dark); margin:0; }
+        .admin-header { background-color: var(--primary); color: white; padding: 1rem 5%; display:flex; justify-content:space-between; align-items:center; }
+        .dashboard-container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .kpi-card { background: white; border-radius: var(--radius); padding: 1.5rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .kpi-value { font-size: 2rem; font-weight: 700; color: var(--primary); }
+        .chart-container { position: relative; height: 300px; margin-bottom: 2rem; background: white; padding: 1rem; border-radius: var(--radius); }
+        .btn { padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: var(--radius); cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="admin-header">
-        <div class="admin-header-container">
-            <div class="admin-logo">
-                <i class="fas fa-chart-line"></i>
-                <span>Reportes y Análisis</span>
-            </div>
-            <button class="logout-btn" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-            </button>
-        </div>
+        <h2>Reportes y Análisis</h2>
+        <button class="btn" onclick="location.href='dashboard.html'">Volver</button>
     </div>
     
     <div class="dashboard-container">
-        <h1 class="dashboard-title">Reportes y Análisis</h1>
-        
-        <!-- Filtros -->
-        <div class="report-filters">
-            <h2 class="filter-title">Filtros</h2>
-            <div class="filter-form">
-                <div class="form-group">
-                    <label class="form-label" for="date-range">Rango de Fechas</label>
-                    <select class="form-input" id="date-range">
-                        <option value="7">Últimos 7 días</option>
-                        <option value="30">Últimos 30 días</option>
-                        <option value="90">Últimos 90 días</option>
-                        <option value="365">Último año</option>
-                        <option value="custom">Personalizado</option>
-                    </select>
-                </div>
-                <div class="form-group" id="custom-dates" style="display: none;">
-                    <div class="form-group">
-                        <label class="form-label" for="start-date">Fecha Desde</label>
-                        <input type="date" class="form-input" id="start-date">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="end-date">Fecha Hasta</label>
-                        <input type="date" class="form-input" id="end-date">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="product-filter">Producto</label>
-                    <select class="form-input" id="product-filter">
-                        <option value="">Todos los productos</option>
-                        <!-- Productos se cargarán por JS -->
-                    </select>
-                </div>
-                <div class="form-group">
-                    <button class="btn" id="apply-filters">
-                        <i class="fas fa-filter"></i> Aplicar Filtros
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- KPIs -->
         <div class="kpi-container">
             <div class="kpi-card">
                 <div class="kpi-value" id="total-orders">-</div>
                 <div class="kpi-label">Pedidos Totales</div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-value" id="total-sales">-</div>
-                <div class="kpi-label">Ventas Totales</div>
+                <div class="kpi-value" id="pending-orders">-</div>
+                <div class="kpi-label">Pendientes</div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-value" id="avg-order">-</div>
-                <div class="kpi-label">Ticket Promedio</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-value" id="top-product">-</div>
-                <div class="kpi-label">Producto Más Vendido</div>
+                <div class="kpi-value" id="total-products">-</div>
+                <div class="kpi-label">Productos Activos</div>
             </div>
         </div>
         
-        <!-- Tabs -->
-        <div class="tabs">
-            <div class="tab active" data-tab="sales">Ventas</div>
-            <div class="tab" data-tab="products">Productos</div>
-            <div class="tab" data-tab="customers">Clientes</div>
-            <div class="tab" data-tab="comparison">Comparación</div>
+        <div class="chart-container">
+            <canvas id="ordersChart"></canvas>
         </div>
         
-        <!-- Tab de Ventas -->
-        <div class="tab-content active" id="sales-tab">
-            <div class="report-section">
-                <h2 class="section-title">Evolución de Ventas</h2>
-                <div class="chart-container">
-                    <canvas id="salesChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="report-section">
-                <h2 class="section-title">Detalle de Pedidos</h2>
-                <div class="table-container">
-                    <table id="ordersTable">
-                        <thead>
-                            <tr>
-                                <th>ID Pedido</th>
-                                <th>Fecha</th>
-                                <th>Cliente</th>
-                                <th>Total</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Datos se cargarán por JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Tab de Productos -->
-        <div class="tab-content" id="products-tab">
-            <div class="report-section">
-                <h2 class="section-title">Productos Más Vendidos</h2>
-                <div class="chart-container">
-                    <canvas id="productsChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="report-section">
-                <h2 class="section-title">Detalle de Ventas por Producto</h2>
-                <div class="table-container">
-                    <table id="productsTable">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th>Cantidad Vendida</th>
-                                <th>Ventas Totales</th>
-                                <th>% del Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Datos se cargarán por JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Tab de Clientes -->
-        <div class="tab-content" id="customers-tab">
-            <div class="report-section">
-                <h2 class="section-title">Clientes Más Activos</h2>
-                <div class="chart-container">
-                    <canvas id="customersChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="report-section">
-                <h2 class="section-title">Detalle de Clientes</h2>
-                <div class="table-container">
-                    <table id="customersTable">
-                        <thead>
-                            <tr>
-                                <th>Cliente</th>
-                                <th>Pedidos</th>
-                                <th>Total Gastado</th>
-                                <th>Último Pedido</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Datos se cargarán por JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Tab de Comparación -->
-        <div class="tab-content" id="comparison-tab">
-            <div class="report-section">
-                <h2 class="section-title">Comparación de Tiendas</h2>
-                <div class="chart-container">
-                    <canvas id="comparisonChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="report-section">
-                <h2 class="section-title">Comparación Mensual</h2>
-                <div class="chart-container">
-                    <canvas id="monthlyChart"></canvas>
-                </div>
-            </div>
+        <div class="chart-container">
+            <canvas id="statusChart"></canvas>
         </div>
     </div>
 
     <script>
-        // URLs de las APIs
-        const ORDERS_API_URL = 'https://api.jsonbin.io/v3/b/68a3b7e7d0ea881f405ce22b'; // Tienda con precios
-        const BASIC_ORDERS_API_URL = 'https://api.jsonbin.io/v3/b/687a974a2de0201b319ca267'; // Tienda básica
-        const PRODUCTS_API_URL = 'https://api.jsonbin.io/v3/b/687f2362f7e7a370d1ebcc73'; // Productos
-        const USERS_API_URL = 'https://api.jsonbin.io/v3/b/687b046c2de0201b319ccf2b'; // Usuarios
-        const ACCESS_KEY = '$2a$10$R7OLDLbAbTNkdQUNQjNZ7ekB1FeLfKRHqKt0DCyTm8XL/9GcpCyYW';
+        const PANTRY_ID = '18fe8ca9-204c-47d1-b0eb-b48cdd2d87aa';
+        const API_BASE = `https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/`;
+        const BASKETS = { orders: 'carritoCompra', products: 'productos' };
 
-        // Variables globales
-        let orders = [];
-        let basicOrders = [];
-        let products = [];
-        let users = [];
-        let salesChart = null;
-        let productsChart = null;
-        let customersChart = null;
-        let comparisonChart = null;
-        let monthlyChart = null;
-
-        // Función para cargar datos
         async function loadData() {
             try {
-                // Cargar pedidos con precios
-                const ordersResponse = await fetch(ORDERS_API_URL, {
-                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
-                });
-                orders = await ordersResponse.json();
-                orders = orders.orders || [];
-                
-                // Cargar pedidos básicos
-                const basicOrdersResponse = await fetch(BASIC_ORDERS_API_URL, {
-                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
-                });
-                basicOrders = await basicOrdersResponse.json();
-                basicOrders = basicOrders.orders || [];
-                
-                // Cargar productos
-                const productsResponse = await fetch(PRODUCTS_API_URL, {
-                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
-                });
-                products = await productsResponse.json();
-                products = products.products || [];
-                
-                // Cargar usuarios
-                const usersResponse = await fetch(USERS_API_URL, {
-                    headers: { 'X-Access-Key': ACCESS_KEY, 'X-Bin-Meta': 'false' }
-                });
-                users = await usersResponse.json();
-                users = users.users || [];
-                
-                // Inicializar filtros
-                initFilters();
-                // Generar reportes iniciales
-                generateReports();
-            } catch (error) {
-                console.error('Error cargando datos:', error);
-                alert('Error cargando datos. Por favor recarga la página.');
-            }
+                // Cargar Pedidos
+                const resOrders = await fetch(API_BASE + BASKETS.orders);
+                const dataOrders = resOrders.ok ? await resOrders.json() : {};
+                const orders = dataOrders.orders || [];
+
+                // Cargar Productos
+                const resProds = await fetch(API_BASE + BASKETS.products);
+                const dataProds = resProds.ok ? await resProds.json() : {};
+                const products = dataProds.products || [];
+
+                updateKPIs(orders, products);
+                renderCharts(orders);
+            } catch (e) { console.error(e); }
         }
 
-        // Inicializar filtros
-        function initFilters() {
-            // Rango de fechas
-            const dateRange = document.getElementById('date-range');
-            dateRange.addEventListener('change', function() {
-                const customDates = document.getElementById('custom-dates');
-                customDates.style.display = this.value === 'custom' ? 'block' : 'none';
-                generateReports();
-            });
-            
-            // Productos
-            const productFilter = document.getElementById('product-filter');
-            products.forEach(product => {
-                const option = document.createElement('option');
-                option.value = product.id;
-                option.textContent = product.name;
-                productFilter.appendChild(option);
-            });
-            productFilter.addEventListener('change', generateReports);
-            
-            // Botón aplicar filtros
-            document.getElementById('apply-filters').addEventListener('click', generateReports);
-            
-            // Tabs
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    // Remover clase activa de todas las tabs
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    
-                    // Agregar clase activa a la tab seleccionada
-                    this.classList.add('active');
-                    const tabId = this.getAttribute('data-tab');
-                    document.getElementById(`${tabId}-tab`).classList.add('active');
-                    
-                    // Regenerar gráficos si es necesario
-                    if (tabId === 'products' && !productsChart) {
-                        generateProductsReport();
-                    } else if (tabId === 'customers' && !customersChart) {
-                        generateCustomersReport();
-                    } else if (tabId === 'comparison' && (!comparisonChart || !monthlyChart)) {
-                        generateComparisonReport();
-                    }
-                });
-            });
-        }
-
-        // Función para aplicar filtros y generar reportes
-        function generateReports() {
-            // Obtener valores de los filtros
-            const dateRange = document.getElementById('date-range').value;
-            const productId = document.getElementById('product-filter').value;
-            
-            // Calcular fechas según rango seleccionado
-            let startDate, endDate = new Date();
-            
-            switch(dateRange) {
-                case '7':
-                    startDate = new Date();
-                    startDate.setDate(startDate.getDate() - 7);
-                    break;
-                case '30':
-                    startDate = new Date();
-                    startDate.setDate(startDate.getDate() - 30);
-                    break;
-                case '90':
-                    startDate = new Date();
-                    startDate.setDate(startDate.getDate() - 90);
-                    break;
-                case '365':
-                    startDate = new Date();
-                    startDate.setFullYear(startDate.getFullYear() - 1);
-                    break;
-                case 'custom':
-                    startDate = new Date(document.getElementById('start-date').value);
-                    endDate = new Date(document.getElementById('end-date').value);
-                    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-                        alert('Por favor selecciona fechas válidas');
-                        return;
-                    }
-                    break;
-                default:
-                    startDate = new Date();
-                    startDate.setDate(startDate.getDate() - 7);
-            }
-            
-            // Filtrar pedidos por fecha
-            const filteredOrders = orders.filter(order => {
-                const orderDate = new Date(order.timestamp);
-                return orderDate >= startDate && orderDate <= endDate;
-            });
-            
-            // Filtrar por producto si está seleccionado
-            const filteredOrdersByProduct = productId ? 
-                filteredOrders.map(order => {
-                    const filteredItems = order.items.filter(item => item.id == productId);
-                    return filteredItems.length > 0 ? {...order, items: filteredItems} : null;
-                }).filter(order => order !== null) : 
-                filteredOrders;
-            
-            // Actualizar KPIs
-            updateKPIs(filteredOrdersByProduct);
-            
-            // Generar reportes
-            generateSalesReport(filteredOrdersByProduct);
-            
-            // Generar reportes específicos de otras tabs si están activas
-            if (document.querySelector('.tab[data-tab="products"].active')) {
-                generateProductsReport();
-            }
-            if (document.querySelector('.tab[data-tab="customers"].active')) {
-                generateCustomersReport();
-            }
-            if (document.querySelector('.tab[data-tab="comparison"].active')) {
-                generateComparisonReport();
-            }
-        }
-
-        // Actualizar KPIs
-        function updateKPIs(orders) {
-            // Total de pedidos
+        function updateKPIs(orders, products) {
             document.getElementById('total-orders').textContent = orders.length;
-            
-            // Total de ventas
-            const totalSales = orders.reduce((sum, order) => sum + order.total, 0);
-            document.getElementById('total-sales').textContent = `S/ ${totalSales.toFixed(2)}`;
-            
-            // Ticket promedio
-            const avgOrder = orders.length > 0 ? totalSales / orders.length : 0;
-            document.getElementById('avg-order').textContent = `S/ ${avgOrder.toFixed(2)}`;
-            
-            // Producto más vendido
-            const productSales = {};
-            orders.forEach(order => {
-                order.items.forEach(item => {
-                    if (!productSales[item.id]) {
-                        productSales[item.id] = {name: item.name, quantity: 0};
-                    }
-                    productSales[item.id].quantity += item.quantity;
-                });
-            });
-            
-            let topProduct = {name: 'Ninguno', quantity: 0};
-            Object.values(productSales).forEach(product => {
-                if (product.quantity > topProduct.quantity) {
-                    topProduct = product;
-                }
-            });
-            
-            document.getElementById('top-product').textContent = topProduct.name;
+            document.getElementById('pending-orders').textContent = orders.filter(o => o.status === 'Pendiente').length;
+            document.getElementById('total-products').textContent = products.filter(p => p.visible).length;
         }
 
-        // Generar reporte de ventas
-        function generateSalesReport(orders) {
-            // Agrupar por día
-            const dailySales = {};
-            orders.forEach(order => {
-                const date = new Date(order.timestamp);
-                const dateStr = date.toISOString().split('T')[0];
-                
-                if (!dailySales[dateStr]) {
-                    dailySales[dateStr] = {
-                        date: dateStr,
-                        total: 0,
-                        orders: []
-                    };
-                }
-                
-                dailySales[dateStr].total += order.total;
-                dailySales[dateStr].orders.push(order);
-            });
+        function renderCharts(orders) {
+            // Chart 1: Pedidos por Estado
+            const statusCounts = { 'Pendiente': 0, 'Aceptado': 0, 'Completado': 0, 'Rechazado': 0 };
+            orders.forEach(o => statusCounts[o.status] = (statusCounts[o.status] || 0) + 1);
             
-            // Ordenar por fecha
-            const sortedDates = Object.values(dailySales)
-                .sort((a, b) => new Date(a.date) - new Date(b.date));
-            
-            // Actualizar tabla de pedidos
-            const ordersTableBody = document.querySelector('#ordersTable tbody');
-            ordersTableBody.innerHTML = '';
-            
-            orders.slice(0, 10).forEach(order => {
-                const date = new Date(order.timestamp);
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${order.id}</td>
-                    <td>${date.toLocaleDateString()}</td>
-                    <td>${order.customer}</td>
-                    <td>S/ ${order.total.toFixed(2)}</td>
-                    <td>${order.status}</td>
-                `;
-                ordersTableBody.appendChild(row);
-            });
-            
-            // Actualizar gráfico de ventas
-            if (salesChart) {
-                salesChart.destroy();
-            }
-            
-            const salesCtx = document.getElementById('salesChart').getContext('2d');
-            salesChart = new Chart(salesCtx, {
-                type: 'line',
-                data: {
-                    labels: sortedDates.map(d => d.date),
-                    datasets: [
-                        {
-                            label: 'Ventas Totales',
-                            data: sortedDates.map(d => d.total),
-                            borderColor: 'rgba(74, 124, 89, 1)',
-                            backgroundColor: 'rgba(74, 124, 89, 0.1)',
-                            borderWidth: 2,
-                            fill: true
-                        },
-                        {
-                            label: 'Número de Pedidos',
-                            data: sortedDates.map(d => d.orders.length),
-                            borderColor: 'rgba(141, 159, 135, 1)',
-                            backgroundColor: 'rgba(141, 159, 135, 0.1)',
-                            borderWidth: 2,
-                            fill: true
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
-        // Generar reporte de productos
-        function generateProductsReport() {
-            // Obtener todos los pedidos filtrados
-            const filteredOrders = getFilteredOrders();
-            
-            // Agrupar por producto
-            const productSales = {};
-            filteredOrders.forEach(order => {
-                order.items.forEach(item => {
-                    if (!productSales[item.id]) {
-                        productSales[item.id] = {
-                            name: item.name,
-                            quantity: 0,
-                            total: 0
-                        };
-                    }
-                    productSales[item.id].quantity += item.quantity;
-                    productSales[item.id].total += item.quantity * item.price;
-                });
-            });
-            
-            // Ordenar por cantidad vendida
-            const sortedProducts = Object.values(productSales)
-                .sort((a, b) => b.quantity - a.quantity);
-            
-            // Actualizar tabla de productos
-            const productsTableBody = document.querySelector('#productsTable tbody');
-            productsTableBody.innerHTML = '';
-            
-            const totalSales = sortedProducts.reduce((sum, p) => sum + p.total, 0);
-            
-            sortedProducts.forEach(product => {
-                const percentage = totalSales > 0 ? (product.total / totalSales * 100) : 0;
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${product.name}</td>
-                    <td>${product.quantity}</td>
-                    <td>S/ ${product.total.toFixed(2)}</td>
-                    <td>${percentage.toFixed(1)}%</td>
-                `;
-                productsTableBody.appendChild(row);
-            });
-            
-            // Actualizar gráfico de productos
-            if (productsChart) {
-                productsChart.destroy();
-            }
-            
-            const productsCtx = document.getElementById('productsChart').getContext('2d');
-            productsChart = new Chart(productsCtx, {
-                type: 'bar',
-                data: {
-                    labels: sortedProducts.slice(0, 10).map(p => p.name),
-                    datasets: [{
-                        label: 'Cantidad Vendida',
-                        data: sortedProducts.slice(0, 10).map(p => p.quantity),
-                        backgroundColor: 'rgba(74, 124, 89, 0.7)',
-                        borderColor: 'rgba(74, 124, 89, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
-        // Generar reporte de clientes
-        function generateCustomersReport() {
-            // Obtener todos los pedidos filtrados
-            const filteredOrders = getFilteredOrders();
-            
-            // Agrupar por cliente
-            const customerActivity = {};
-            filteredOrders.forEach(order => {
-                if (!customerActivity[order.userId]) {
-                    customerActivity[order.userId] = {
-                        name: order.customer,
-                        orders: 0,
-                        total: 0,
-                        lastOrder: new Date(0)
-                    };
-                }
-                customerActivity[order.userId].orders += 1;
-                customerActivity[order.userId].total += order.total;
-                
-                const orderDate = new Date(order.timestamp);
-                if (orderDate > customerActivity[order.userId].lastOrder) {
-                    customerActivity[order.userId].lastOrder = orderDate;
-                }
-            });
-            
-            // Ordenar por total gastado
-            const sortedCustomers = Object.values(customerActivity)
-                .sort((a, b) => b.total - a.total);
-            
-            // Actualizar tabla de clientes
-            const customersTableBody = document.querySelector('#customersTable tbody');
-            customersTableBody.innerHTML = '';
-            
-            sortedCustomers.forEach(customer => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${customer.name}</td>
-                    <td>${customer.orders}</td>
-                    <td>S/ ${customer.total.toFixed(2)}</td>
-                    <td>${customer.lastOrder.toLocaleDateString()}</td>
-                `;
-                customersTableBody.appendChild(row);
-            });
-            
-            // Actualizar gráfico de clientes
-            if (customersChart) {
-                customersChart.destroy();
-            }
-            
-            const customersCtx = document.getElementById('customersChart').getContext('2d');
-            customersChart = new Chart(customersCtx, {
-                type: 'bar',
-                data: {
-                    labels: sortedCustomers.slice(0, 10).map(c => c.name),
-                    datasets: [{
-                        label: 'Total Gastado (S/)',
-                        data: sortedCustomers.slice(0, 10).map(c => c.total),
-                        backgroundColor: 'rgba(208, 180, 159, 0.7)',
-                        borderColor: 'rgba(208, 180, 159, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
-        // Generar reporte de comparación
-        function generateComparisonReport() {
-            // Obtener todos los pedidos filtrados
-            const filteredOrders = getFilteredOrders();
-            
-            // Comparación entre tiendas
-            const storeComparison = {
-                'Con Precios': filteredOrders.reduce((sum, order) => sum + order.total, 0),
-                'Sin Precios': basicOrders.length * 50 // Valor estimado para pedidos básicos
-            };
-            
-            // Actualizar gráfico de comparación
-            if (comparisonChart) {
-                comparisonChart.destroy();
-            }
-            
-            const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
-            comparisonChart = new Chart(comparisonCtx, {
+            new Chart(document.getElementById('statusChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Tienda con Precios', 'Tienda sin Precios'],
+                    labels: Object.keys(statusCounts),
                     datasets: [{
-                        data: [storeComparison['Con Precios'], storeComparison['Sin Precios']],
-                        backgroundColor: ['rgba(74, 124, 89, 0.7)', 'rgba(141, 159, 135, 0.7)'],
-                        borderWidth: 1
+                        data: Object.values(statusCounts),
+                        backgroundColor: ['#ffc107', '#0d6efd', '#198754', '#dc3545']
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
+                options: { plugins: { title: { display: true, text: 'Distribución por Estado' } } }
             });
-            
-            // Comparación mensual
-            const monthlySales = Array(12).fill(0);
-            const monthlyBasicSales = Array(12).fill(0);
-            
-            // Procesar pedidos con precios
-            filteredOrders.forEach(order => {
-                const date = new Date(order.timestamp);
-                const month = date.getMonth();
-                monthlySales[month] += order.total;
+
+            // Chart 2: Pedidos por Fecha
+            const dateCounts = {};
+            orders.forEach(o => {
+                const date = new Date(o.timestamp).toLocaleDateString();
+                dateCounts[date] = (dateCounts[date] || 0) + 1;
             });
-            
-            // Procesar pedidos básicos (valor estimado)
-            basicOrders.forEach(order => {
-                const date = new Date(order.timestamp);
-                const month = date.getMonth();
-                monthlyBasicSales[month] += 50;
-            });
-            
-            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-            
-            // Actualizar gráfico mensual
-            if (monthlyChart) {
-                monthlyChart.destroy();
-            }
-            
-            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-            monthlyChart = new Chart(monthlyCtx, {
+
+            new Chart(document.getElementById('ordersChart'), {
                 type: 'bar',
                 data: {
-                    labels: months,
-                    datasets: [
-                        {
-                            label: 'Tienda con Precios',
-                            data: monthlySales,
-                            backgroundColor: 'rgba(74, 124, 89, 0.7)'
-                        },
-                        {
-                            label: 'Tienda sin Precios',
-                            data: monthlyBasicSales,
-                            backgroundColor: 'rgba(141, 159, 135, 0.7)'
-                        }
-                    ]
+                    labels: Object.keys(dateCounts),
+                    datasets: [{
+                        label: 'Pedidos por Día',
+                        data: Object.values(dateCounts),
+                        backgroundColor: '#4a7c59'
+                    }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
+                options: { plugins: { title: { display: true, text: 'Historial de Pedidos' } } }
             });
         }
 
-        // Función auxiliar para obtener pedidos filtrados
-        function getFilteredOrders() {
-            const dateRange = document.getElementById('date-range').value;
-            const productId = document.getElementById('product-filter').value;
-            
-            // Calcular fechas según rango seleccionado
-            let startDate, endDate = new Date();
-            
-            switch(dateRange) {
-                case '7':
-                    startDate = new Date();
-                    startDate.setDate(startDate.getDate() - 7);
-                    break;
-                case '30':
-                    startDate = new Date();
-                    startDate.setDate(startDate.getDate() - 30);
-                    break;
-                case '90':
-                    startDate = new Date();
-                    startDate.setDate(startDate.getDate() - 90);
-                    break;
-                case '365':
-                    startDate = new Date();
-                    startDate.setFullYear(startDate.getFullYear() - 1);
-                    break;
-                case 'custom':
-                    startDate = new Date(document.getElementById('start-date').value);
-                    endDate = new Date(document.getElementById('end-date').value);
-                    break;
-                default:
-                    startDate = new Date();
-                    startDate.setDate(startDate.getDate() - 7);
-            }
-            
-            // Filtrar pedidos por fecha
-            const filteredOrders = orders.filter(order => {
-                const orderDate = new Date(order.timestamp);
-                return orderDate >= startDate && orderDate <= endDate;
-            });
-            
-            // Filtrar por producto si está seleccionado
-            return productId ? 
-                filteredOrders.map(order => {
-                    const filteredItems = order.items.filter(item => item.id == productId);
-                    return filteredItems.length > 0 ? {...order, items: filteredItems} : null;
-                }).filter(order => order !== null) : 
-                filteredOrders;
-        }
-
-        // Función de logout
-        function logout() {
-            localStorage.removeItem('adminLoggedIn');
-            window.location.href = 'dashboard.html';
-        }
-
-        // Inicializar
-        document.addEventListener('DOMContentLoaded', () => {
-            if (localStorage.getItem('adminLoggedIn') !== 'true') {
-                window.location.href = 'dashboard.html';
-            }
-            
-            loadData();
-        });
+        document.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
 </html>
