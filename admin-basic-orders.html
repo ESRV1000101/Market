@@ -4,18 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>yü foods - Pedidos Básicos</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="admin.css">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
     <div id="access-denied" style="display: none;">
         <div class="login-container">
             <h2 style="color: #dc3545;">Acceso Denegado</h2>
-            <p>Debes iniciar sesión.</p>
-            <a href="dashboard.html" class="btn">Volver</a>
+            <p>Debes iniciar sesión desde el panel principal.</p>
+            <a href="dashboard.html" class="btn">
+                <i class="fas fa-arrow-left"></i> Volver al Dashboard
+            </a>
         </div>
     </div>
 
@@ -24,10 +27,12 @@
             <div class="admin-header-container">
                 <a href="dashboard.html" class="admin-logo">
                     <i class="fas fa-arrow-left"></i>
-                    <img src="img/logo.jpeg" alt="Logo" class="logo-image" style="width: 40px; height: 40px;">
+                    <img src="img/logo.jpeg" alt="yü foods Logo" class="logo-image" style="width: 40px; height: 40px;">
                     <span class="logo-text">Pedidos Básicos</span>
                 </a>
-                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</button>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
             </div>
         </div>
         
@@ -36,27 +41,85 @@
             
             <div class="admin-actions">
                 <div class="date-filter">
-                    <label>Filtrar:</label>
+                    <label>Filtrar por fecha:</label>
                     <input type="date" id="filter-start-date">
                     <span>a</span>
                     <input type="date" id="filter-end-date">
+                    
                     <select id="filter-status" class="form-input" style="width: auto;">
-                        <option value="">Todos</option>
+                        <option value="">Todos los estados</option>
                         <option value="Pendiente">Pendiente</option>
                         <option value="Aceptado">Aceptado</option>
                         <option value="Completado">Completado</option>
                         <option value="Rechazado">Rechazado</option>
                     </select>
-                    <button class="btn" onclick="applyFilters()">Buscar</button>
-                    <button class="btn btn-gray" onclick="clearFilters()">Limpiar</button>
+                    
+                    <button class="btn" onclick="applyFilters()">
+                        <i class="fas fa-filter"></i> Buscar
+                    </button>
+                    <button class="btn btn-gray" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Limpiar
+                    </button>
                 </div>
+                
                 <div style="display: flex; gap: 1rem;">
-                    <button class="btn btn-excel" id="download-excel-btn" style="display: none;" onclick="downloadExcel()">Excel</button>
-                    <button class="btn" onclick="hardRefresh()">Actualizar Total</button>
+                    <button class="btn btn-excel" id="download-excel-btn" style="display: none;" onclick="downloadExcel()">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                    <button class="btn" onclick="forceReload()" style="background-color: #d63384;">
+                        <i class="fas fa-sync-alt"></i> Recarga Forzada
+                    </button>
                 </div>
             </div>
             
             <div class="loader" id="admin-loader"></div>
+            
+            <div class="stats-container" id="stats-container">
+                <div class="stats-tabs">
+                    <button class="stats-tab active" onclick="showStatsTab('products-report')">
+                        <i class="fas fa-boxes"></i> Reporte de Productos
+                    </button>
+                    <button class="stats-tab" onclick="showStatsTab('status-report')">
+                        <i class="fas fa-chart-pie"></i> Estadísticas por Estado
+                    </button>
+                </div>
+                
+                <div id="products-report" class="stats-tab-content active">
+                    <div class="stat-card" style="margin-top: 1.5rem;">
+                        <div class="stat-label">Resumen de Productos Aceptados</div>
+                        <div id="products-report-content" style="margin-top: 1rem;">
+                            </div>
+                    </div>
+                </div>
+                
+                <div id="status-report" class="stats-tab-content">
+                    <div class="stat-card">
+                        <div class="stat-label">Pedidos Totales</div>
+                        <div class="stat-value" id="stat-total">0</div>
+                        <div class="stat-label">En el rango seleccionado</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Pendientes</div>
+                        <div class="stat-value" id="stat-pending">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Aceptados</div>
+                        <div class="stat-value" id="stat-accepted">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Completados</div>
+                        <div class="stat-value" id="stat-completed">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Rechazados</div>
+                        <div class="stat-value" id="stat-rejected">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container" id="chart-container">
+                <canvas id="orders-chart"></canvas>
+            </div>
             
             <div id="orders-section">
                 <div class="admin-actions" style="margin-top: 20px;">
@@ -65,26 +128,36 @@
                 </div>
                 
                 <div class="bulk-actions">
-                    <button class="btn btn-action" onclick="acceptAllPending()">Aceptar Pendientes</button>
-                    <button class="btn btn-action" onclick="completeAllAccepted()">Completar Aceptados</button>
+                    <button class="btn btn-action" onclick="acceptAllPending()">
+                        <i class="fas fa-check-circle"></i> Aceptar Todos los Pendientes
+                    </button>
+                    <button class="btn btn-action" onclick="completeAllAccepted()">
+                        <i class="fas fa-check-double"></i> Completar Todos los Aceptados
+                    </button>
                 </div>
                 
                 <table class="orders-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>ID Pedido</th>
                             <th>Fecha</th>
                             <th>Cliente</th>
-                            <th>Items</th>
+                            <th>Productos</th>
                             <th>Estado</th>
-                            <th>Acción</th>
+                            <th>Cambiar Estado</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="orders-body"></tbody>
+                    <tbody id="orders-body">
+                        </tbody>
                 </table>
+                
                 <div id="orders-pagination" class="pagination-container"></div>
+
                 <div id="empty-orders" class="empty-state" style="display: none;">
-                    <p>No se encontraron pedidos</p>
+                    <i class="fas fa-search"></i>
+                    <h3>No hay pedidos para mostrar</h3>
+                    <p>No se encontraron pedidos con los filtros seleccionados</p>
                 </div>
             </div>
         </div>
@@ -92,22 +165,34 @@
     
     <div class="modal-backdrop" id="order-details-modal">
         <div class="order-details">
-            <button class="close-modal" onclick="closeOrderDetails()"><i class="fas fa-times"></i></button>
-            <div id="order-details-content"></div>
+            <button class="close-modal" onclick="closeOrderDetails()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="order-details-content">
+                </div>
         </div>
     </div>
-    <div id="toast-container"></div>
+    
+    <div id="toast-container" aria-live="polite"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <script>
+        // CONFIGURACIÓN
         const PANTRY_ID = '18fe8ca9-204c-47d1-b0eb-b48cdd2d87aa';
         const BASKET_ORDERS = 'carritoCompra';
         const API_URL = `https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${BASKET_ORDERS}`;
         
+        // Variables globales
+        let ordersChart = null;
         let currentOrders = [];
+        let currentOrderDetailsId = null;
         let ordersCurrentPage = 1;
         const ordersPageSize = 10;
+        let productsCurrentPage = 1;
+        const productsPageSize = 10;
         
+        // --- CONTROL DE ACCESO ---
         function checkAccess() {
             if (localStorage.getItem('adminLoggedIn') !== 'true') {
                 document.getElementById('access-denied').style.display = 'block';
@@ -117,48 +202,77 @@
             return true;
         }
         
-        function showToast(msg, type='info') {
-            const c = document.getElementById('toast-container');
-            const t = document.createElement('div');
-            t.className = `toast toast-${type}`;
-            t.textContent = msg;
-            c.appendChild(t);
-            setTimeout(() => t.remove(), 3000);
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            window.location.href = 'dashboard.html';
+        }
+
+        // --- UTILIDADES ---
+        function showToast(message, type = 'info') {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
         }
         
-        function logout() { localStorage.removeItem('adminLoggedIn'); window.location.href = 'dashboard.html'; }
+        function showLoader() {
+            document.getElementById('admin-loader').style.display = 'block';
+            document.getElementById('orders-body').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">Cargando pedidos...</td></tr>';
+        }
         
-        function showLoader() { document.getElementById('admin-loader').style.display = 'block'; document.getElementById('orders-body').innerHTML = ''; }
-        function hideLoader() { document.getElementById('admin-loader').style.display = 'none'; }
+        function hideLoader() {
+            document.getElementById('admin-loader').style.display = 'none';
+        }
+
+        // --- API & DATA HANDLING ---
         
-        // --- API CON NO-CACHE ---
-        async function fetchOrders() {
+        // Función para recarga forzada (Borra caché y recarga)
+        function forceReload() {
+            showLoader();
+            // Añadimos un parámetro aleatorio para engañar al navegador y al servidor
+            loadFilteredOrders(true); 
+        }
+
+        async function fetchOrders(force = false) {
             try {
-                // Header 'no-store' es la clave para que no guarde caché
-                const response = await fetch(`${API_URL}?_t=${Date.now()}`, {
-                    headers: { 'Cache-Control': 'no-cache, no-store' }
+                // El timestamp asegura que la URL sea única cada vez
+                const timestamp = force ? Date.now() + '_forced' : Date.now();
+                const response = await fetch(`${API_URL}?_t=${timestamp}`, {
+                    headers: { 
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
                 });
-                
+
                 if (!response.ok) return [];
-                const data = await response.json();
                 
-                // Intentar leer orders o data plano
+                const data = await response.json();
+                // Pantry puede devolver { orders: [...] } o [...] directamente
                 let rawOrders = data.orders || data || [];
                 if (!Array.isArray(rawOrders)) rawOrders = [];
-                
-                // Filtro estricto de duplicados por ID
-                const unique = [];
-                const map = new Map();
-                // Ordenar inverso (los más nuevos primero en el array original suelen ser los válidos si hay dupes)
-                for (const item of rawOrders.reverse()) {
-                    if (item.id && !map.has(item.id)) {
-                        map.set(item.id, true);
-                        unique.push(item);
+
+                // LIMPIEZA DE DUPLICADOS:
+                // Creamos un mapa usando el ID como clave. Si el ID se repite, se sobrescribe.
+                // Esto elimina duplicados visuales inmediatamente.
+                const uniqueOrdersMap = new Map();
+                rawOrders.forEach(order => {
+                    if (order.id) {
+                        uniqueOrdersMap.set(order.id, order);
                     }
-                }
-                return unique; // Ya están en orden inverso
+                });
+                
+                return Array.from(uniqueOrdersMap.values());
             } catch (error) {
-                console.error(error);
+                console.error('Error al obtener pedidos:', error);
+                showToast('Error de conexión.', 'error');
                 return [];
             }
         }
@@ -171,172 +285,302 @@
                     body: JSON.stringify({ orders })
                 });
                 return { success: true };
-            } catch (error) { return { success: true }; } // Ignore CORS
-        }
-        
-        async function hardRefresh() {
-            loadFilteredOrders();
+            } catch (error) {
+                console.warn("CORS ignorado", error);
+                return { success: true };
+            }
         }
 
-        async function loadFilteredOrders() {
+        // --- LÓGICA DE FILTROS Y RENDERIZADO ---
+
+        async function loadFilteredOrders(force = false) {
             showLoader();
-            const orders = await fetchOrders();
-            
-            const start = document.getElementById('filter-start-date').value;
-            const end = document.getElementById('filter-end-date').value;
-            const status = document.getElementById('filter-status').value;
-            
-            let filtered = orders.filter(o => {
-                if(status && o.status !== status) return false;
-                if(start || end) {
-                    const d = new Date(o.timestamp);
-                    if(start && d < new Date(start)) return false;
-                    if(end) {
-                        const e = new Date(end); e.setHours(23,59,59);
-                        if(d > e) return false;
-                    }
+            try {
+                const orders = await fetchOrders(force);
+                
+                const startDateInput = document.getElementById('filter-start-date').value;
+                const endDateInput = document.getElementById('filter-end-date').value;
+                const statusFilter = document.getElementById('filter-status').value;
+
+                let filteredOrders = orders;
+
+                // Filtrado por Fecha
+                if (startDateInput || endDateInput) {
+                    filteredOrders = filteredOrders.filter(order => {
+                        const orderDate = new Date(order.timestamp);
+                        if (startDateInput) {
+                            const start = new Date(startDateInput); start.setHours(0,0,0,0);
+                            if (orderDate < start) return false;
+                        }
+                        if (endDateInput) {
+                            const end = new Date(endDateInput); end.setHours(23,59,59,999);
+                            if (orderDate > end) return false;
+                        }
+                        return true;
+                    });
                 }
-                return true;
-            });
-            
-            currentOrders = filtered;
-            renderOrders(filtered);
-            hideLoader();
-            
-            document.getElementById('download-excel-btn').style.display = filtered.length ? 'inline-block' : 'none';
-            document.getElementById('orders-count').textContent = `${filtered.length} pedidos`;
-            document.getElementById('empty-orders').style.display = filtered.length ? 'none' : 'block';
+
+                // Filtrado por Estado
+                if (statusFilter) {
+                    filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
+                }
+
+                // Ordenar: Más recientes primero
+                filteredOrders.sort((a, b) => b.timestamp - a.timestamp);
+
+                currentOrders = filteredOrders;
+                
+                renderOrders(filteredOrders);
+                updateStats(filteredOrders);
+                createOrdersChart(filteredOrders);
+                loadProductsReport(); // Carga reporte de productos
+                
+                hideLoader();
+
+                // UI Updates
+                document.getElementById('download-excel-btn').style.display = filteredOrders.length > 0 ? 'inline-block' : 'none';
+                document.getElementById('orders-count').innerHTML = `<span style="background: var(--accent); padding: 4px 8px; border-radius: 20px;">${filteredOrders.length} pedidos</span>`;
+                document.getElementById('empty-orders').style.display = filteredOrders.length === 0 ? 'block' : 'none';
+
+            } catch (error) {
+                console.error(error);
+                hideLoader();
+            }
         }
-        
+
         function renderOrders(orders) {
             const tbody = document.getElementById('orders-body');
             tbody.innerHTML = '';
             
-            // Ordenar por fecha descendente
-            orders.sort((a, b) => b.timestamp - a.timestamp);
-            
-            const pages = Math.ceil(orders.length / ordersPageSize);
-            if (ordersCurrentPage > pages) ordersCurrentPage = 1;
-            
-            const pageOrders = orders.slice((ordersCurrentPage-1)*ordersPageSize, ordersCurrentPage*ordersPageSize);
-            
-            pageOrders.forEach(o => {
+            if (orders.length === 0) return;
+
+            // Paginación
+            const totalPages = Math.ceil(orders.length / ordersPageSize);
+            if (ordersCurrentPage > totalPages) ordersCurrentPage = 1;
+            const startIdx = (ordersCurrentPage - 1) * ordersPageSize;
+            const pageOrders = orders.slice(startIdx, startIdx + ordersPageSize);
+
+            pageOrders.forEach(order => {
+                let statusClass = 'order-status ';
+                switch(order.status) {
+                    case 'Pendiente': statusClass += 'status-pendiente'; break;
+                    case 'Aceptado': statusClass += 'status-aceptado'; break;
+                    case 'Completado': statusClass += 'status-completado'; break;
+                    case 'Rechazado': statusClass += 'status-rechazado'; break;
+                    default: statusClass += 'status-pendiente';
+                }
+
+                const itemsCount = order.items ? order.items.length : 0;
+                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${o.id}</td>
-                    <td>${o.date}</td>
-                    <td>${o.customer}</td>
-                    <td>${o.items.length}</td>
+                    <td>${order.id}</td>
+                    <td>${order.date}</td>
+                    <td>${order.customer}</td>
+                    <td>${itemsCount} items</td>
+                    <td><span class="${statusClass}">${order.status}</span></td>
                     <td>
-                        <select onchange="updateStatus('${o.id}', this.value)" class="form-input" style="margin:0; padding: 4px;">
-                            <option value="Pendiente" ${o.status=='Pendiente'?'selected':''}>Pendiente</option>
-                            <option value="Aceptado" ${o.status=='Aceptado'?'selected':''}>Aceptado</option>
-                            <option value="Completado" ${o.status=='Completado'?'selected':''}>Completado</option>
-                            <option value="Rechazado" ${o.status=='Rechazado'?'selected':''}>Rechazado</option>
+                        <select class="form-input" style="margin:0; padding:5px" onchange="saveOrderStatus('${order.id}', this.value)">
+                            <option value="Pendiente" ${order.status === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+                            <option value="Aceptado" ${order.status === 'Aceptado' ? 'selected' : ''}>Aceptado</option>
+                            <option value="Completado" ${order.status === 'Completado' ? 'selected' : ''}>Completado</option>
+                            <option value="Rechazado" ${order.status === 'Rechazado' ? 'selected' : ''}>Rechazado</option>
                         </select>
                     </td>
                     <td>
-                        <button class="action-btn" onclick="viewDetails('${o.id}')"><i class="fas fa-eye"></i></button>
-                        <button class="action-btn" onclick="deleteOrder('${o.id}')" style="background:#dc3545"><i class="fas fa-trash"></i></button>
+                        <button class="action-btn" onclick="viewOrderDetails('${order.id}')"><i class="fas fa-eye"></i></button>
+                        <button class="action-btn" onclick="deleteOrder('${order.id}')" style="background-color:#dc3545"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
-            renderPagination(orders.length);
-        }
-        
-        function renderPagination(total) {
-            const div = document.getElementById('orders-pagination');
-            const pages = Math.ceil(total / ordersPageSize);
-            if(pages <= 1) { div.innerHTML = ''; return; }
             
+            renderOrdersPagination(orders.length);
+        }
+
+        function renderOrdersPagination(totalItems) {
+            const container = document.getElementById('orders-pagination');
+            const totalPages = Math.ceil(totalItems / ordersPageSize);
+            
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+
             let html = '';
-            for(let i=1; i<=pages; i++) {
-                html += `<button class="pagination-btn ${i===ordersCurrentPage?'active':''}" onclick="ordersCurrentPage=${i}; renderOrders(currentOrders)">${i}</button>`;
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button class="pagination-btn${i === ordersCurrentPage ? ' active' : ''}" onclick="ordersCurrentPage=${i}; renderOrders(currentOrders)">${i}</button>`;
             }
-            div.innerHTML = html;
+            container.innerHTML = html;
         }
-        
-        async function updateStatus(id, newStatus) {
-            const orders = await fetchOrders(); // Traer versión fresca antes de editar
-            const idx = orders.findIndex(o => o.id === id);
-            if(idx > -1) {
-                orders[idx].status = newStatus;
-                await saveOrdersToCloud(orders);
-                showToast('Estado actualizado');
-                // No recargamos todo para no perder la posición, solo feedback visual
-            }
+
+        // --- ACCIONES (Borrar, Actualizar) ---
+
+        async function saveOrderStatus(orderId, newStatus) {
+            // Actualizamos localmente primero para UI rápida
+            const order = currentOrders.find(o => o.id === orderId);
+            if(order) order.status = newStatus;
+            
+            // Guardamos en la nube la lista completa
+            await saveOrdersToCloud(currentOrders);
+            showToast('Estado actualizado');
+            updateStats(currentOrders); // Actualizar gráficas sin recargar todo
         }
-        
-        async function deleteOrder(id) {
-            if(!confirm('¿Eliminar pedido de verdad?')) return;
-            showLoader();
+
+        async function deleteOrder(orderId) {
+            if (!confirm(`¿Eliminar pedido #${orderId}?`)) return;
             
-            // 1. Traer lista fresca
-            let orders = await fetchOrders();
-            // 2. Filtrar
-            const initialCount = orders.length;
-            orders = orders.filter(o => o.id !== id);
+            // 1. Eliminamos del array local visualmente
+            currentOrders = currentOrders.filter(o => o.id !== orderId);
+            renderOrders(currentOrders); // Actualizamos tabla
             
-            if (orders.length === initialCount) {
-                hideLoader();
-                showToast('El pedido ya no existía', 'warning');
-                loadFilteredOrders();
+            // 2. Guardamos la nueva lista en la nube
+            await saveOrdersToCloud(currentOrders);
+            
+            showToast('Pedido eliminado');
+            
+            // 3. Forzamos una actualización "silenciosa" del reporte
+            setTimeout(() => updateStats(currentOrders), 500);
+        }
+
+        // --- ESTADÍSTICAS Y GRÁFICOS (Restaurados) ---
+
+        function updateStats(orders) {
+            document.getElementById('stat-total').textContent = orders.length;
+            document.getElementById('stat-pending').textContent = orders.filter(o => o.status === 'Pendiente').length;
+            document.getElementById('stat-accepted').textContent = orders.filter(o => o.status === 'Aceptado').length;
+            document.getElementById('stat-completed').textContent = orders.filter(o => o.status === 'Completado').length;
+            document.getElementById('stat-rejected').textContent = orders.filter(o => o.status === 'Rechazado').length;
+        }
+
+        function createOrdersChart(orders) {
+            const ctx = document.getElementById('orders-chart').getContext('2d');
+            if (ordersChart) ordersChart.destroy();
+            
+            if (orders.length === 0) return;
+            
+            const ordersByDay = {};
+            orders.forEach(order => {
+                const date = new Date(order.timestamp);
+                const dayKey = `${date.getDate()}/${date.getMonth() + 1}`;
+                ordersByDay[dayKey] = (ordersByDay[dayKey] || 0) + 1;
+            });
+            
+            ordersChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(ordersByDay),
+                    datasets: [{
+                        label: 'Pedidos por día',
+                        data: Object.values(ordersByDay),
+                        backgroundColor: 'rgba(74, 124, 89, 0.7)'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function showStatsTab(tabId) {
+            document.querySelectorAll('.stats-tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.stats-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            if(tabId === 'products-report') loadProductsReport();
+        }
+
+        function loadProductsReport() {
+            const container = document.getElementById('products-report-content');
+            const accepted = currentOrders.filter(o => o.status === 'Aceptado');
+            
+            if (accepted.length === 0) {
+                container.innerHTML = '<p>No hay pedidos aceptados en este rango.</p>';
                 return;
             }
 
-            // 3. Guardar
-            await saveOrdersToCloud(orders);
+            const productsMap = {};
+            accepted.forEach(order => {
+                order.items.forEach(item => {
+                    const key = `${item.name}-${item.unit}`;
+                    if(!productsMap[key]) productsMap[key] = {name: item.name, unit: item.unit, qty: 0};
+                    productsMap[key].qty += item.quantity;
+                });
+            });
+
+            const list = Object.values(productsMap).sort((a,b) => b.qty - a.qty);
             
-            // 4. Esperar y Recargar forzosamente
-            setTimeout(() => {
-                loadFilteredOrders();
-                showToast('Pedido eliminado definitivamente');
-            }, 1000);
+            // Renderizar tabla simple
+            let html = '<table class="orders-table"><thead><tr><th>Producto</th><th>Unidad</th><th>Total</th></tr></thead><tbody>';
+            list.forEach(p => {
+                html += `<tr><td>${p.name}</td><td>${p.unit}</td><td>${p.qty.toFixed(2)}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
         }
+
+        // --- EXTRAS: DETALLES, EXCEL, MASIVOS ---
         
-        async function acceptAllPending() {
-            if(!confirm('¿Aceptar todos los pendientes?')) return;
-            const orders = await fetchOrders();
-            let change = false;
-            orders.forEach(o => { if(o.status === 'Pendiente') { o.status = 'Aceptado'; change = true; }});
-            if(change) { await saveOrdersToCloud(orders); loadFilteredOrders(); }
-        }
-        
-        async function completeAllAccepted() {
-            if(!confirm('¿Completar todos los aceptados?')) return;
-            const orders = await fetchOrders();
-            let change = false;
-            orders.forEach(o => { if(o.status === 'Aceptado') { o.status = 'Completado'; change = true; }});
-            if(change) { await saveOrdersToCloud(orders); loadFilteredOrders(); }
-        }
-        
-        // Detalles
-        function viewDetails(id) {
+        function viewOrderDetails(id) {
             const o = currentOrders.find(x => x.id === id);
             if(!o) return;
             document.getElementById('order-details-content').innerHTML = `
-                <h3>Pedido ${o.id}</h3>
+                <h3>Pedido #${o.id}</h3>
                 <p><b>Cliente:</b> ${o.customer}</p>
                 <p><b>Tel:</b> ${o.phone}</p>
                 <p><b>Dir:</b> ${o.address}</p>
                 <p><b>Nota:</b> ${o.notes || '-'}</p>
                 <hr>
-                ${o.items.map(i => `<div>${i.name} - ${i.quantity} ${i.unit}</div>`).join('')}
+                ${o.items.map(i => `<div>- ${i.name}: ${i.quantity} ${i.unit}</div>`).join('')}
             `;
             document.getElementById('order-details-modal').classList.add('active');
         }
-        
         function closeOrderDetails() { document.getElementById('order-details-modal').classList.remove('active'); }
-        function downloadExcel() { alert('Función disponible en versión escritorio completa'); } // Simplificado para mobile
-        
-        function applyFilters() { ordersCurrentPage=1; loadFilteredOrders(); }
-        function clearFilters() { document.getElementById('filter-status').value=''; loadFilteredOrders(); }
-        function refreshOrders() { loadFilteredOrders(); }
 
+        async function acceptAllPending() {
+            if(!confirm('¿Aceptar todos?')) return;
+            currentOrders.forEach(o => { if(o.status === 'Pendiente') o.status = 'Aceptado'; });
+            await saveOrdersToCloud(currentOrders);
+            loadFilteredOrders(true);
+        }
+        
+        async function completeAllAccepted() {
+            if(!confirm('¿Completar todos?')) return;
+            currentOrders.forEach(o => { if(o.status === 'Aceptado') o.status = 'Completado'; });
+            await saveOrdersToCloud(currentOrders);
+            loadFilteredOrders(true);
+        }
+
+        // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
-            if(checkAccess()) loadFilteredOrders();
+            if (checkAccess()) {
+                loadFilteredOrders();
+            }
+            // Funciones de filtros
+            window.applyFilters = () => loadFilteredOrders();
+            window.clearFilters = () => {
+                document.getElementById('filter-start-date').value = '';
+                document.getElementById('filter-end-date').value = '';
+                document.getElementById('filter-status').value = '';
+                loadFilteredOrders();
+            };
+            window.refreshOrders = () => loadFilteredOrders(true);
         });
+        
+        function downloadExcel() {
+             const accepted = currentOrders.filter(o => o.status === 'Aceptado');
+             if(accepted.length === 0) return alert('No hay pedidos aceptados');
+             
+             // Lógica simplificada de excel
+             const data = [['Producto', 'Unidad', 'Total']];
+             const map = {};
+             accepted.forEach(o => o.items.forEach(i => {
+                 const k = i.name+i.unit;
+                 if(!map[k]) map[k] = {n: i.name, u: i.unit, q:0};
+                 map[k].q += i.quantity;
+             }));
+             Object.values(map).forEach(v => data.push([v.n, v.u, v.q]));
+             
+             const ws = XLSX.utils.aoa_to_sheet(data);
+             const wb = XLSX.utils.book_new();
+             XLSX.utils.book_append_sheet(wb, ws, "Resumen");
+             XLSX.writeFile(wb, "Reporte.xlsx");
+        }
     </script>
 </body>
 </html>
