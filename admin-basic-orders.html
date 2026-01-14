@@ -113,7 +113,8 @@
                             <th>Cliente</th>
                             <th>Items</th>
                             <th>Estado</th>
-                            <th>Acción</th>
+                            <th>Cambiar Estado</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="orders-body"></tbody>
@@ -145,11 +146,9 @@
         let currentOrders = [];
         let currentOrderDetailsId = null;
         
-        // Paginación de PEDIDOS
+        // Paginación
         let ordersCurrentPage = 1;
         const ordersPageSize = 10;
-        
-        // Paginación de PRODUCTOS (RESTAURADA)
         let productsCurrentPage = 1;
         const productsPageSize = 10;
         
@@ -175,10 +174,9 @@
         
         function forceReload() { loadFilteredOrders(true); }
 
-        // --- API ANTI-CACHÉ ---
+        // --- API ---
         async function fetchOrders(force = false) {
             try {
-                // cache: 'no-store' obliga al navegador a ir a la red
                 const response = await fetch(`${API_URL}?_t=${Date.now()}`, {
                     cache: 'no-store',
                     headers: { 
@@ -193,7 +191,7 @@
                 let rawOrders = data.orders || data || [];
                 if (!Array.isArray(rawOrders)) rawOrders = [];
 
-                // LIMPIEZA ESTRICTA DE DUPLICADOS POR ID
+                // Deduplicación estricta por ID
                 const uniqueOrdersMap = new Map();
                 rawOrders.forEach(order => {
                     if (order.id) uniqueOrdersMap.set(order.id, order);
@@ -227,7 +225,6 @@
             const end = document.getElementById('filter-end-date').value;
             const status = document.getElementById('filter-status').value;
             
-            // Lógica para el gráfico: ¿Están los filtros de fecha vacíos?
             const isDateFilterEmpty = !start && !end;
 
             let filtered = orders.filter(o => {
@@ -240,18 +237,13 @@
                 return true;
             });
             
-            // Ordenar: Más recientes primero
             filtered.sort((a, b) => b.timestamp - a.timestamp);
-            
             currentOrders = filtered;
             
             renderOrders(filtered);
             updateStats(filtered);
-            
-            // GRÁFICO: Pasamos el flag si no hay fechas seleccionadas
             createOrdersChart(filtered, isDateFilterEmpty);
             
-            // PRODUCTOS: Reseteamos página a 1 al cargar nuevos datos
             productsCurrentPage = 1;
             loadProductsReport();
             
@@ -262,16 +254,18 @@
             document.getElementById('empty-orders').style.display = filtered.length ? 'none' : 'block';
         }
 
-        // --- RENDERIZADO DE PEDIDOS ---
+        // --- RENDERIZADO TABLA ---
         function renderOrders(orders) {
             const tbody = document.getElementById('orders-body');
             tbody.innerHTML = '';
             
+            if (orders.length === 0) return;
+
             const pages = Math.ceil(orders.length / ordersPageSize);
             if (ordersCurrentPage > pages) ordersCurrentPage = 1;
             
             const pageOrders = orders.slice((ordersCurrentPage-1)*ordersPageSize, ordersCurrentPage*ordersPageSize);
-            
+
             pageOrders.forEach(o => {
                 let statusClass = 'order-status status-' + o.status.toLowerCase();
                 const tr = document.createElement('tr');
@@ -282,29 +276,42 @@
                     <td>${o.items ? o.items.length : 0} items</td>
                     <td><span class="${statusClass}">${o.status}</span></td>
                     <td>
-                        <button class="action-btn" onclick="viewDetails('${o.id}')"><i class="fas fa-eye"></i></button>
-                        <button class="action-btn" onclick="deleteOrder('${o.id}')" style="background-color:#dc3545"><i class="fas fa-trash"></i></button>
+                        <select class="form-input" id="status-${o.id}" style="margin:0; padding:5px">
+                            <option value="Pendiente" ${o.status === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+                            <option value="Aceptado" ${o.status === 'Aceptado' ? 'selected' : ''}>Aceptado</option>
+                            <option value="Completado" ${o.status === 'Completado' ? 'selected' : ''}>Completado</option>
+                            <option value="Rechazado" ${o.status === 'Rechazado' ? 'selected' : ''}>Rechazado</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="action-btn" onclick="viewDetails('${o.id}')" title="Ver"><i class="fas fa-eye"></i></button>
+                        <button class="action-btn" onclick="saveOrderStatus('${o.id}')" title="Guardar Estado"><i class="fas fa-save"></i></button>
+                        <button class="action-btn" onclick="deleteOrder('${o.id}')" style="background-color:#dc3545" title="Eliminar"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
             
-            // Paginación Pedidos
-            const div = document.getElementById('orders-pagination');
-            div.innerHTML = '';
-            if(pages > 1) {
-                for(let i=1; i<=pages; i++) {
-                    div.innerHTML += `<button class="pagination-btn ${i===ordersCurrentPage?'active':''}" onclick="ordersCurrentPage=${i}; renderOrders(currentOrders)">${i}</button>`;
-                }
-            }
+            renderOrdersPagination(orders.length);
         }
 
-        // --- REPORTE DE PRODUCTOS (CON PAGINACIÓN) ---
+        function renderOrdersPagination(totalItems) {
+            const container = document.getElementById('orders-pagination');
+            const totalPages = Math.ceil(totalItems / ordersPageSize);
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+            let html = '';
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button class="pagination-btn${i === ordersCurrentPage ? ' active' : ''}" onclick="ordersCurrentPage=${i}; renderOrders(currentOrders)">${i}</button>`;
+            }
+            container.innerHTML = html;
+        }
+
+        // --- REPORTE DE PRODUCTOS (CORREGIDO UNDEFINED) ---
         function loadProductsReport() {
             const container = document.getElementById('products-report-content');
             const controls = document.getElementById('products-pagination-controls');
             
-            // Filtrar solo aceptados
             const accepted = currentOrders.filter(o => o.status === 'Aceptado');
             
             if (accepted.length === 0) {
@@ -316,15 +323,15 @@
             const map = {};
             accepted.forEach(o => {
                 if(o.items) o.items.forEach(i => {
+                    // CORRECCIÓN: Usar nombres consistentes para evitar undefined
                     const k = i.name + i.unit;
-                    if(!map[k]) map[k] = {n: i.name, u: i.unit, q:0};
-                    map[k].q += i.quantity;
+                    if(!map[k]) map[k] = {name: i.name, unit: i.unit, quantity: 0};
+                    map[k].quantity += i.quantity;
                 });
             });
 
-            let list = Object.values(map).sort((a,b) => b.q - a.q);
+            let list = Object.values(map).sort((a,b) => b.quantity - a.quantity);
             
-            // Lógica de Paginación de Productos
             const totalPages = Math.ceil(list.length / productsPageSize);
             if (productsCurrentPage > totalPages) productsCurrentPage = 1;
             
@@ -334,12 +341,12 @@
 
             let html = '<table class="orders-table"><thead><tr><th>Producto</th><th>Unidad</th><th>Total</th></tr></thead><tbody>';
             pageList.forEach(p => {
-                html += `<tr><td>${p.name}</td><td>${p.unit}</td><td>${p.q.toFixed(2)}</td></tr>`;
+                // CORRECCIÓN: Usar p.name, p.unit, p.quantity
+                html += `<tr><td>${p.name}</td><td>${p.unit}</td><td>${p.quantity.toFixed(2)}</td></tr>`;
             });
             html += '</tbody></table>';
             container.innerHTML = html;
 
-            // Renderizar Botones Paginación Productos
             let paginationHtml = '';
             if (totalPages > 1) {
                 paginationHtml += `<button class="pagination-btn" onclick="productsCurrentPage--; loadProductsReport()" ${productsCurrentPage===1?'disabled':''}>&laquo;</button>`;
@@ -349,29 +356,58 @@
             controls.innerHTML = paginationHtml;
         }
 
-        // --- GRÁFICO (LÓGICA 30 DÍAS) ---
+        // --- ACCIONES ---
+        async function saveOrderStatus(orderId) {
+            // Leer el valor del select específico de esa fila
+            const selectElement = document.getElementById(`status-${orderId}`);
+            if(!selectElement) return;
+            
+            const newStatus = selectElement.value;
+            
+            // Actualizar en memoria local
+            const order = currentOrders.find(o => o.id === orderId);
+            if(order) order.status = newStatus;
+            
+            // Guardar en nube
+            await saveOrdersToCloud(currentOrders);
+            
+            showToast('Estado actualizado');
+            renderOrders(currentOrders); // Re-renderizar para actualizar colores
+            updateStats(currentOrders); // Actualizar stats
+            loadProductsReport(); // Actualizar reporte si cambió de Aceptado
+        }
+
+        async function deleteOrder(id) {
+            if (!confirm(`¿Eliminar pedido?`)) return;
+            showLoader();
+            let orders = await fetchOrders(true);
+            const newOrders = orders.filter(o => o.id !== id);
+            
+            await saveOrdersToCloud(newOrders);
+            
+            setTimeout(() => {
+                loadFilteredOrders(true);
+                showToast('Pedido eliminado');
+            }, 500);
+        }
+
         function createOrdersChart(orders, showLastMonthOnly = false) {
             const ctx = document.getElementById('orders-chart').getContext('2d');
             if (ordersChart) ordersChart.destroy();
             
             let dataToChart = orders;
-
-            // Si no hay filtro activo, cortar a 30 días
             if (showLastMonthOnly) {
                 const thirtyDaysAgo = new Date();
                 thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
                 thirtyDaysAgo.setHours(0,0,0,0);
-                
                 dataToChart = orders.filter(o => new Date(o.timestamp) >= thirtyDaysAgo);
             }
             
             if (dataToChart.length === 0) return;
             
             const byDay = {};
-            // Ordenar cronológicamente para el gráfico (ascendente)
-            const sortedForChart = [...dataToChart].sort((a, b) => a.timestamp - b.timestamp);
-
-            sortedForChart.forEach(o => {
+            const sorted = [...dataToChart].sort((a, b) => a.timestamp - b.timestamp);
+            sorted.forEach(o => {
                 const d = new Date(o.timestamp);
                 const key = `${d.getDate()}/${d.getMonth()+1}`;
                 byDay[key] = (byDay[key] || 0) + 1;
@@ -382,42 +418,23 @@
                 data: {
                     labels: Object.keys(byDay),
                     datasets: [{
-                        label: showLastMonthOnly ? 'Pedidos (Últimos 30 días)' : 'Pedidos (Rango seleccionado)',
+                        label: showLastMonthOnly ? 'Pedidos (Últimos 30 días)' : 'Pedidos',
                         data: Object.values(byDay),
                         backgroundColor: 'rgba(74, 124, 89, 0.7)'
                     }]
                 },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
             });
-        }
-
-        // --- ACCIONES Y EXTRAS ---
-        function updateStats(orders) {
-            document.getElementById('stat-total').textContent = orders.length;
-            document.getElementById('stat-pending').textContent = orders.filter(o => o.status === 'Pendiente').length;
-            document.getElementById('stat-accepted').textContent = orders.filter(o => o.status === 'Aceptado').length;
-            document.getElementById('stat-completed').textContent = orders.filter(o => o.status === 'Completado').length;
-            document.getElementById('stat-rejected').textContent = orders.filter(o => o.status === 'Rechazado').length;
-        }
-
-        function showStatsTab(tabId) {
-            document.querySelectorAll('.stats-tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.stats-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
         }
 
         function viewDetails(id) {
             const o = currentOrders.find(x => x.id === id);
             if(!o) return;
             document.getElementById('order-details-content').innerHTML = `
-                <h3>Pedido ${o.id}</h3>
+                <h3>Pedido #${o.id}</h3>
                 <p><b>Cliente:</b> ${o.customer}</p>
-                <p><b>Dir:</b> ${o.address} | <b>Tel:</b> ${o.phone}</p>
+                <p><b>Tel:</b> ${o.phone}</p>
+                <p><b>Dir:</b> ${o.address}</p>
                 <p><b>Nota:</b> ${o.notes || '-'}</p>
                 <hr>
                 ${(o.items||[]).map(i => `<div>- ${i.name}: ${i.quantity} ${i.unit}</div>`).join('')}
@@ -425,19 +442,6 @@
             document.getElementById('order-details-modal').classList.add('active');
         }
         function closeOrderDetails() { document.getElementById('order-details-modal').classList.remove('active'); }
-
-        async function deleteOrder(id) {
-            if(!confirm('¿Eliminar pedido?')) return;
-            showLoader();
-            // 1. Fetch fresco
-            let orders = await fetchOrders(true);
-            // 2. Filtrar
-            const newOrders = orders.filter(o => o.id !== id);
-            // 3. Guardar
-            await saveOrdersToCloud(newOrders);
-            // 4. Recargar
-            setTimeout(() => loadFilteredOrders(true), 500);
-        }
 
         async function acceptAllPending() {
             if(!confirm('¿Aceptar todos?')) return;
@@ -455,6 +459,30 @@
             loadFilteredOrders(true);
         }
 
+        // Stats UI helpers
+        function updateStats(orders) {
+            document.getElementById('stat-total').textContent = orders.length;
+            document.getElementById('stat-pending').textContent = orders.filter(o => o.status === 'Pendiente').length;
+            document.getElementById('stat-accepted').textContent = orders.filter(o => o.status === 'Aceptado').length;
+            document.getElementById('stat-completed').textContent = orders.filter(o => o.status === 'Completado').length;
+            document.getElementById('stat-rejected').textContent = orders.filter(o => o.status === 'Rechazado').length;
+        }
+        function showStatsTab(tabId) {
+            document.querySelectorAll('.stats-tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.stats-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            if(tabId === 'products-report') loadProductsReport();
+        }
+        function applyFilters() { ordersCurrentPage=1; loadFilteredOrders(); }
+        function clearFilters() { 
+            document.getElementById('filter-start-date').value = '';
+            document.getElementById('filter-end-date').value = '';
+            document.getElementById('filter-status').value = '';
+            loadFilteredOrders(); 
+        }
+        function refreshOrders() { loadFilteredOrders(true); }
+        
         function downloadExcel() {
              const accepted = currentOrders.filter(o => o.status === 'Aceptado');
              if(accepted.length === 0) return alert('No hay pedidos aceptados');
@@ -471,15 +499,6 @@
              XLSX.utils.book_append_sheet(wb, ws, "Resumen");
              XLSX.writeFile(wb, "Reporte.xlsx");
         }
-
-        function applyFilters() { ordersCurrentPage=1; loadFilteredOrders(); }
-        function clearFilters() { 
-            document.getElementById('filter-start-date').value = '';
-            document.getElementById('filter-end-date').value = '';
-            document.getElementById('filter-status').value = '';
-            loadFilteredOrders(); 
-        }
-        function refreshOrders() { loadFilteredOrders(true); }
 
         document.addEventListener('DOMContentLoaded', () => {
             if(checkAccess()) loadFilteredOrders();
