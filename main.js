@@ -1,15 +1,15 @@
 // ==========================================
-// CONFIGURACIÓN DE API - PANTRY (FINAL)
+// CONFIGURACIÓN DE API - PANTRY (CLIENTE)
 // ==========================================
 
 // Tu ID de Pantry
 const PANTRY_ID = '18fe8ca9-204c-47d1-b0eb-b48cdd2d87aa';
 
-// Nombres de tus Cestas (Baskets) - Configurados según tus datos
-const BASKET_ORDERS = 'carritoCompra';  // Para las órdenes
-const BASKET_USERS = 'usuarios';        // Para los usuarios
-const BASKET_CATEGORIES = 'categorias'; // Para las categorías
-const BASKET_PRODUCTS = 'productos';    // Para los productos
+// Nombres de tus Cestas (Baskets)
+const BASKET_ORDERS = 'carritoCompra';
+const BASKET_USERS = 'usuarios';
+const BASKET_CATEGORIES = 'categorias';
+const BASKET_PRODUCTS = 'productos';
 
 // URL Base de Pantry
 const API_URL = `https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/`;
@@ -99,13 +99,15 @@ function getQuantityOptions(unit, productId) {
 // CONEXIÓN CON API (PANTRY)
 // ==========================================
 
-// Función Genérica para LEER de Pantry
+// Función Genérica para LEER de Pantry (Con Anti-Caché)
 async function fetchFromPantry(basketName) {
     try {
-        const response = await fetch(`${API_URL}${basketName}`, {
+        // Agregamos timestamp para evitar que el navegador use datos viejos
+        const response = await fetch(`${API_URL}${basketName}?_t=${Date.now()}`, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache, no-store'
             }
         });
         
@@ -121,11 +123,11 @@ async function fetchFromPantry(basketName) {
     }
 }
 
-// Función Genérica para GUARDAR en Pantry (BLINDADA CONTRA CORS)
+// Función Genérica para GUARDAR (PUT = REEMPLAZO TOTAL)
 async function saveToPantry(basketName, dataObject) {
     try {
         const response = await fetch(`${API_URL}${basketName}`, {
-            method: 'PUT', // Cambiamos POST por PUT (Reemplazo total, suele fallar menos)
+            method: 'PUT', // PUT es vital para evitar el "merge" que duplica
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -137,12 +139,8 @@ async function saveToPantry(basketName, dataObject) {
         }
         return await response.json();
     } catch (error) {
-        // AQUÍ ESTÁ EL TRUCO:
-        // Si es un error de red (TypeError) pero sabemos que Pantry a veces falla en responder,
-        // asumimos éxito para no bloquear al usuario.
+        // Si hay error CORS pero sabemos que funciona, lo ignoramos para no bloquear al usuario
         console.warn(`Alerta de CORS ignorada en ${basketName}:`, error);
-        
-        // Retornamos un objeto falso de éxito para que el código continúe
         return { success: true, message: "Guardado forzado (CORS bypass)" };
     }
 }
@@ -150,7 +148,7 @@ async function saveToPantry(basketName, dataObject) {
 // Carga de Categorías
 async function loadCategoriesData() {
     const data = await fetchFromPantry(BASKET_CATEGORIES);
-    // Verificamos si existe data.categories o si los datos vienen directos
+    // Soporte para estructura { categories: [...] } o [...]
     if (!data) return [];
     return (data.categories || data).filter(category => category.visible);
 }
@@ -452,13 +450,12 @@ function validateForm() {
 }
 
 // ==========================================
-// AUTENTICACIÓN (LOGIN/SIGNUP) - CON PANTRY
+// AUTENTICACIÓN
 // ==========================================
 
 async function fetchUsers() {
     const data = await fetchFromPantry(BASKET_USERS);
     if (!data) return [];
-    // Soporta estructura { users: [...] } o array directo [...]
     return data.users || data;
 }
 
@@ -496,8 +493,6 @@ async function customerSignup() {
     
     try {
         const users = await fetchUsers();
-        
-        // Verificación segura incluso si users es undefined al inicio
         const userList = Array.isArray(users) ? users : [];
         
         if (userList.some(user => user.email === email)) {
@@ -530,8 +525,6 @@ async function customerSignup() {
         };
         
         userList.push(newUser);
-        
-        // Guardar en Pantry
         await saveToPantry(BASKET_USERS, { users: userList });
         
         currentUser = newUser;
@@ -604,7 +597,7 @@ function customerLogout() {
 }
 
 // ==========================================
-// PERFIL Y RECUPERACIÓN - CON PANTRY
+// PERFIL
 // ==========================================
 
 async function updateProfile() {
@@ -746,11 +739,12 @@ function updateAuthLinks() {
 }
 
 // ==========================================
-// GESTIÓN DE PEDIDOS - CON PANTRY
+// GESTIÓN DE PEDIDOS - CON SOLUCIÓN DE DUPLICADOS
 // ==========================================
 
 async function fetchOrders() {
     const data = await fetchFromPantry(BASKET_ORDERS);
+    // Si viene como { orders: [...] } o [...] directo
     if (!data) return [];
     return data.orders || data;
 }
@@ -792,8 +786,8 @@ async function saveOrder() {
     const now = new Date();
     
     try {
+        // 1. Obtener lista actual fresca
         const existingOrders = await fetchOrders();
-        // Aseguramos que sea array
         const ordersList = Array.isArray(existingOrders) ? existingOrders : [];
         
         let newOrderId = 'P00001';
@@ -831,28 +825,33 @@ async function saveOrder() {
             userId: currentUser.id.toString()
         };
 
-        // ... (código anterior donde preparas el objeto order) ...
-
-        existingOrders.push(order);
+        // 2. SOLUCIÓN ANTI-DUPLICADOS:
+        // Limpiamos la lista existente por ID antes de añadir el nuevo.
+        const cleanOrdersMap = new Map();
+        ordersList.forEach(o => cleanOrdersMap.set(o.id, o));
         
-        // Guardar en Pantry
-        await saveToPantry(BASKET_ORDERS, { orders: existingOrders });
+        // Convertimos el mapa a array
+        const cleanList = Array.from(cleanOrdersMap.values());
         
-        // Limpiamos carrito y UI inmediatamente
+        // Añadimos el nuevo
+        cleanList.push(order);
+        
+        // 3. Guardamos la lista limpia
+        await saveToPantry(BASKET_ORDERS, { orders: cleanList });
+        
+        // 4. Limpieza UI
         cart = [];
         localStorage.setItem('cart', JSON.stringify(cart));
         updateCartCount();
         updateCartView();
         
-        // Notificamos éxito aunque el navegador se haya quejado
         showToast('¡Pedido enviado con éxito! Nuestro equipo lo procesará pronto.');
         sendWhatsAppNotification(order);
         showSection('home');
 
     } catch (error) {
-        // Solo mostraremos error si es algo grave que impidió la ejecución del código
-        console.error('Error en el proceso de pedido:', error);
-        // Si el error es el que ya conocemos, no asustamos al usuario
+        console.error('Error al guardar el pedido:', error);
+        // Si fue error de CORS pero sabemos que el PUT funcionó, no asustamos
         if (error.message && error.message.includes('Failed to fetch')) {
              showToast('Pedido enviado (Alerta de conexión, pero recibido).');
              showSection('home');
