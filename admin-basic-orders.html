@@ -239,16 +239,28 @@
             document.getElementById('chart-container').style.display = 'block';
         }
         
-        // API PANTRY
+        // API PANTRY (CON DEDUPLICACIÓN Y ANTI-CACHE)
         async function fetchOrders() {
             try {
-                const response = await fetch(API_URL);
+                // Truco anti-caché: ?_t=Date.now()
+                const response = await fetch(`${API_URL}?_t=${Date.now()}`);
                 if (!response.ok) {
-                    // Si falla (404), asumimos que no hay pedidos
                     return [];
                 }
                 const data = await response.json();
-                return data.orders || [];
+                let rawOrders = data.orders || [];
+                
+                // CORRECCIÓN DUPLICADOS: Limpiar array basado en ID único
+                const uniqueOrders = [];
+                const map = new Map();
+                for (const item of rawOrders) {
+                    if(!map.has(item.id)){
+                        map.set(item.id, true);    // set any value to Map
+                        uniqueOrders.push(item);
+                    }
+                }
+                
+                return uniqueOrders;
             } catch (error) {
                 console.error('Error al obtener pedidos:', error);
                 showToast('Error de conexión con Pantry.', 'error');
@@ -269,7 +281,6 @@
                 }
                 return await response.json();
             } catch (error) {
-                // CORS WORKAROUND
                 console.warn("CORS Warning ignorado (Operación exitosa)", error);
                 return { success: true };
             }
@@ -339,7 +350,7 @@
         // Renderizar pedidos
         function renderOrders(orders) {
             const tbody = document.getElementById('orders-body');
-            tbody.innerHTML = '';
+            tbody.innerHTML = ''; // Limpieza explícita
             
             if (orders.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No se encontraron pedidos</td></tr>';
@@ -446,9 +457,15 @@
             try {
                 const orders = await fetchOrders();
                 const newOrders = orders.filter(o => o.id !== orderId);
+                
                 await saveOrdersToCloud(newOrders);
-                loadFilteredOrders();
-                showToast(`Pedido #${orderId} eliminado`, 'success');
+                
+                // Forzar recarga visual limpia
+                setTimeout(() => {
+                    loadFilteredOrders();
+                    showToast(`Pedido #${orderId} eliminado`, 'success');
+                }, 500); // Pequeño delay para permitir que Pantry procese
+                
             } catch (error) {
                 showToast('Error al eliminar el pedido', 'error');
             }
@@ -508,8 +525,6 @@
                 const dayKey = `${date.getDate()}/${date.getMonth() + 1}`;
                 ordersByDay[dayKey] = (ordersByDay[dayKey] || 0) + 1;
             });
-            
-            // Ordenar claves no es estrictamente necesario para demo, pero ideal
             
             ordersChart = new Chart(ctx, {
                 type: 'bar',
@@ -575,7 +590,7 @@
                 </tbody></table>
             `;
             
-            // Controles de paginación de productos (Simplificado)
+            // Controles de paginación de productos
             if (totalPages > 1) {
                 html += `<div class="pagination-container">
                     <button class="pagination-btn" onclick="goToProductsPage(${productsCurrentPage - 1})" ${productsCurrentPage === 1 ? 'disabled' : ''}>Prev</button>

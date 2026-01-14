@@ -100,13 +100,17 @@
             setTimeout(() => t.remove(), 3000);
         }
         
-        // API PANTRY HELPER (GET)
+        // API PANTRY HELPER (GET ROBUSTO)
         async function fetchData(basket) {
             try {
-                const res = await fetch(API_BASE + basket);
+                // Agregar ?_t=Date.now() para evitar caché
+                const res = await fetch(`${API_BASE}${basket}?_t=${Date.now()}`);
                 if (!res.ok) return [];
                 const data = await res.json();
-                return data[basket] || [];
+                
+                // Pantry a veces devuelve { "productos": [...] } y a veces [...]
+                // Esta línea maneja ambos casos
+                return data[basket] || data || [];
             } catch (e) { console.error(e); return []; }
         }
         
@@ -135,6 +139,10 @@
         
         function renderCategories() {
             const grid = document.getElementById('categories-grid');
+            if(categories.length === 0) {
+                 grid.innerHTML = '<p style="padding:1rem;">No hay categorías. Crea una.</p>';
+                 return;
+            }
             grid.innerHTML = categories.map(c => `
                 <div class="editor-item">
                     <img src="${c.image}" onerror="this.src='https://via.placeholder.com/150'">
@@ -157,6 +165,11 @@
             const grid = document.getElementById('products-grid');
             const filterId = document.getElementById('category-filter').value;
             const filtered = filterId ? products.filter(p => p.categoryId == filterId) : products;
+            
+            if(filtered.length === 0) {
+                 grid.innerHTML = '<p style="padding:1rem;">No hay productos.</p>';
+                 return;
+            }
             
             grid.innerHTML = filtered.map(p => {
                 const cat = categories.find(c => c.id == p.categoryId)?.name || '?';
