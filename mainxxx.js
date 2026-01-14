@@ -1,20 +1,22 @@
+       // ==========================================
+// CONFIGURACIÓN DE API - JSONBIN
 // ==========================================
-// CONFIGURACIÓN DE API - PANTRY (FINAL)
-// ==========================================
 
-// Tu ID de Pantry
-const PANTRY_ID = '18fe8ca9-204c-47d1-b0eb-b48cdd2d87aa';
+// USAMOS LA MASTER KEY (La que tiene acceso total y nunca falla por permisos)
+const API_KEY = '$2a$10$3gSifjDVPBsqWLO9T2SBnuWtTugUFc1jWxsrP3F2uSt3h2T7Bm5pq'; 
 
-// Nombres de tus Cestas (Baskets) - Configurados según tus datos
-const BASKET_ORDERS = 'carritoCompra';  // Para las órdenes
-const BASKET_USERS = 'usuarios';        // Para los usuarios
-const BASKET_CATEGORIES = 'categorias'; // Para las categorías
-const BASKET_PRODUCTS = 'productos';    // Para los productos
+// IDs de tus Bins
+const BIN_ID = '687a974a2de0201b319ca267'; // Pedidos
+const USERS_BIN_ID = '687b046c2de0201b319ccf2b'; // Usuarios
+const CATEGORIES_BIN_ID = '687f2380ae596e708fb99af7'; // Categorías
+const PRODUCTS_BIN_ID = '687f2362f7e7a370d1ebcc73'; // Productos
 
-// URL Base de Pantry
-const API_URL = `https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/`;
+// URLs Base
+const API_URL = `https://api.jsonbin.io/v3/b/`;
+const CATEGORIES_API_URL = `https://api.jsonbin.io/v3/b/${CATEGORIES_BIN_ID}`;
+const PRODUCTS_API_URL = `https://api.jsonbin.io/v3/b/${PRODUCTS_BIN_ID}`;
 
-// Clave secreta para encriptación local (No tocar)
+// Clave secreta para encriptación local
 const SECRET_KEY = "market_secret_key_123!";
 
 // ==========================================
@@ -96,65 +98,46 @@ function getQuantityOptions(unit, productId) {
 }
 
 // ==========================================
-// CONEXIÓN CON API (PANTRY)
+// CONEXIÓN CON API (CARGAR DATOS)
 // ==========================================
 
-// Función Genérica para LEER de Pantry
-async function fetchFromPantry(basketName) {
+async function loadCategoriesData() {
     try {
-        const response = await fetch(`${API_URL}${basketName}`, {
+        console.log("Cargando categorías con Key:", API_KEY.substring(0, 10) + "..."); // Debug
+        const response = await fetch(CATEGORIES_API_URL, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'X-Master-Key': API_KEY, // Volvemos a Master Key
+                'X-Bin-Meta': 'false'
             }
         });
-        
-        if (!response.ok) {
-            console.warn(`La cesta ${basketName} no existe o está vacía.`);
-            return null; 
-        }
-        
-        return await response.json();
-    } catch (error) {
-        console.error(`Error al leer ${basketName}:`, error);
-        return null;
+        if (!response.ok) throw new Error('Error al obtener las categorías');
+        const data = await response.json();
+        return data.categories.filter(category => category.visible);
+    } catch (e) {
+        console.error(e);
+        showToast('Error al cargar categorías', 'error');
+        return [];
     }
 }
 
-// Función Genérica para GUARDAR en Pantry (POST actualiza/crea)
-async function saveToPantry(basketName, dataObject) {
-    try {
-        const response = await fetch(`${API_URL}${basketName}`, {
-            method: 'POST', // En Pantry, POST actualiza los datos
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(dataObject)
-        });
-
-        if (!response.ok) {
-            throw new Error(`Error ${response.status} al guardar en Pantry`);
-        }
-        return await response.json();
-    } catch (error) {
-        console.error(`Error guardando en ${basketName}:`, error);
-        throw error;
-    }
-}
-
-// Carga de Categorías
-async function loadCategoriesData() {
-    const data = await fetchFromPantry(BASKET_CATEGORIES);
-    // Verificamos si existe data.categories o si los datos vienen directos
-    if (!data) return [];
-    return (data.categories || data).filter(category => category.visible);
-}
-
-// Carga de Productos
 async function loadProductsData() {
-    const data = await fetchFromPantry(BASKET_PRODUCTS);
-    if (!data) return [];
-    return (data.products || data).filter(product => product.visible);
+    try {
+        const response = await fetch(PRODUCTS_API_URL, {
+            method: 'GET',
+            headers: {
+                'X-Master-Key': API_KEY, // Volvemos a Master Key
+                'X-Bin-Meta': 'false'
+            }
+        });
+        if (!response.ok) throw new Error('Error al obtener los productos');
+        const data = await response.json();
+        return data.products.filter(product => product.visible);
+    } catch (e) {
+        console.error(e);
+        showToast('Error al cargar productos', 'error');
+        return [];
+    }
 }
 
 // ==========================================
@@ -293,10 +276,6 @@ function showCategory(categoryId) {
     showSection('category');
 }
 
-// ==========================================
-// CARRITO
-// ==========================================
-
 function addToCart(productId) {
     if (!currentUser) {
         showToast('Debes iniciar sesión para agregar productos al carrito');
@@ -330,16 +309,21 @@ function addToCart(productId) {
     
     updateCartCount();
     showToast(`Se ha agregado ${product.name} al carrito`);
-    
+
     const categorySection = document.getElementById('category');
     const storeSection = document.getElementById('store');
+
     if (categorySection.classList.contains('active')) {
         const categoryTitle = document.getElementById('category-title').textContent;
         const currentCategory = categories.find(cat => cat.name === categoryTitle);
-        if (currentCategory) showCategory(currentCategory.id);
+        if (currentCategory) {
+            showCategory(currentCategory.id);
+        }
     } else if (storeSection.classList.contains('active')) {
         const searchInput = document.getElementById('search-input');
-        if (searchInput.value) searchProducts();
+        if (searchInput.value) {
+            searchProducts();
+        }
     }
 }
 
@@ -357,6 +341,8 @@ function updateCartView() {
         document.getElementById('checkout-btn').disabled = true;
         return;
     }
+    
+    cart = cart.filter(item => true);
     
     cart.forEach(item => {
         const itemTotal = item.quantity;
@@ -407,6 +393,7 @@ function updateCartView() {
             </p>
         `;
     }
+    
     validateForm();
 }
 
@@ -447,14 +434,51 @@ function validateForm() {
 }
 
 // ==========================================
-// AUTENTICACIÓN (LOGIN/SIGNUP) - CON PANTRY
+// AUTENTICACIÓN (LOGIN/SIGNUP)
 // ==========================================
 
 async function fetchUsers() {
-    const data = await fetchFromPantry(BASKET_USERS);
-    if (!data) return [];
-    // Soporta estructura { users: [...] } o array directo [...]
-    return data.users || data;
+    try {
+        const response = await fetch(`${API_URL}${USERS_BIN_ID}`, {
+            method: 'GET',
+            headers: {
+                'X-Master-Key': API_KEY, // Volvemos a Master Key
+                'X-Bin-Meta': 'false'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error en la solicitud: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.users || [];
+    } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+        return [];
+    }
+}
+
+async function saveUsersToCloud(users) {
+    try {
+        const response = await fetch(`${API_URL}${USERS_BIN_ID}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': API_KEY // Volvemos a Master Key
+            },
+            body: JSON.stringify({ users })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error al guardar: ${response.status}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error al guardar usuarios:', error);
+        throw error;
+    }
 }
 
 async function customerSignup() {
@@ -492,18 +516,15 @@ async function customerSignup() {
     try {
         const users = await fetchUsers();
         
-        // Verificación segura incluso si users es undefined al inicio
-        const userList = Array.isArray(users) ? users : [];
-        
-        if (userList.some(user => user.email === email)) {
+        if (users.some(user => user.email === email)) {
             errorEl.textContent = 'Este correo ya está registrado';
             errorEl.style.display = 'block';
             return;
         }
         
         let newUserId = 'U00001';
-        if (userList.length > 0) {
-            const lastUser = userList
+        if (users.length > 0) {
+            const lastUser = users
                 .map(user => {
                     const match = user.id.toString().match(/U(\d+)/);
                     return match ? parseInt(match[1]) : 0;
@@ -524,10 +545,8 @@ async function customerSignup() {
             createdAt: new Date().toISOString()
         };
         
-        userList.push(newUser);
-        
-        // Guardar en Pantry
-        await saveToPantry(BASKET_USERS, { users: userList });
+        users.push(newUser);
+        await saveUsersToCloud(users);
         
         currentUser = newUser;
         localStorage.setItem('currentUser', JSON.stringify(newUser));
@@ -561,9 +580,8 @@ async function customerLogin() {
     
     try {
         const users = await fetchUsers();
-        const userList = Array.isArray(users) ? users : [];
         
-        const user = userList.find(u => 
+        const user = users.find(u => 
             u.email === email && 
             decryptData(u.password) === password
         );
@@ -599,7 +617,7 @@ function customerLogout() {
 }
 
 // ==========================================
-// PERFIL Y RECUPERACIÓN - CON PANTRY
+// PERFIL Y RECUPERACIÓN
 // ==========================================
 
 async function updateProfile() {
@@ -616,17 +634,16 @@ async function updateProfile() {
     
     try {
         const users = await fetchUsers();
-        const userList = Array.isArray(users) ? users : [];
-        const userIndex = userList.findIndex(u => u.id.toString() === currentUser.id.toString());
+        const userIndex = users.findIndex(u => u.id.toString() === currentUser.id.toString());
         
         if (userIndex !== -1) {
-            userList[userIndex].name = name;
-            userList[userIndex].phone = phone;
-            userList[userIndex].address = address;
+            users[userIndex].name = name;
+            users[userIndex].phone = phone;
+            users[userIndex].address = address;
             
-            await saveToPantry(BASKET_USERS, { users: userList });
+            await saveUsersToCloud(users);
             
-            currentUser = userList[userIndex];
+            currentUser = users[userIndex];
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
             
             showToast('Perfil actualizado correctamente');
@@ -661,8 +678,7 @@ async function verifyUser() {
     
     try {
         const users = await fetchUsers();
-        const userList = Array.isArray(users) ? users : [];
-        const user = userList.find(u => u.name === name && u.email === email);
+        const user = users.find(u => u.name === name && u.email === email);
         
         if (user) {
             sessionStorage.setItem('recoveryUserId', user.id);
@@ -704,13 +720,11 @@ async function updatePassword() {
     
     try {
         const users = await fetchUsers();
-        const userList = Array.isArray(users) ? users : [];
-        const userIndex = userList.findIndex(u => u.id.toString() === userId.toString());
+        const userIndex = users.findIndex(u => u.id.toString() === userId.toString());
         
         if (userIndex !== -1) {
-            userList[userIndex].password = encryptData(newPassword);
-            await saveToPantry(BASKET_USERS, { users: userList });
-            
+            users[userIndex].password = encryptData(newPassword);
+            await saveUsersToCloud(users);
             sessionStorage.removeItem('recoveryUserId');
             showToast('Contraseña actualizada correctamente. Ahora puedes iniciar sesión.');
             showSection('login');
@@ -741,13 +755,52 @@ function updateAuthLinks() {
 }
 
 // ==========================================
-// GESTIÓN DE PEDIDOS - CON PANTRY
+// GESTIÓN DE PEDIDOS
 // ==========================================
 
 async function fetchOrders() {
-    const data = await fetchFromPantry(BASKET_ORDERS);
-    if (!data) return [];
-    return data.orders || data;
+    try {
+        console.log("Obteniendo pedidos con Key:", API_KEY.substring(0, 5) + "...");
+        const response = await fetch(`${API_URL}${BIN_ID}`, {
+            method: 'GET',
+            headers: {
+                'X-Master-Key': API_KEY, // Volvemos a Master Key
+                'X-Bin-Meta': 'false'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error en la solicitud: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.orders || [];
+    } catch (error) {
+        console.error('Error al obtener pedidos:', error);
+        return [];
+    }
+}
+
+async function saveOrdersToCloud(orders) {
+    try {
+        const response = await fetch(`${API_URL}${BIN_ID}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': API_KEY // Volvemos a Master Key
+            },
+            body: JSON.stringify({ orders })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Error al guardar: ${response.status}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error al guardar pedidos:', error);
+        throw error;
+    }
 }
 
 function sendWhatsAppNotification(orderData) {
@@ -781,20 +834,20 @@ async function saveOrder() {
     const notes = document.getElementById('customer-notes').value.trim();
     
     let subtotal = 0;
-    cart.forEach(item => { subtotal += 1; });
+    cart.forEach(item => {
+        subtotal += 1;
+    });
     const total = subtotal;
     
     const now = new Date();
     
     try {
         const existingOrders = await fetchOrders();
-        // Aseguramos que sea array
-        const ordersList = Array.isArray(existingOrders) ? existingOrders : [];
         
         let newOrderId = 'P00001';
 
-        if (ordersList.length > 0) {
-            const lastOrder = ordersList
+        if (existingOrders.length > 0) {
+            const lastOrder = existingOrders
                 .map(order => {
                     const match = order.id.toString().match(/P(\d+)/);
                     return match ? parseInt(match[1]) : 0;
@@ -808,8 +861,12 @@ async function saveOrder() {
         const order = {
             id: newOrderId,
             date: now.toLocaleString('es-PE', { 
-                year: 'numeric', month: '2-digit', day: '2-digit',
-                hour: '2-digit', minute: '2-digit', second: '2-digit'
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
             }),
             customer: name,
             address: address,
@@ -826,10 +883,8 @@ async function saveOrder() {
             userId: currentUser.id.toString()
         };
 
-        ordersList.push(order);
-        
-        // Guardar en Pantry
-        await saveToPantry(BASKET_ORDERS, { orders: ordersList });
+        existingOrders.push(order);
+        await saveOrdersToCloud(existingOrders);
         
         cart = [];
         localStorage.setItem('cart', JSON.stringify(cart));
@@ -851,8 +906,7 @@ async function loadUserOrders() {
         container.innerHTML = '<p>Cargando pedidos...</p>';
         try {
             const orders = await fetchOrders();
-            const ordersList = Array.isArray(orders) ? orders : [];
-            const userOrders = ordersList.filter(order => order.userId.toString() === currentUser.id.toString());
+            const userOrders = orders.filter(order => order.userId.toString() === currentUser.id.toString());
             
             if (userOrders.length === 0) {
                 container.innerHTML = '<p>No has realizado ningún pedido aún.</p>';
