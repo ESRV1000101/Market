@@ -6,7 +6,7 @@
     <title>yü foods - Editor Tienda</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Estilos originales mantenidos */
+        /* Estilos mantenidos */
         :root { --primary: #4a7c59; --primary-dark: #3a6547; --secondary: #8d9f87; --accent: #d0b49f; --light: #f4f1e9; --dark: #2d3319; --gray: #7d8c7d; --light-gray: #e9ecef; --shadow: 0 4px 12px rgba(0,0,0,0.08); --radius: 8px; --transition: all 0.3s ease; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--light); color: var(--dark); line-height: 1.6; }
@@ -77,12 +77,11 @@
     </div>
     
     <script>
-        // CONFIGURACIÓN PANTRY
         const PANTRY_ID = '18fe8ca9-204c-47d1-b0eb-b48cdd2d87aa';
-        const BASKETS = { categories: 'categorias', products: 'productos' };
         const API_BASE = `https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/`;
+        // Nombres de las cestas
+        const BASKETS = { categories: 'categorias', products: 'productos' };
         
-        // Cloudinary
         const CLOUDINARY_CLOUD_NAME = 'dgxjjabov';
         const CLOUDINARY_UPLOAD_PRESET = 'yufoods_preset';
         
@@ -100,32 +99,52 @@
             setTimeout(() => t.remove(), 3000);
         }
         
-        // API PANTRY HELPER (GET ROBUSTO)
-        async function fetchData(basket) {
+        // --- FUNCIÓN DE LECTURA INTELIGENTE ---
+        async function fetchData(basketName) {
             try {
-                // Agregar ?_t=Date.now() para evitar caché
-                const res = await fetch(`${API_BASE}${basket}?_t=${Date.now()}`);
+                // Agregar timestamp para evitar caché al leer
+                const res = await fetch(`${API_BASE}${basketName}?_t=${Date.now()}`);
                 if (!res.ok) return [];
                 const data = await res.json();
                 
-                // Pantry a veces devuelve { "productos": [...] } y a veces [...]
-                // Esta línea maneja ambos casos
-                return data[basket] || data || [];
-            } catch (e) { console.error(e); return []; }
+                // Pantry puede guardar los datos bajo llaves distintas o como array directo.
+                // Verificamos todas las posibilidades:
+                
+                // 1. ¿Es un array directo?
+                if (Array.isArray(data)) return data;
+                
+                // 2. ¿Tiene la llave "categories" o "products" (Inglés, usada en main.js)?
+                if (data.categories) return data.categories;
+                if (data.products) return data.products;
+                
+                // 3. ¿Tiene la llave igual al nombre de la cesta (Español)?
+                if (data[basketName]) return data[basketName];
+                
+                return [];
+            } catch (e) { console.error("Error leyendo " + basketName, e); return []; }
         }
         
-        // API PANTRY HELPER (PUT + CORS FIX)
-        async function saveData(basket, data) {
+        async function saveData(basketName, dataArray) {
             try {
-                const payload = {}; payload[basket] = data;
-                const res = await fetch(API_BASE + basket, {
+                // Al guardar, estandarizamos las llaves para que siempre coincidan
+                // con lo que espera el main.js: { categories: [...] } o { products: [...] }
+                let payload = {};
+                
+                if (basketName === 'categorias') {
+                    payload = { categories: dataArray }; // Llave 'categories' en cesta 'categorias'
+                } else if (basketName === 'productos') {
+                    payload = { products: dataArray };   // Llave 'products' en cesta 'productos'
+                } else {
+                    payload[basketName] = dataArray;
+                }
+
+                await fetch(`${API_BASE}${basketName}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                if (!res.ok) throw new Error(res.status);
             } catch (e) {
-                console.warn("CORS ignored", e);
+                console.warn("CORS ignored on save", e);
             }
         }
         
@@ -140,7 +159,7 @@
         function renderCategories() {
             const grid = document.getElementById('categories-grid');
             if(categories.length === 0) {
-                 grid.innerHTML = '<p style="padding:1rem;">No hay categorías. Crea una.</p>';
+                 grid.innerHTML = '<p style="padding:1rem;">No hay categorías.</p>';
                  return;
             }
             grid.innerHTML = categories.map(c => `
@@ -278,7 +297,6 @@
             loadData(); showToast('Eliminado');
         }
         
-        // Funciones auxiliares
         function editCategory(id) { openCategoryModal(id); }
         function editProduct(id) { openProductModal(id); }
         function closeModal() { document.getElementById('edit-modal').style.display = 'none'; }

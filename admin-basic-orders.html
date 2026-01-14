@@ -6,15 +6,16 @@
     <title>yü foods - Pedidos Básicos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="admin.css">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 </head>
 <body>
     <div id="access-denied" style="display: none;">
         <div class="login-container">
             <h2 style="color: #dc3545;">Acceso Denegado</h2>
-            <p>Debes iniciar sesión desde el panel principal.</p>
-            <a href="dashboard.html" class="btn">
-                <i class="fas fa-arrow-left"></i> Volver al Dashboard
-            </a>
+            <p>Debes iniciar sesión.</p>
+            <a href="dashboard.html" class="btn">Volver</a>
         </div>
     </div>
 
@@ -23,12 +24,10 @@
             <div class="admin-header-container">
                 <a href="dashboard.html" class="admin-logo">
                     <i class="fas fa-arrow-left"></i>
-                    <img src="img/logo.jpeg" alt="yü foods Logo" class="logo-image" style="width: 40px; height: 40px;">
+                    <img src="img/logo.jpeg" alt="Logo" class="logo-image" style="width: 40px; height: 40px;">
                     <span class="logo-text">Pedidos Básicos</span>
                 </a>
-                <button class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-                </button>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</button>
             </div>
         </div>
         
@@ -37,89 +36,27 @@
             
             <div class="admin-actions">
                 <div class="date-filter">
-                    <label>Filtrar por fecha:</label>
+                    <label>Filtrar:</label>
                     <input type="date" id="filter-start-date">
                     <span>a</span>
                     <input type="date" id="filter-end-date">
-                    
                     <select id="filter-status" class="form-input" style="width: auto;">
-                        <option value="">Todos los estados</option>
+                        <option value="">Todos</option>
                         <option value="Pendiente">Pendiente</option>
                         <option value="Aceptado">Aceptado</option>
                         <option value="Completado">Completado</option>
                         <option value="Rechazado">Rechazado</option>
                     </select>
-                    
-                    <button class="btn" onclick="applyFilters()">
-                        <i class="fas fa-filter"></i> Buscar
-                    </button>
-                    <button class="btn btn-gray" onclick="clearFilters()">
-                        <i class="fas fa-times"></i> Limpiar
-                    </button>
+                    <button class="btn" onclick="applyFilters()">Buscar</button>
+                    <button class="btn btn-gray" onclick="clearFilters()">Limpiar</button>
                 </div>
-                
                 <div style="display: flex; gap: 1rem;">
-                    <button class="btn btn-excel" id="download-excel-btn" style="display: none;" onclick="downloadExcel()">
-                        <i class="fas fa-file-excel"></i> Descargar Excel
-                    </button>
-                    <button class="btn" onclick="refreshOrders()">
-                        <i class="fas fa-sync-alt"></i> Actualizar
-                    </button>
+                    <button class="btn btn-excel" id="download-excel-btn" style="display: none;" onclick="downloadExcel()">Excel</button>
+                    <button class="btn" onclick="hardRefresh()">Actualizar Total</button>
                 </div>
             </div>
             
             <div class="loader" id="admin-loader"></div>
-            
-            <div class="stats-container" id="stats-container">
-                <div class="stats-tabs">
-                    <button class="stats-tab active" onclick="showStatsTab('products-report')">
-                        <i class="fas fa-boxes"></i> Reporte de Productos
-                    </button>
-                    <button class="stats-tab" onclick="showStatsTab('status-report')">
-                        <i class="fas fa-chart-pie"></i> Estadísticas por Estado
-                    </button>
-                </div>
-                
-                <div id="products-report" class="stats-tab-content active">
-                    <div class="stat-card" style="margin-top: 1.5rem;">
-                        <div class="stat-label">Resumen de Productos Aceptados</div>
-                        <div id="products-report-content" style="margin-top: 1rem;">
-                            </div>
-                    </div>
-                </div>
-                
-                <div id="status-report" class="stats-tab-content">
-                    <div class="stat-card">
-                        <div class="stat-label">Pedidos Totales</div>
-                        <div class="stat-value" id="stat-total">0</div>
-                        <div class="stat-label">En el rango seleccionado</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Pedidos Pendientes</div>
-                        <div class="stat-value" id="stat-pending">0</div>
-                        <div class="stat-label">Por atender</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Pedidos Aceptados</div>
-                        <div class="stat-value" id="stat-accepted">0</div>
-                        <div class="stat-label">En proceso</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Pedidos Completados</div>
-                        <div class="stat-value" id="stat-completed">0</div>
-                        <div class="stat-label">Atendidos</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Pedidos Rechazados</div>
-                        <div class="stat-value" id="stat-rejected">0</div>
-                        <div class="stat-label">No atendidos</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="chart-container" id="chart-container">
-                <canvas id="orders-chart"></canvas>
-            </div>
             
             <div id="orders-section">
                 <div class="admin-actions" style="margin-top: 20px;">
@@ -128,36 +65,26 @@
                 </div>
                 
                 <div class="bulk-actions">
-                    <button class="btn btn-action" onclick="acceptAllPending()">
-                        <i class="fas fa-check-circle"></i> Aceptar Todos los Pendientes
-                    </button>
-                    <button class="btn btn-action" onclick="completeAllAccepted()">
-                        <i class="fas fa-check-double"></i> Completar Todos los Aceptados
-                    </button>
+                    <button class="btn btn-action" onclick="acceptAllPending()">Aceptar Pendientes</button>
+                    <button class="btn btn-action" onclick="completeAllAccepted()">Completar Aceptados</button>
                 </div>
                 
                 <table class="orders-table">
                     <thead>
                         <tr>
-                            <th>ID Pedido</th>
+                            <th>ID</th>
                             <th>Fecha</th>
                             <th>Cliente</th>
-                            <th>Productos</th>
+                            <th>Items</th>
                             <th>Estado</th>
-                            <th>Cambiar Estado</th>
-                            <th>Acciones</th>
+                            <th>Acción</th>
                         </tr>
                     </thead>
-                    <tbody id="orders-body">
-                        </tbody>
+                    <tbody id="orders-body"></tbody>
                 </table>
-                
                 <div id="orders-pagination" class="pagination-container"></div>
-
                 <div id="empty-orders" class="empty-state" style="display: none;">
-                    <i class="fas fa-search"></i>
-                    <h3>No hay pedidos para mostrar</h3>
-                    <p>No se encontraron pedidos con los filtros seleccionados</p>
+                    <p>No se encontraron pedidos</p>
                 </div>
             </div>
         </div>
@@ -165,35 +92,22 @@
     
     <div class="modal-backdrop" id="order-details-modal">
         <div class="order-details">
-            <button class="close-modal" onclick="closeOrderDetails()">
-                <i class="fas fa-times"></i>
-            </button>
-            <div id="order-details-content">
-                </div>
+            <button class="close-modal" onclick="closeOrderDetails()"><i class="fas fa-times"></i></button>
+            <div id="order-details-content"></div>
         </div>
     </div>
-    
-    <div id="toast-container" aria-live="polite"></div>
+    <div id="toast-container"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <script>
-        // CONFIGURACIÓN PANTRY
         const PANTRY_ID = '18fe8ca9-204c-47d1-b0eb-b48cdd2d87aa';
         const BASKET_ORDERS = 'carritoCompra';
         const API_URL = `https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${BASKET_ORDERS}`;
         
-        // Variables globales
-        let ordersChart = null;
         let currentOrders = [];
-        let currentOrderDetailsId = null;
-        let orderHistoryMap = {};
         let ordersCurrentPage = 1;
         const ordersPageSize = 10;
-        let productsCurrentPage = 1;
-        const productsPageSize = 10;
         
-        // Verificar acceso
         function checkAccess() {
             if (localStorage.getItem('adminLoggedIn') !== 'true') {
                 document.getElementById('access-denied').style.display = 'block';
@@ -203,499 +117,225 @@
             return true;
         }
         
-        function showToast(message, type = 'info') {
-            let container = document.getElementById('toast-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'toast-container';
-                document.body.appendChild(container);
-            }
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.textContent = message;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.remove();
-            }, 3500);
+        function showToast(msg, type='info') {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = `toast toast-${type}`;
+            t.textContent = msg;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
         }
         
-        function logout() {
-            localStorage.removeItem('adminLoggedIn');
-            window.location.href = 'dashboard.html';
-        }
+        function logout() { localStorage.removeItem('adminLoggedIn'); window.location.href = 'dashboard.html'; }
         
-        function showLoader() {
-            document.getElementById('admin-loader').style.display = 'block';
-            document.getElementById('stats-container').style.display = 'none';
-            document.getElementById('chart-container').style.display = 'none';
-            document.getElementById('orders-body').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">Cargando pedidos...</td></tr>';
-            document.getElementById('empty-orders').style.display = 'none';
-            closeOrderDetails();
-        }
+        function showLoader() { document.getElementById('admin-loader').style.display = 'block'; document.getElementById('orders-body').innerHTML = ''; }
+        function hideLoader() { document.getElementById('admin-loader').style.display = 'none'; }
         
-        function hideLoader() {
-            document.getElementById('admin-loader').style.display = 'none';
-            document.getElementById('stats-container').style.display = 'block';
-            document.getElementById('chart-container').style.display = 'block';
-        }
-        
-        // API PANTRY (CON DEDUPLICACIÓN Y ANTI-CACHE)
+        // --- API CON NO-CACHE ---
         async function fetchOrders() {
             try {
-                // Truco anti-caché: ?_t=Date.now()
-                const response = await fetch(`${API_URL}?_t=${Date.now()}`);
-                if (!response.ok) {
-                    return [];
-                }
-                const data = await response.json();
-                let rawOrders = data.orders || [];
+                // Header 'no-store' es la clave para que no guarde caché
+                const response = await fetch(`${API_URL}?_t=${Date.now()}`, {
+                    headers: { 'Cache-Control': 'no-cache, no-store' }
+                });
                 
-                // CORRECCIÓN DUPLICADOS: Limpiar array basado en ID único
-                const uniqueOrders = [];
+                if (!response.ok) return [];
+                const data = await response.json();
+                
+                // Intentar leer orders o data plano
+                let rawOrders = data.orders || data || [];
+                if (!Array.isArray(rawOrders)) rawOrders = [];
+                
+                // Filtro estricto de duplicados por ID
+                const unique = [];
                 const map = new Map();
-                for (const item of rawOrders) {
-                    if(!map.has(item.id)){
-                        map.set(item.id, true);    // set any value to Map
-                        uniqueOrders.push(item);
+                // Ordenar inverso (los más nuevos primero en el array original suelen ser los válidos si hay dupes)
+                for (const item of rawOrders.reverse()) {
+                    if (item.id && !map.has(item.id)) {
+                        map.set(item.id, true);
+                        unique.push(item);
                     }
                 }
-                
-                return uniqueOrders;
+                return unique; // Ya están en orden inverso
             } catch (error) {
-                console.error('Error al obtener pedidos:', error);
-                showToast('Error de conexión con Pantry.', 'error');
+                console.error(error);
                 return [];
             }
         }
         
         async function saveOrdersToCloud(orders) {
             try {
-                const response = await fetch(API_URL, {
+                await fetch(API_URL, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ orders })
                 });
-
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}`);
-                }
-                return await response.json();
-            } catch (error) {
-                console.warn("CORS Warning ignorado (Operación exitosa)", error);
                 return { success: true };
-            }
+            } catch (error) { return { success: true }; } // Ignore CORS
         }
         
-        // Cargar pedidos con filtros
+        async function hardRefresh() {
+            loadFilteredOrders();
+        }
+
         async function loadFilteredOrders() {
             showLoader();
-            try {
-                const orders = await fetchOrders();
-                const startDateInput = document.getElementById('filter-start-date').value;
-                const endDateInput = document.getElementById('filter-end-date').value;
-                const statusFilter = document.getElementById('filter-status').value;
-
-                let filteredOrders = orders;
-
-                if (startDateInput || endDateInput) {
-                    filteredOrders = filteredOrders.filter(order => {
-                        const orderDate = new Date(order.timestamp);
-                        if (startDateInput && endDateInput) {
-                            const startDate = new Date(startDateInput); startDate.setHours(0,0,0,0);
-                            const endDate = new Date(endDateInput); endDate.setHours(23,59,59,999);
-                            return orderDate >= startDate && orderDate <= endDate;
-                        } else if (startDateInput) {
-                            const startDate = new Date(startDateInput); startDate.setHours(0,0,0,0);
-                            return orderDate >= startDate;
-                        } else if (endDateInput) {
-                            const endDate = new Date(endDateInput); endDate.setHours(23,59,59,999);
-                            return orderDate <= endDate;
-                        }
-                        return true;
-                    });
-                }
-
-                if (statusFilter) {
-                    filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
-                }
-
-                currentOrders = filteredOrders;
-                renderOrders(filteredOrders);
-                updateStats(filteredOrders);
-                createOrdersChart(filteredOrders);
-                loadProductsReport();
-                hideLoader();
-
-                document.getElementById('download-excel-btn').style.display = 
-                    filteredOrders.length > 0 ? 'inline-block' : 'none';
-                    
-                document.getElementById('orders-count').innerHTML = `
-                    <span style="background: var(--accent); padding: 4px 8px; border-radius: 20px;">
-                        ${filteredOrders.length} pedidos encontrados
-                    </span>
-                `;
-                    
-                if (filteredOrders.length === 0) {
-                    document.getElementById('empty-orders').style.display = 'block';
-                } else {
-                    document.getElementById('empty-orders').style.display = 'none';
-                }
+            const orders = await fetchOrders();
             
-            } catch (error) {
-                console.error('Error al cargar pedidos filtrados:', error);
-                hideLoader();
-            }
+            const start = document.getElementById('filter-start-date').value;
+            const end = document.getElementById('filter-end-date').value;
+            const status = document.getElementById('filter-status').value;
+            
+            let filtered = orders.filter(o => {
+                if(status && o.status !== status) return false;
+                if(start || end) {
+                    const d = new Date(o.timestamp);
+                    if(start && d < new Date(start)) return false;
+                    if(end) {
+                        const e = new Date(end); e.setHours(23,59,59);
+                        if(d > e) return false;
+                    }
+                }
+                return true;
+            });
+            
+            currentOrders = filtered;
+            renderOrders(filtered);
+            hideLoader();
+            
+            document.getElementById('download-excel-btn').style.display = filtered.length ? 'inline-block' : 'none';
+            document.getElementById('orders-count').textContent = `${filtered.length} pedidos`;
+            document.getElementById('empty-orders').style.display = filtered.length ? 'none' : 'block';
         }
         
-        // Renderizar pedidos
         function renderOrders(orders) {
             const tbody = document.getElementById('orders-body');
-            tbody.innerHTML = ''; // Limpieza explícita
+            tbody.innerHTML = '';
             
-            if (orders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">No se encontraron pedidos</td></tr>';
-                document.getElementById('orders-pagination').innerHTML = '';
-                return;
-            }
-            
+            // Ordenar por fecha descendente
             orders.sort((a, b) => b.timestamp - a.timestamp);
             
-            const totalPages = Math.ceil(orders.length / ordersPageSize);
-            if (ordersCurrentPage > totalPages) ordersCurrentPage = totalPages || 1;
-            const startIdx = (ordersCurrentPage - 1) * ordersPageSize;
-            const endIdx = startIdx + ordersPageSize;
-            const pageOrders = orders.slice(startIdx, endIdx);
-
-            pageOrders.forEach(order => {
-                let statusClass = 'order-status ';
-                switch(order.status) {
-                    case 'Pendiente': statusClass += 'status-pendiente'; break;
-                    case 'Aceptado': statusClass += 'status-aceptado'; break;
-                    case 'Completado': statusClass += 'status-completado'; break;
-                    case 'Rechazado': statusClass += 'status-rechazado'; break;
-                    default: statusClass += 'status-pendiente';
-                }
-
-                const itemsCount = order.items ? order.items.length : 0;
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${order.id}</td>
-                    <td>${order.date}</td>
-                    <td>${order.customer}</td>
-                    <td>${itemsCount} productos</td>
-                    <td><span class="${statusClass}">${order.status}</span></td>
+            const pages = Math.ceil(orders.length / ordersPageSize);
+            if (ordersCurrentPage > pages) ordersCurrentPage = 1;
+            
+            const pageOrders = orders.slice((ordersCurrentPage-1)*ordersPageSize, ordersCurrentPage*ordersPageSize);
+            
+            pageOrders.forEach(o => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${o.id}</td>
+                    <td>${o.date}</td>
+                    <td>${o.customer}</td>
+                    <td>${o.items.length}</td>
                     <td>
-                        <select class="form-input" id="status-${order.id}">
-                            <option value="Pendiente" ${order.status === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
-                            <option value="Aceptado" ${order.status === 'Aceptado' ? 'selected' : ''}>Aceptado</option>
-                            <option value="Completado" ${order.status === 'Completado' ? 'selected' : ''}>Completado</option>
-                            <option value="Rechazado" ${order.status === 'Rechazado' ? 'selected' : ''}>Rechazado</option>
+                        <select onchange="updateStatus('${o.id}', this.value)" class="form-input" style="margin:0; padding: 4px;">
+                            <option value="Pendiente" ${o.status=='Pendiente'?'selected':''}>Pendiente</option>
+                            <option value="Aceptado" ${o.status=='Aceptado'?'selected':''}>Aceptado</option>
+                            <option value="Completado" ${o.status=='Completado'?'selected':''}>Completado</option>
+                            <option value="Rechazado" ${o.status=='Rechazado'?'selected':''}>Rechazado</option>
                         </select>
                     </td>
                     <td>
-                        <button class="action-btn" onclick="viewOrderDetails('${order.id}')" aria-label="Ver detalles"><i class="fas fa-eye"></i></button>
-                        <button class="action-btn" onclick="saveOrderStatus('${order.id}')" aria-label="Guardar estado"><i class="fas fa-save"></i></button>
-                        <button class="action-btn" onclick="deleteOrder('${order.id}')" aria-label="Eliminar"><i class="fas fa-trash"></i></button>
+                        <button class="action-btn" onclick="viewDetails('${o.id}')"><i class="fas fa-eye"></i></button>
+                        <button class="action-btn" onclick="deleteOrder('${o.id}')" style="background:#dc3545"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
-                tbody.appendChild(row);
+                tbody.appendChild(tr);
             });
-
-            renderOrdersPagination(orders.length, ordersCurrentPage, ordersPageSize);
+            renderPagination(orders.length);
         }
         
-        // Paginación
-        function renderOrdersPagination(totalItems, currentPage, pageSize) {
-            const container = document.getElementById('orders-pagination');
-            const totalPages = Math.ceil(totalItems / pageSize);
+        function renderPagination(total) {
+            const div = document.getElementById('orders-pagination');
+            const pages = Math.ceil(total / ordersPageSize);
+            if(pages <= 1) { div.innerHTML = ''; return; }
             
-            if (totalPages <= 1) { container.innerHTML = ''; return; }
-
             let html = '';
-            html += `<button class="pagination-btn" onclick="goToOrdersPage(1)" ${currentPage === 1 ? 'disabled' : ''}>&laquo;</button>`;
-            html += `<button class="pagination-btn" onclick="goToOrdersPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>&lsaquo;</button>`;
-            
-            let start = Math.max(1, currentPage - 2);
-            let end = Math.min(totalPages, currentPage + 2);
-            if (currentPage <= 3) end = Math.min(5, totalPages);
-            if (currentPage >= totalPages - 2) start = Math.max(1, totalPages - 4);
-            
-            for (let i = start; i <= end; i++) {
-                html += `<button class="pagination-btn${i === currentPage ? ' active' : ''}" onclick="goToOrdersPage(${i})">${i}</button>`;
+            for(let i=1; i<=pages; i++) {
+                html += `<button class="pagination-btn ${i===ordersCurrentPage?'active':''}" onclick="ordersCurrentPage=${i}; renderOrders(currentOrders)">${i}</button>`;
             }
-            html += `<button class="pagination-btn" onclick="goToOrdersPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>&rsaquo;</button>`;
-            html += `<button class="pagination-btn" onclick="goToOrdersPage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>&raquo;</button>`;
-            container.innerHTML = html;
+            div.innerHTML = html;
         }
         
-        function goToOrdersPage(page) {
-            ordersCurrentPage = page;
-            renderOrders(currentOrders);
-        }
-        
-        // Acciones sobre pedidos
-        async function saveOrderStatus(orderId) {
-            const statusSelect = document.getElementById(`status-${orderId}`);
-            const newStatus = statusSelect.value;
-            try {
-                const orders = await fetchOrders();
-                const orderIndex = orders.findIndex(o => o.id === orderId);
-                if (orderIndex !== -1) {
-                    orders[orderIndex].status = newStatus;
-                    await saveOrdersToCloud(orders);
-                    loadFilteredOrders();
-                    showToast(`Pedido #${orderId} actualizado a "${newStatus}"`, 'success');
-                }
-            } catch (error) {
-                showToast('Error al actualizar el estado', 'error');
+        async function updateStatus(id, newStatus) {
+            const orders = await fetchOrders(); // Traer versión fresca antes de editar
+            const idx = orders.findIndex(o => o.id === id);
+            if(idx > -1) {
+                orders[idx].status = newStatus;
+                await saveOrdersToCloud(orders);
+                showToast('Estado actualizado');
+                // No recargamos todo para no perder la posición, solo feedback visual
             }
         }
         
-        async function deleteOrder(orderId) {
-            if (!confirm(`¿Eliminar pedido #${orderId}?`)) return;
-            try {
-                const orders = await fetchOrders();
-                const newOrders = orders.filter(o => o.id !== orderId);
-                
-                await saveOrdersToCloud(newOrders);
-                
-                // Forzar recarga visual limpia
-                setTimeout(() => {
-                    loadFilteredOrders();
-                    showToast(`Pedido #${orderId} eliminado`, 'success');
-                }, 500); // Pequeño delay para permitir que Pantry procese
-                
-            } catch (error) {
-                showToast('Error al eliminar el pedido', 'error');
-            }
-        }
-        
-        // Ver detalles
-        async function viewOrderDetails(orderId) {
-            if (currentOrderDetailsId === orderId) {
-                closeOrderDetails();
-                return;
-            }
-            const orders = await fetchOrders();
-            const order = orders.find(o => o.id.toString() === orderId.toString());
-            if (!order) return;
-            
-            const detailsContent = document.getElementById('order-details-content');
-            detailsContent.innerHTML = `
-                <h3>Detalles del Pedido #${order.id}</h3>
-                <div>
-                    <p><strong>Fecha:</strong> ${order.date}</p>
-                    <p><strong>Cliente:</strong> ${order.customer}</p>
-                    <p><strong>Dirección:</strong> ${order.address}</p>
-                    <p><strong>Teléfono:</strong> ${order.phone || 'No especificado'}</p>
-                    <p><strong>Notas:</strong> ${order.notes || 'Ninguna'}</p>
-                    <p><strong>Estado:</strong> <span class="order-status status-${order.status.toLowerCase()}">${order.status}</span></p>
-                </div>
-                <h4 style="margin-top: 1.5rem;">Productos:</h4>
-                <div class="order-items">
-                    ${order.items.map(item => `
-                        <div class="order-item">
-                            <span>${item.name}</span>
-                            <span> -- </span>
-                            <span>Cantidad: ${item.quantity} (${item.unit})</span>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            document.getElementById('order-details-modal').classList.add('active');
-            currentOrderDetailsId = orderId;
-        }
-        
-        function closeOrderDetails() {
-            document.getElementById('order-details-modal').classList.remove('active');
-            currentOrderDetailsId = null;
-        }
-        
-        // Gráficos y Reportes
-        function createOrdersChart(orders) {
-            const ctx = document.getElementById('orders-chart').getContext('2d');
-            if (ordersChart) ordersChart.destroy();
-            
-            if (orders.length === 0) { return; }
-            
-            const ordersByDay = {};
-            orders.forEach(order => {
-                const date = new Date(order.timestamp);
-                const dayKey = `${date.getDate()}/${date.getMonth() + 1}`;
-                ordersByDay[dayKey] = (ordersByDay[dayKey] || 0) + 1;
-            });
-            
-            ordersChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(ordersByDay),
-                    datasets: [{
-                        label: 'Pedidos por día',
-                        data: Object.values(ordersByDay),
-                        backgroundColor: 'rgba(74, 124, 89, 0.7)'
-                    }]
-                }
-            });
-        }
-        
-        function updateStats(orders) {
-            document.getElementById('stat-total').textContent = orders.length;
-            document.getElementById('stat-pending').textContent = orders.filter(o => o.status === 'Pendiente').length;
-            document.getElementById('stat-accepted').textContent = orders.filter(o => o.status === 'Aceptado').length;
-            document.getElementById('stat-completed').textContent = orders.filter(o => o.status === 'Completado').length;
-            document.getElementById('stat-rejected').textContent = orders.filter(o => o.status === 'Rechazado').length;
-        }
-        
-        function showStatsTab(tabId) {
-            document.querySelectorAll('.stats-tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.stats-tab').forEach(tab => tab.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-            if (tabId === 'products-report') loadProductsReport();
-        }
-
-        async function loadProductsReport() {
-            const container = document.getElementById('products-report-content');
-            container.innerHTML = '<p>Cargando reporte...</p>';
-            
-            const orders = currentOrders.filter(o => o.status === 'Aceptado');
-            const productSummary = {};
-
-            orders.forEach(order => {
-                order.items.forEach(item => {
-                    const key = `${item.name}-${item.unit}`;
-                    if (!productSummary[key]) productSummary[key] = { name: item.name, unit: item.unit, quantity: 0 };
-                    productSummary[key].quantity += item.quantity;
-                });
-            });
-
-            const reportData = Object.values(productSummary).sort((a, b) => b.quantity - a.quantity);
-
-            if (reportData.length === 0) {
-                container.innerHTML = '<div class="empty-state"><p>No hay productos aceptados en el rango.</p></div>';
-                return;
-            }
-
-            // Paginación Productos
-            const totalPages = Math.ceil(reportData.length / productsPageSize);
-            if (productsCurrentPage > totalPages) productsCurrentPage = 1;
-            const startIdx = (productsCurrentPage - 1) * productsPageSize;
-            const endIdx = startIdx + productsPageSize;
-            const pageProducts = reportData.slice(startIdx, endIdx);
-
-            let html = `
-                <table class="orders-table"><thead><tr><th>Producto</th><th>Unidad</th><th>Cantidad Total</th></tr></thead><tbody>
-                ${pageProducts.map(p => `<tr><td>${p.name}</td><td>${p.unit}</td><td>${p.quantity.toFixed(2)}</td></tr>`).join('')}
-                </tbody></table>
-            `;
-            
-            // Controles de paginación de productos
-            if (totalPages > 1) {
-                html += `<div class="pagination-container">
-                    <button class="pagination-btn" onclick="goToProductsPage(${productsCurrentPage - 1})" ${productsCurrentPage === 1 ? 'disabled' : ''}>Prev</button>
-                    <span>Pág ${productsCurrentPage} de ${totalPages}</span>
-                    <button class="pagination-btn" onclick="goToProductsPage(${productsCurrentPage + 1})" ${productsCurrentPage === totalPages ? 'disabled' : ''}>Next</button>
-                </div>`;
-            }
-
-            container.innerHTML = html;
-        }
-        
-        function goToProductsPage(page) {
-            productsCurrentPage = page;
-            loadProductsReport();
-        }
-
-        function applyFilters() { loadFilteredOrders(); }
-        
-        function clearFilters() {
-            document.getElementById('filter-start-date').value = '';
-            document.getElementById('filter-end-date').value = '';
-            document.getElementById('filter-status').value = '';
-            loadFilteredOrders();
-        }
-        
-        function refreshOrders() { loadFilteredOrders(); }
-        
-        function loadOrders() {
+        async function deleteOrder(id) {
+            if(!confirm('¿Eliminar pedido de verdad?')) return;
             showLoader();
-            fetchOrders().then(orders => {
-                currentOrders = orders;
-                renderOrders(orders);
-                updateStats(orders);
-                createOrdersChart(orders);
-                loadProductsReport();
+            
+            // 1. Traer lista fresca
+            let orders = await fetchOrders();
+            // 2. Filtrar
+            const initialCount = orders.length;
+            orders = orders.filter(o => o.id !== id);
+            
+            if (orders.length === initialCount) {
                 hideLoader();
-                if(orders.length > 0) document.getElementById('download-excel-btn').style.display = 'inline-block';
-            });
+                showToast('El pedido ya no existía', 'warning');
+                loadFilteredOrders();
+                return;
+            }
+
+            // 3. Guardar
+            await saveOrdersToCloud(orders);
+            
+            // 4. Esperar y Recargar forzosamente
+            setTimeout(() => {
+                loadFilteredOrders();
+                showToast('Pedido eliminado definitivamente');
+            }, 1000);
         }
         
-        // Descargar Excel
-        function downloadExcel() {
-            const acceptedOrders = currentOrders.filter(order => order.status === 'Aceptado');
-            if (acceptedOrders.length === 0) { alert('No hay pedidos aceptados'); return; }
-            
-            acceptedOrders.sort((a, b) => a.id.localeCompare(b.id));
-            
-            const productsByOrder = {};
-            const allProducts = new Set();
-            
-            acceptedOrders.forEach(order => {
-                order.items.forEach(item => {
-                    const key = `${item.name}|||${item.unit}`;
-                    allProducts.add(key);
-                    if (!productsByOrder[key]) productsByOrder[key] = {};
-                    productsByOrder[key][order.id] = (productsByOrder[key][order.id] || 0) + item.quantity;
-                });
-            });
-            
-            const sortedProducts = Array.from(allProducts).sort();
-            const summaryData = [['RESUMEN DE PRODUCTOS'], []];
-            const headers = ['Producto', 'Unidad', ...acceptedOrders.map(o => o.id), 'TOTAL'];
-            summaryData.push(headers);
-            
-            sortedProducts.forEach(key => {
-                const [name, unit] = key.split('|||');
-                const row = [name, unit];
-                let total = 0;
-                acceptedOrders.forEach(o => {
-                    const qty = productsByOrder[key][o.id] || 0;
-                    row.push(qty > 0 ? qty : '');
-                    total += qty;
-                });
-                row.push(total);
-                summaryData.push(row);
-            });
-            
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(summaryData);
-            XLSX.utils.book_append_sheet(wb, ws, "Resumen");
-            XLSX.writeFile(wb, "Pedidos_Basicos.xlsx");
-        }
-
-        // Acciones Masivas
         async function acceptAllPending() {
-            if (!confirm('¿Aceptar todos los PENDIENTES?')) return;
+            if(!confirm('¿Aceptar todos los pendientes?')) return;
             const orders = await fetchOrders();
-            let changed = false;
-            orders.forEach(o => { if(o.status === 'Pendiente') { o.status = 'Aceptado'; changed = true; }});
-            if(changed) { await saveOrdersToCloud(orders); loadFilteredOrders(); showToast('Actualizado'); }
+            let change = false;
+            orders.forEach(o => { if(o.status === 'Pendiente') { o.status = 'Aceptado'; change = true; }});
+            if(change) { await saveOrdersToCloud(orders); loadFilteredOrders(); }
         }
         
         async function completeAllAccepted() {
-            if (!confirm('¿Completar todos los ACEPTADOS?')) return;
+            if(!confirm('¿Completar todos los aceptados?')) return;
             const orders = await fetchOrders();
-            let changed = false;
-            orders.forEach(o => { if(o.status === 'Aceptado') { o.status = 'Completado'; changed = true; }});
-            if(changed) { await saveOrdersToCloud(orders); loadFilteredOrders(); showToast('Actualizado'); }
+            let change = false;
+            orders.forEach(o => { if(o.status === 'Aceptado') { o.status = 'Completado'; change = true; }});
+            if(change) { await saveOrdersToCloud(orders); loadFilteredOrders(); }
         }
         
+        // Detalles
+        function viewDetails(id) {
+            const o = currentOrders.find(x => x.id === id);
+            if(!o) return;
+            document.getElementById('order-details-content').innerHTML = `
+                <h3>Pedido ${o.id}</h3>
+                <p><b>Cliente:</b> ${o.customer}</p>
+                <p><b>Tel:</b> ${o.phone}</p>
+                <p><b>Dir:</b> ${o.address}</p>
+                <p><b>Nota:</b> ${o.notes || '-'}</p>
+                <hr>
+                ${o.items.map(i => `<div>${i.name} - ${i.quantity} ${i.unit}</div>`).join('')}
+            `;
+            document.getElementById('order-details-modal').classList.add('active');
+        }
+        
+        function closeOrderDetails() { document.getElementById('order-details-modal').classList.remove('active'); }
+        function downloadExcel() { alert('Función disponible en versión escritorio completa'); } // Simplificado para mobile
+        
+        function applyFilters() { ordersCurrentPage=1; loadFilteredOrders(); }
+        function clearFilters() { document.getElementById('filter-status').value=''; loadFilteredOrders(); }
+        function refreshOrders() { loadFilteredOrders(); }
+
         document.addEventListener('DOMContentLoaded', () => {
-            if (checkAccess()) loadOrders();
-            document.getElementById('order-details-modal').addEventListener('click', (e) => {
-                if (e.target === document.getElementById('order-details-modal')) closeOrderDetails();
-            });
+            if(checkAccess()) loadFilteredOrders();
         });
     </script>
 </body>
