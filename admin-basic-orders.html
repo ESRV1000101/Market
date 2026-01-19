@@ -483,21 +483,155 @@
         }
         function refreshOrders() { loadFilteredOrders(true); }
         
+        // Descargar Excel (Versión Original Completa)
         function downloadExcel() {
-             const accepted = currentOrders.filter(o => o.status === 'Aceptado');
-             if(accepted.length === 0) return alert('No hay pedidos aceptados');
-             const data = [['Producto', 'Unidad', 'Total']];
-             const map = {};
-             accepted.forEach(o => (o.items||[]).forEach(i => {
-                 const k = i.name+i.unit;
-                 if(!map[k]) map[k] = {n: i.name, u: i.unit, q:0};
-                 map[k].q += i.quantity;
-             }));
-             Object.values(map).forEach(v => data.push([v.n, v.u, v.q]));
-             const ws = XLSX.utils.aoa_to_sheet(data);
-             const wb = XLSX.utils.book_new();
-             XLSX.utils.book_append_sheet(wb, ws, "Resumen");
-             XLSX.writeFile(wb, "Reporte.xlsx");
+            const acceptedOrders = currentOrders.filter(order => order.status === 'Aceptado');
+            
+            if (acceptedOrders.length === 0) {
+                alert('No hay pedidos aceptados para exportar');
+                return;
+            }
+            
+            // Ordenar pedidos por ID
+            acceptedOrders.sort((a, b) => a.id.localeCompare(b.id));
+            
+            // 1. PREPARAR HOJA DE RESUMEN (MATRIZ)
+            const productsByOrder = {};
+            const allProducts = new Set();
+            
+            // Recopilar todos los productos y sus cantidades por pedido
+            acceptedOrders.forEach(order => {
+                if(order.items) {
+                    order.items.forEach(item => {
+                        const productKey = `${item.name}|||${item.unit}`; // Usar ||| como separador
+                        allProducts.add(productKey);
+                        
+                        if (!productsByOrder[productKey]) {
+                            productsByOrder[productKey] = {};
+                        }
+                        
+                        // Sumar cantidades (por si hay duplicados internos)
+                        productsByOrder[productKey][order.id] = (productsByOrder[productKey][order.id] || 0) + item.quantity;
+                    });
+                }
+            });
+            
+            // Convertir Set a Array y ordenar alfabéticamente
+            const sortedProducts = Array.from(allProducts).sort();
+            
+            // Crear datos para la hoja de resumen
+            const summaryData = [
+                ['RESUMEN DE PRODUCTOS POR PEDIDO - TIENDA BÁSICA'],
+                []
+            ];
+            
+            // Crear encabezados (Producto, Unidad, ID Pedido 1, ID Pedido 2..., TOTAL)
+            const headers = ['Producto', 'Unidad'];
+            acceptedOrders.forEach(order => {
+                headers.push(order.id);
+            });
+            headers.push('TOTAL');
+            summaryData.push(headers);
+            
+            // Llenar filas de productos
+            sortedProducts.forEach(productKey => {
+                const [productName, productUnit] = productKey.split('|||');
+                const row = [productName, productUnit];
+                let totalQuantity = 0;
+                
+                acceptedOrders.forEach(order => {
+                    const quantity = productsByOrder[productKey][order.id] || 0;
+                    row.push(quantity > 0 ? quantity : '');
+                    totalQuantity += quantity;
+                });
+                
+                row.push(totalQuantity);
+                summaryData.push(row);
+            });
+            
+            // Agregar fila de totales al final
+            summaryData.push([]);
+            const totalsRow = ['TOTAL DE PRODUCTOS', ''];
+            acceptedOrders.forEach(order => {
+                let orderTotal = 0;
+                // Sumar items de este pedido
+                if(order.items) {
+                    order.items.forEach(i => orderTotal += i.quantity);
+                }
+                totalsRow.push(orderTotal);
+            });
+            
+            // Gran total final
+            let grandTotal = 0;
+            acceptedOrders.forEach(order => {
+                if(order.items) {
+                    order.items.forEach(item => grandTotal += item.quantity);
+                }
+            });
+            totalsRow.push(grandTotal);
+            summaryData.push(totalsRow);
+            
+            // Crear el libro de Excel
+            const workbook = XLSX.utils.book_new();
+            const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+            
+            // Configurar merge del título
+            summarySheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }];
+            
+            // Configurar anchos de columna
+            const colWidths = [{ wch: 30 }, { wch: 12 }];
+            acceptedOrders.forEach(() => {
+                colWidths.push({ wch: 12 });
+            });
+            colWidths.push({ wch: 12 }); // Columna TOTAL
+            summarySheet['!cols'] = colWidths;
+            
+            XLSX.utils.book_append_sheet(workbook, summarySheet, "Resumen General");
+            
+            // 2. CREAR HOJAS INDIVIDUALES POR PEDIDO
+            acceptedOrders.forEach(order => {
+                const orderData = [
+                    [`PEDIDO #${order.id} - ${order.customer}`],
+                    ['Fecha:', order.date],
+                    ['Dirección:', order.address],
+                    ['Teléfono:', order.phone || 'No especificado'],
+                    ['Notas:', order.notes || 'Ninguna'],
+                    ['Estado:', order.status],
+                    ['ID Usuario:', order.userId || 'No registrado'],
+                    [],
+                    ['Producto', 'Unidad', 'Cantidad'],
+                ];
+
+                if(order.items) {
+                    order.items.forEach(item => {
+                        orderData.push([
+                            item.name, 
+                            item.unit || 'unidad', 
+                            item.quantity
+                        ]);
+                    });
+                    
+                    orderData.push([]);
+                    orderData.push(['Total de productos distintos:', '', order.items.length]);
+                }
+
+                const orderSheet = XLSX.utils.aoa_to_sheet(orderData);
+                
+                // Formato básico para hoja individual
+                orderSheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 2 } }];
+                orderSheet['!cols'] = [
+                    { wch: 30 },
+                    { wch: 20 },
+                    { wch: 15 }
+                ];
+
+                // Limpiar nombre de hoja (Excel no permite caracteres raros)
+                const safeName = `Pedido ${order.id}`.replace(/[:\/\\?*\[\]]/g, "");
+                XLSX.utils.book_append_sheet(workbook, orderSheet, safeName);
+            });
+            
+            const today = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(workbook, `Pedidos_Basicos_${today}.xlsx`);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
