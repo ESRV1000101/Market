@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yü foods - Reportes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Estilos originales mantenidos */
+        :root { --primary: #4a7c59; --primary-dark: #3a6547; --secondary: #8d9f87; --light: #f4f1e9; --dark: #2d3319; --gray: #7d8c7d; --radius: 8px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--light); color: var(--dark); margin:0; }
+        .admin-header { background-color: var(--primary); color: white; padding: 1rem 5%; display:flex; justify-content:space-between; align-items:center; }
+        .dashboard-container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .kpi-card { background: white; border-radius: var(--radius); padding: 1.5rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .kpi-value { font-size: 2rem; font-weight: 700; color: var(--primary); }
+        .chart-container { position: relative; height: 300px; margin-bottom: 2rem; background: white; padding: 1rem; border-radius: var(--radius); }
+        .btn { padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: var(--radius); cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h2>Reportes y Análisis</h2>
+        <button class="btn" onclick="location.href='dashboard.html'">Volver</button>
+    </div>
+    
+    <div class="dashboard-container">
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <div class="kpi-value" id="total-orders">-</div>
+                <div class="kpi-label">Pedidos Totales</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value" id="pending-orders">-</div>
+                <div class="kpi-label">Pendientes</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value" id="total-products">-</div>
+                <div class="kpi-label">Productos Activos</div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="ordersChart"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'api.php?resource=';
+        const BASKETS = { orders: 'carritoCompra', products: 'productos' };
+
+        async function loadData() {
+            try {
+                // Cargar Pedidos
+                const resOrders = await fetch(`${API_BASE}${BASKETS.orders}`);
+                const dataOrders = resOrders.ok ? await resOrders.json() : {};
+                const orders = dataOrders.orders || dataOrders || [];
+
+                // Cargar Productos
+                const resProds = await fetch(`${API_BASE}${BASKETS.products}`);
+                const dataProds = resProds.ok ? await resProds.json() : {};
+                const products = dataProds.products || dataProds || [];
+
+                updateKPIs(orders, products);
+                renderCharts(orders);
+            } catch (e) { console.error(e); }
+        }
+
+        function updateKPIs(orders, products) {
+            document.getElementById('total-orders').textContent = orders.length;
+            document.getElementById('pending-orders').textContent = orders.filter(o => o.status === 'Pendiente').length;
+            document.getElementById('total-products').textContent = products.filter(p => p.visible).length;
+        }
+
+        function renderCharts(orders) {
+            // Chart 1: Pedidos por Estado
+            const statusCounts = { 'Pendiente': 0, 'Aceptado': 0, 'Completado': 0, 'Rechazado': 0 };
+            orders.forEach(o => statusCounts[o.status] = (statusCounts[o.status] || 0) + 1);
+            
+            new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statusCounts),
+                    datasets: [{
+                        data: Object.values(statusCounts),
+                        backgroundColor: ['#ffc107', '#0d6efd', '#198754', '#dc3545']
+                    }]
+                },
+                options: { plugins: { title: { display: true, text: 'Distribución por Estado' } } }
+            });
+
+            // Chart 2: Pedidos por Fecha
+            const dateCounts = {};
+            orders.forEach(o => {
+                const date = new Date(o.timestamp).toLocaleDateString();
+                dateCounts[date] = (dateCounts[date] || 0) + 1;
+            });
+
+            new Chart(document.getElementById('ordersChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(dateCounts),
+                    datasets: [{
+                        label: 'Pedidos por Día',
+                        data: Object.values(dateCounts),
+                        backgroundColor: '#4a7c59'
+                    }]
+                },
+                options: { plugins: { title: { display: true, text: 'Historial de Pedidos' } } }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

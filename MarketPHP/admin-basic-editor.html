@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yü foods - Editor Tienda</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos Base */
+        :root { --primary: #4a7c59; --primary-dark: #3a6547; --secondary: #8d9f87; --accent: #d0b49f; --light: #f4f1e9; --dark: #2d3319; --gray: #7d8c7d; --light-gray: #e9ecef; --shadow: 0 4px 12px rgba(0,0,0,0.08); --radius: 8px; --transition: all 0.3s ease; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--light); color: var(--dark); line-height: 1.6; }
+        
+        /* Header */
+        .header { background-color: var(--primary); color: white; padding: 1rem 5%; box-shadow: var(--shadow); }
+        .header-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; }
+        .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 1.5rem; }
+        
+        /* Botones */
+        .btn { padding: 0.8rem 1.5rem; background-color: var(--primary); color: white; border: none; border-radius: var(--radius); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+        .btn:hover { background-color: var(--primary-dark); }
+        .btn-secondary { background-color: var(--secondary); }
+        
+        /* Contenedor Principal */
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .editor-section { background: white; border-radius: var(--radius); box-shadow: var(--shadow); padding: 2rem; margin-bottom: 2rem; }
+        
+        /* Grid de Items */
+        .editor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem; }
+        
+        .editor-item { 
+            background: var(--light); 
+            border-radius: var(--radius); 
+            padding: 1rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 1rem; 
+            border: 2px solid transparent; 
+            transition: var(--transition);
+        }
+        .editor-item:hover { border-color: var(--accent); background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        
+        .editor-item img { width: 60px; height: 60px; object-fit: cover; border-radius: var(--radius); }
+        
+        .item-info { flex: 1; }
+        .item-info h4 { margin: 0; font-size: 1rem; color: var(--primary); }
+        .item-info small { color: var(--gray); font-size: 0.85rem; }
+        
+        .item-actions { display: flex; align-items: center; gap: 10px; }
+
+        /* TOGGLE SWITCH (Interruptor) */
+        .visibility-toggle {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .visibility-toggle input { opacity: 0; width: 0; height: 0; }
+        
+        .visibility-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .visibility-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .visibility-slider { background-color: var(--primary); }
+        input:checked + .visibility-slider:before { transform: translateX(20px); }
+
+        /* Modales */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: var(--radius); padding: 2rem; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .form-input { width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: var(--radius); margin-bottom: 1rem; }
+        
+        /* Toast */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
+        .toast { background: var(--primary); color: white; padding: 1rem; border-radius: var(--radius); margin-bottom: 0.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-container">
+            <div class="logo"><i class="fas fa-seedling"></i><span>Editor Tienda</span></div>
+            <a href="dashboard.html" class="btn"><i class="fas fa-arrow-left"></i> Volver</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h1>Editor de Tienda Básica</h1>
+        
+        <div class="editor-section">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2><i class="fas fa-layer-group"></i> Categorías</h2>
+                <button class="btn" onclick="openCategoryModal()"><i class="fas fa-plus"></i> Nueva</button>
+            </div>
+            <div class="editor-grid" id="categories-grid"></div>
+        </div>
+        
+        <div class="editor-section">
+            <h2><i class="fas fa-apple-alt"></i> Productos</h2>
+            <div style="display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                <button class="btn" onclick="openProductModal()"><i class="fas fa-plus"></i> Nuevo</button>
+                <select id="category-filter" class="form-input" style="width:auto; margin-bottom:0;" onchange="renderProducts()">
+                    <option value="">Todas las categorías</option>
+                </select>
+                <input type="text" id="product-search" class="form-input" style="width:200px; margin-bottom:0;" placeholder="Buscar producto..." oninput="renderProducts()">
+            </div>
+            <div class="editor-grid" id="products-grid"></div>
+        </div>
+    </div>
+    
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <div id="modal-body"></div>
+        </div>
+    </div>
+    
+    <div id="image-upload-modal" class="modal">
+        <div class="modal-content">
+            <h3>Subir Imagen (Cloudinary)</h3>
+            <input type="file" id="image-file-input" class="form-input">
+            <input type="text" id="image-filename" class="form-input" placeholder="Nombre archivo (opcional)">
+            <button class="btn" onclick="uploadImage()">Subir</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('image-upload-modal').style.display='none'">Cancelar</button>
+            <div id="upload-status" style="margin-top:10px; font-weight:bold; color:var(--primary);"></div>
+        </div>
+    </div>
+    
+    <script>
+        // CONFIGURACIÓN MySQL
+        const API_BASE = 'api.php?resource=';
+        const BASKETS = { categories: 'categorias', products: 'productos' };
+        
+        // Cloudinary Config
+        const CLOUDINARY_CLOUD_NAME = 'dgxjjabov';
+        const CLOUDINARY_UPLOAD_PRESET = 'yufoods_preset';
+        
+        let categories = [];
+        let products = [];
+        let currentEditItem = null;
+        let currentUploadType = null;
+        
+        function showToast(msg) {
+            const container = document.querySelector('.toast-container') || document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+            const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+            container.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+        
+        // --- API & DATA ---
+        async function fetchData(basketName) {
+            try {
+                const res = await fetch(`${API_BASE}${basketName}&_t=${Date.now()}`);
+                if (!res.ok) return [];
+                const data = await res.json();
+                if (data.categories) return data.categories;
+                if (data.products) return data.products;
+                return Array.isArray(data) ? data : [];
+            } catch (e) { console.error(e); return []; }
+        }
+        
+        async function saveData(basketName, dataArray) {
+            try {
+                let payload = {};
+                if (basketName === 'categorias') payload = { categories: dataArray }; 
+                else if (basketName === 'productos') payload = { products: dataArray };
+                else payload[basketName] = dataArray;
+
+                await fetch(`${API_BASE}${basketName}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) { console.warn("Save warning", e); }
+        }
+        
+        async function loadData() {
+            categories = await fetchData(BASKETS.categories);
+            products = await fetchData(BASKETS.products);
+            renderCategories();
+            renderCategoryFilter();
+            renderProducts();
+        }
+        
+        // --- RENDERIZADO CON TOGGLES ---
+        
+        function renderCategories() {
+            const grid = document.getElementById('categories-grid');
+            if(categories.length === 0) {
+                 grid.innerHTML = '<p style="padding:1rem; grid-column:1/-1;">No hay categorías.</p>';
+                 return;
+            }
+            grid.innerHTML = categories.map(c => `
+                <div class="editor-item">
+                    <img src="${c.image}" onerror="this.src='https://via.placeholder.com/60'">
+                    <div class="item-info">
+                        <h4>${c.name}</h4>
+                        <small>${c.visible ? 'Activo' : 'Inactivo'}</small>
+                    </div>
+                    <div class="item-actions">
+                        <label class="visibility-toggle" title="${c.visible ? 'Ocultar' : 'Mostrar'}">
+                            <input type="checkbox" ${c.visible ? 'checked' : ''} onchange="toggleCategoryVisibility(${c.id}, this.checked)">
+                            <span class="visibility-slider"></span>
+                        </label>
+                        <button class="btn" style="padding:0.5rem;" onclick="editCategory(${c.id})" title="Editar"><i class="fas fa-edit"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function renderCategoryFilter() {
+            const sel = document.getElementById('category-filter');
+            sel.innerHTML = '<option value="">Todas las categorías</option>' + categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        }
+        
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            const filterId = document.getElementById('category-filter').value;
+            const search = document.getElementById('product-search').value.toLowerCase();
+            
+            const filtered = products.filter(p => {
+                const matchCat = filterId ? p.categoryId == filterId : true;
+                const matchSearch = p.name.toLowerCase().includes(search);
+                return matchCat && matchSearch;
+            });
+            
+            if(filtered.length === 0) {
+                 grid.innerHTML = '<p style="padding:1rem; grid-column:1/-1;">No se encontraron productos.</p>';
+                 return;
+            }
+            
+            grid.innerHTML = filtered.map(p => {
+                const cat = categories.find(c => c.id == p.categoryId)?.name || '?';
+                return `
+                <div class="editor-item">
+                    <img src="${p.image}" onerror="this.src='https://via.placeholder.com/60'">
+                    <div class="item-info">
+                        <h4>${p.name}</h4>
+                        <small>${cat} | ${p.unit}</small>
+                    </div>
+                    <div class="item-actions">
+                        <label class="visibility-toggle" title="${p.visible ? 'Ocultar' : 'Mostrar'}">
+                            <input type="checkbox" ${p.visible ? 'checked' : ''} onchange="toggleProductVisibility(${p.id}, this.checked)">
+                            <span class="visibility-slider"></span>
+                        </label>
+                        <button class="btn" style="padding:0.5rem;" onclick="editProduct(${p.id})" title="Editar"><i class="fas fa-edit"></i></button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        
+        // --- VISIBILITY TOGGLE LOGIC ---
+        
+        async function toggleCategoryVisibility(id, isVisible) {
+            const idx = categories.findIndex(c => c.id === id);
+            if(idx > -1) {
+                categories[idx].visible = isVisible;
+                // Actualización optimista (sin recargar todo)
+                renderCategories(); 
+                await saveData(BASKETS.categories, categories);
+                showToast(isVisible ? 'Categoría Activada' : 'Categoría Oculta');
+            }
+        }
+
+        async function toggleProductVisibility(id, isVisible) {
+            const idx = products.findIndex(p => p.id === id);
+            if(idx > -1) {
+                products[idx].visible = isVisible;
+                // No recargamos renderProducts para no perder posición de scroll o filtros
+                // Solo guardamos y notificamos
+                await saveData(BASKETS.products, products);
+                showToast(isVisible ? 'Producto Activado' : 'Producto Oculto');
+            }
+        }
+
+        // --- CRUD MODALS ---
+        
+        function openCategoryModal(id) {
+            const c = id ? categories.find(x => x.id === id) : null;
+            currentEditItem = { type: 'category', id };
+            currentUploadType = 'category';
+            document.getElementById('modal-body').innerHTML = `
+                <h3 style="color:var(--primary); margin-bottom:1rem;">${id ? 'Editar' : 'Nueva'} Categoría</h3>
+                <label class="form-label">Nombre</label>
+                <input id="cat-name" class="form-input" value="${c?.name||''}">
+                <label class="form-label">Imagen URL</label>
+                <div style="display:flex; gap:5px; margin-bottom:1rem;">
+                    <input id="cat-img" class="form-input" style="margin-bottom:0;" value="${c?.image||''}">
+                    <button class="btn" onclick="openImageUploadModal()"><i class="fas fa-upload"></i></button>
+                </div>
+                <div style="text-align:right;">
+                    <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                    <button class="btn" onclick="saveCategory()">Guardar</button>
+                </div>
+            `;
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+        
+        function openProductModal(id) {
+            const p = id ? products.find(x => x.id === id) : null;
+            currentEditItem = { type: 'product', id };
+            currentUploadType = 'product';
+            document.getElementById('modal-body').innerHTML = `
+                <h3 style="color:var(--primary); margin-bottom:1rem;">${id ? 'Editar' : 'Nuevo'} Producto</h3>
+                <label class="form-label">Nombre</label>
+                <input id="prod-name" class="form-input" value="${p?.name||''}">
+                
+                <label class="form-label">Categoría</label>
+                <select id="prod-cat" class="form-input">
+                    ${categories.map(c => `<option value="${c.id}" ${p?.categoryId==c.id?'selected':''}>${c.name}</option>`).join('')}
+                </select>
+                
+                <label class="form-label">Unidad</label>
+                <select id="prod-unit" class="form-input">
+                    ${['unidad','kilo','atado','atado*','atado**','mano','docena','cajón','plancha','bolsa','bandeja'].map(u => `<option value="${u}" ${p?.unit==u?'selected':''}>${u}</option>`).join('')}
+                </select>
+                
+                <label class="form-label">Imagen URL</label>
+                <div style="display:flex; gap:5px; margin-bottom:1rem;">
+                    <input id="prod-img" class="form-input" style="margin-bottom:0;" value="${p?.image||''}">
+                    <button class="btn" onclick="openImageUploadModal()"><i class="fas fa-upload"></i></button>
+                </div>
+                
+                <div style="text-align:right;">
+                    <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                    <button class="btn" onclick="saveProduct()">Guardar</button>
+                </div>
+            `;
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+
+        async function saveCategory() {
+            const name = document.getElementById('cat-name').value;
+            const image = document.getElementById('cat-img').value;
+            
+            if (currentEditItem.id) {
+                const idx = categories.findIndex(c => c.id === currentEditItem.id);
+                // Mantenemos el estado 'visible' actual
+                categories[idx] = { ...categories[idx], name, image };
+            } else {
+                // Nueva categoría: visible por defecto
+                // ID seguro basado en timestamp
+                categories.push({ id: Math.floor(Date.now()/1000), name, image, visible: true });
+            }
+            await saveData(BASKETS.categories, categories);
+            loadData(); closeModal(); showToast('Categoría Guardada');
+        }
+
+        async function saveProduct() {
+            const name = document.getElementById('prod-name').value;
+            const categoryId = parseInt(document.getElementById('prod-cat').value);
+            const unit = document.getElementById('prod-unit').value;
+            const image = document.getElementById('prod-img').value;
+            
+            if (currentEditItem.id) {
+                const idx = products.findIndex(p => p.id === currentEditItem.id);
+                products[idx] = { ...products[idx], name, categoryId, unit, image };
+            } else {
+                products.push({ id: Math.floor(Date.now()/1000), name, categoryId, unit, image, visible: true });
+            }
+            await saveData(BASKETS.products, products);
+            loadData(); closeModal(); showToast('Producto Guardado');
+        }
+        
+        // Auxiliares
+        function editCategory(id) { openCategoryModal(id); }
+        function editProduct(id) { openProductModal(id); }
+        function closeModal() { document.getElementById('edit-modal').style.display = 'none'; }
+        function openImageUploadModal() { document.getElementById('image-upload-modal').style.display = 'flex'; }
+        
+        async function uploadImage() {
+            const file = document.getElementById('image-file-input').files[0];
+            const name = document.getElementById('image-filename').value;
+            if(!file) return alert('Selecciona un archivo');
+            
+            document.getElementById('upload-status').innerText = 'Subiendo imagen...';
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+            if(name) fd.append('public_id', name);
+            
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
+                const data = await res.json();
+                const urlField = currentUploadType === 'category' ? 'cat-img' : 'prod-img';
+                document.getElementById(urlField).value = data.secure_url;
+                document.getElementById('image-upload-modal').style.display = 'none';
+                document.getElementById('upload-status').innerText = '';
+                showToast('Imagen subida correctamente');
+            } catch(e) { 
+                alert('Error al subir imagen'); 
+                document.getElementById('upload-status').innerText = '';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

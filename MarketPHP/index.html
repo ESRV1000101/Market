@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yü foods</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!--Icono de whatsapp-->
+    <div class="whatsapp-float">
+      <a href="https://wa.me/51968747222" target="_blank"><i class="fab fa-whatsapp"></i></a>
+    </div>
+
+    <!-- Navegación -->
+    <nav>
+        <div class="nav-container">
+            <a href="#home" class="logo" onclick="showSection('home'); return false;">
+                <img src="img/logo.jpeg" alt="yü foods" style="width: 60px; height: 60px;">
+            </a>
+            <div class="hamburger" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home" onclick="showSection('home'); return false;">Inicio</a></li>
+                <li><a href="#store" onclick="showSection('store'); return false;">Tienda</a></li>
+                <li>
+                    <a href="#cart" onclick="showSection('cart'); return false;" class="cart-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </a>
+                </li>
+                <li id="auth-links">
+                    </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Sección de Inicio -->
+    <section id="home" class="active">
+        <div class="banner">
+            <h1>Frutas y Verduras Frescas a Tu Puerta</h1>
+            <p style="font-weight: bold;">Selecciona los mejores productos y nosotros los recolectamos y entregamos en tu hogar</p>
+            <button class="btn" onclick="showSection('store')">Ir a la Tienda</button>
+        </div>
+            <div style="background: white; border-radius: var(--radius); padding: 2rem; margin: 3rem 0; box-shadow: var(--shadow);">
+                <h2 style="text-align: center; margin-bottom: 1.5rem; color: var(--primary);">Nuestro Servicio</h2>
+                <p style="text-align: center; max-width: 800px; margin: 0 auto;">
+                    Puedes ahorrar tiempo y dinero en algo que compras todas las semanas: frutas y verduras.<br>
+                    Somos tu comprador de confianza en el <strong>mercado mayorista</strong>. Tú nos haces tu pedido, y vamos personalmente al mercado a
+                    buscar los productos más frescos al <strong>precio real del día</strong>.<br>
+                    No vendemos con precios inflados.
+                    Simplemente trasladamos el precio exacto que se paga en el mayorista, y por el servicio de compra sólo cobramos un <strong>25% adicional*</strong>.<br>
+                    Luego, lo entregamos <strong>directo en la puerta de tu casa</strong>,
+                    con un costo de delivery accesible. Todo fresco, rápido, y sin que tengas que moverte.<br>
+                    ¿Lo mejor? Nuestros clientes logran ahorrar en comparación con lo que pagarían en cualquier supermercado.<br>
+                    Es un modelo simple, transparente y súper conveniente. Si quieres comer mejor, ahorrar más y olvidarte de cargar bolsas, nosotros nos encargamos de todo. <br>
+                    <br>
+                    <strong>*mínimo S/ 25.00</strong>
+                </p>
+            </div>
+
+            <div style="max-width: 1200px; margin: 0 auto;">
+                <div class="horarios-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+                    <div style="text-align: center; padding: 1.5rem; background: white; border-radius: var(--radius); box-shadow: var(--shadow);">
+                        <h2 style="margin: 0 0 1.5rem; color: var(--primary);">Nuestros Horarios</h2>
+                        <p style="text-align: center; line-height: 1.6;">
+                            <strong>Días de entrega:</strong> Martes y jueves (entre las 11 am y las 3 pm)
+                            <br><br>
+                            <strong>Detalles de pedidos:</strong> Los pedidos realizados hasta el lunes a las 7 pm serán entregados el martes y los pedidos realizados hasta el miércoles a las 7 pm serán entregados el jueves.
+                        </p>
+                    </div>
+                    <div style="text-align: center; padding: 1.5rem; background: white; border-radius: var(--radius); box-shadow: var(--shadow);">
+                        <h2 style="margin: 0 0 1.5rem; color: var(--primary);">Costo del Delivery</h2>
+                        <ul style="list-style-position: inside; text-align: left; display: inline-block; margin: 0; padding: 0; line-height: 1.8;">
+                            <li><strong>S/ 20.00</strong> (La Molina, Monterrico y San Borja)</li>
+                            <li><strong>S/ 25.00</strong> (San Isidro, Miraflores, Barranco y otros distritos)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div style="max-width: 1200px; margin: 0 auto;">
+                <h2 style="text-align: center; margin: 3rem 0 2rem; color: var(--primary);">¿Cómo Funciona?</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                    <div style="text-align: center; padding: 1.5rem; background: white; border-radius: var(--radius); box-shadow: var(--shadow);">
+                        <i class="fas fa-shopping-basket" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                        <h3 style="margin-bottom: 1rem;">1. Regístrate y selecciona tus productos</h3>
+                        <p>Explora nuestra tienda y elige las frutas y verduras que deseas</p>
+                    </div>
+                    <div style="text-align: center; padding: 1.5rem; background: white; border-radius: var(--radius); box-shadow: var(--shadow);">
+                        <i class="fas fa-truck" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                        <h3 style="margin-bottom: 1rem;">2. Nosotros compramos</h3>
+                        <p>Recolectamos los productos más frescos según tu selección</p>
+                    </div>
+                    <div style="text-align: center; padding: 1.5rem; background: white; border-radius: var(--radius); box-shadow: var(--shadow);">
+                        <i class="fas fa-home" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                        <h3 style="margin-bottom: 1rem;">3. Recibe en tu hogar</h3>
+                        <p>Entregamos tus productos frescos directamente a tu puerta</p>
+                    </div>
+                </div>
+            </div>
+    </section>
+
+    <!-- Sección de Tienda -->
+    <section id="store">
+        <h2 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">Nuestras Categorías</h2>
+        <p style="text-align: center; margin-bottom: 2rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+            Selecciona una categoría para ver los productos disponibles
+        </p>
+        <!-- Dentro de <section id="store"> -->
+        <div style="max-width: 600px; margin: 0 auto 2rem auto;">
+            <div class="form-group" style="position: relative;">
+                <input type="text" id="search-input" class="form-input" placeholder="Buscar productos..." style="padding-right: 40px;">
+                <i class="fas fa-search" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--gray);"></i>
+            </div>
+        </div>
+        <!-- Dentro de <section id="store"> después del buscador -->
+        <div class="products-grid" id="search-products-container" style="display: none;">
+            <!-- Los productos de búsqueda aparecerán aquí -->
+        </div>
+        <div class="categories-grid" id="categories-container">
+            <!-- Las categorías se generarán dinámicamente con JavaScript -->
+        </div>
+        <div id="no-visible-categories" style="display: none; text-align: center; padding: 2rem;">
+            <i class="fas fa-box-open"></i>
+            <h3>No hay categorías disponibles</h3>
+            <p>Actualmente no hay categorías visibles. Por favor, intenta más tarde.</p>
+        </div>
+    </section>
+
+    <!-- Sección de Categoría -->
+    <section id="category">
+        <!-- Dentro de <section id="category"> -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <button onclick="showSection('store')" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; color: var(--primary);">
+                <i class="fas fa-arrow-left" style="margin-right: 8px;"></i> Volver
+            </button>
+        </div>
+        <h2 id="category-title" style="text-align: center; margin-bottom: 2rem; color: var(--primary);"></h2>
+        
+        <!-- Agrega este div para los mensajes -->
+        <div id="unit-messages" style="font-weight: bolder; text-align: center; margin-bottom: 1.5rem; max-width: 800px; margin-left: auto; margin-right: auto; font-size: 0.9rem; color: var(--gray);">
+            <!-- Los mensajes se generarán dinámicamente con JavaScript -->
+        </div>
+        
+        <div class="products-grid" id="products-container">
+            <!-- Los productos se generarán dinámicamente con JavaScript -->
+        </div>
+    </section>
+
+    <!-- Sección de Carrito -->
+    <section id="cart">
+        <div class="cart-container">
+            <div class="cart-items">
+                <div class="cart-header">
+                    <h2 class="cart-title">Resumen de Pedidos</h2>
+                    <button class="empty-cart" onclick="emptyCart()">
+                        <i class="fas fa-trash-alt"></i> Vaciar Carrito
+                    </button>
+                </div>
+                <div id="cart-items-container">
+                    <!-- Los productos del carrito se generarán dinámicamente con JavaScript -->
+                </div>
+            </div>
+            
+            <div class="customer-info">
+                <h2 class="info-title">Información de Entrega</h2>
+                <div id="customer-info-content">
+                    <!-- Contenido dinámico basado en estado de autenticación -->
+                </div>
+            </div>
+            
+            <div class="cart-summary">
+                <p style="font-size: medium; font-weight: bold; text-align: center;">*Verifique que los productos en su carrito sean los correctos antes de enviar su pedido. Gracias.</p>
+                <button class="checkout-btn" id="checkout-btn" disabled onclick="saveOrder()">
+                    <i class="fas fa-paper-plane"></i> Enviar Pedido
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Login -->
+    <section id="login">
+        <div class="auth-container">
+            <h2 class="auth-title">Iniciar Sesión</h2>
+            <div class="form-group">
+                <label class="form-label" for="login-email">Correo Electrónico</label>
+                <input type="email" class="form-input" id="login-email" placeholder="Ingresa tu correo">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="login-password">Contraseña</label>
+                <input type="password" class="form-input" id="login-password" placeholder="Ingresa tu contraseña">
+            </div>
+            <div class="error-message" id="login-error"></div>
+            <button class="btn" onclick="customerLogin()" style="width: 100%;">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </button>
+            <div class="auth-switch">
+                ¿No tienes cuenta? <a href="#" onclick="showSection('signup')">Regístrate aquí</a>
+                <div style="margin-top: 10px;">
+                    <a href="#" onclick="showSection('forgot-password')">¿Olvidaste tu contraseña?</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Registro -->
+    <section id="signup">
+        <div class="auth-container">
+            <h2 class="auth-title">Crear Cuenta</h2>
+            <div class="form-group">
+                <label class="form-label required" for="signup-name">Nombre Completo</label>
+                <input type="text" class="form-input" id="signup-name" placeholder="Ingresa tu nombre completo">
+            </div>
+            <div class="form-group">
+                <label class="form-label required" for="signup-email">Correo Electrónico</label>
+                <input type="email" class="form-input" id="signup-email" placeholder="Ingresa tu correo">
+            </div>
+            <div class="form-group">
+                <label class="form-label required" for="signup-phone">Número Celular</label>
+                <input type="text" class="form-input" id="signup-phone" placeholder="Ingresa tu número celular">
+            </div>
+            <div class="form-group">
+                <label class="form-label required" for="signup-address">Dirección de Entrega</label>
+                <input type="text" class="form-input" id="signup-address" placeholder="Ingresa tu dirección completa">
+            </div>
+            <div class="form-group">
+                <label class="form-label required" for="signup-password">Contraseña</label>
+                <input type="password" class="form-input" id="signup-password" placeholder="Crea una contraseña">
+            </div>
+            <div class="error-message" id="signup-error"></div>
+            <button class="btn" onclick="customerSignup()" style="width: 100%;">
+                <i class="fas fa-user-plus"></i> Crear Cuenta
+            </button>
+            <div class="auth-switch">
+                ¿Ya tienes cuenta? <a href="#" onclick="showSection('login')">Inicia sesión aquí</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Recuperación de Contraseña -->
+    <section id="forgot-password">
+        <div class="auth-container">
+            <h2 class="auth-title">Recuperar Contraseña</h2>
+            <div class="form-group">
+                <label class="form-label required" for="recovery-name">Nombre Completo</label>
+                <input type="text" class="form-input" id="recovery-name" placeholder="Ingresa tu nombre completo">
+            </div>
+            <div class="form-group">
+                <label class="form-label required" for="recovery-email">Correo Electrónico</label>
+                <input type="email" class="form-input" id="recovery-email" placeholder="Ingresa tu correo">
+            </div>
+            <div class="error-message" id="recovery-error"></div>
+            <button class="btn" onclick="verifyUser()" style="width: 100%;">
+                <i class="fas fa-check-circle"></i> Verificar Datos
+            </button>
+            <div class="auth-switch">
+                <a href="#" onclick="showSection('login')">Volver a Iniciar Sesión</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Nueva Contraseña -->
+    <section id="new-password">
+        <div class="auth-container">
+            <h2 class="auth-title">Establecer Nueva Contraseña</h2>
+            <div class="form-group">
+                <label class="form-label required" for="new-password-input">Nueva Contraseña</label>
+                <input type="password" class="form-input" id="new-password-input" placeholder="Crea una nueva contraseña">
+            </div>
+            <div class="form-group">
+                <label class="form-label required" for="confirm-new-password">Confirmar Nueva Contraseña</label>
+                <input type="password" class="form-input" id="confirm-new-password" placeholder="Repite la nueva contraseña">
+            </div>
+            <div class="error-message" id="new-password-error"></div>
+            <button class="btn" onclick="updatePassword()" style="width: 100%;">
+                <i class="fas fa-sync-alt"></i> Cambiar Contraseña
+            </button>
+        </div>
+    </section>
+
+    <!-- Sección de Perfil -->
+    <section id="profile">
+        <div class="profile-container">
+
+            <!-- Menú de navegación agregado -->
+            <div class="profile-navigation">
+                <button class="profile-tab active" onclick="showProfileTab('update-data')">
+                    <i class="fas fa-user-edit"></i> Actualizar Datos
+                </button>
+                <button class="profile-tab" onclick="showProfileTab('order-history')">
+                    <i class="fas fa-history"></i> Historial de Pedidos
+                </button>
+            </div>
+
+            <!-- Sección de actualización de datos -->
+            <div id="update-data" class="profile-section">
+                <h2 class="auth-title">Mi Perfil</h2>
+                <div class="form-group">
+                    <label class="form-label required" for="profile-name">Nombre Completo</label>
+                    <input type="text" class="form-input" id="profile-name" placeholder="Ingresa tu nombre completo">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required" for="profile-email">Correo Electrónico</label>
+                    <input type="email" class="form-input" id="profile-email" placeholder="Ingresa tu correo" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required" for="profile-phone">Número Celular</label>
+                    <input type="text" class="form-input" id="profile-phone" placeholder="Ingresa tu número celular">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required" for="profile-address">Dirección de Entrega</label>
+                    <input type="text" class="form-input" id="profile-address" placeholder="Ingresa tu dirección completa">
+                </div>
+                <div class="error-message" id="profile-error"></div>
+                
+                <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--primary);">Cambiar Contraseña</h3>
+                <div class="form-group">
+                    <label class="form-label" for="current-password">Contraseña Actual</label>
+                    <input type="password" class="form-input" id="current-password" placeholder="Ingresa tu contraseña actual">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="new-password">Nueva Contraseña</label>
+                    <input type="password" class="form-input" id="new-password" placeholder="Crea una nueva contraseña">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="confirm-password">Confirmar Nueva Contraseña</label>
+                    <input type="password" class="form-input" id="confirm-password" placeholder="Repite la nueva contraseña">
+                </div>
+                <div class="error-message" id="password-error"></div>
+                
+                <div class="profile-actions">
+                    <button class="btn" onclick="updateProfile()">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                    <button class="btn btn-logout" onclick="customerLogout()">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+
+            <div id="order-history" class="profile-section" style="display:none;">
+                <h3 class="auth-title">Mis Pedidos</h3>
+                <div class="user-orders" id="user-orders"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>Contacto</h3>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Miraflores, Lima</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Lun-Vier: 8:00 AM - 7:00 PM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            <p>&copy; 2025 yü foods. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- MEJORA: Notificaciones tipo toast -->
+    <div id="toast-container" aria-live="polite"></div>
+
+    <!-- MEJORA: JS externo -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="main.js?v=2"></script> 
+</body>
+</html>
+

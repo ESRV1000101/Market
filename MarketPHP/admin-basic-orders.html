@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yü foods - Pedidos Básicos</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div id="access-denied" style="display: none;">
+        <div class="login-container">
+            <h2 style="color: #dc3545;">Acceso Denegado</h2>
+            <p>Debes iniciar sesión.</p>
+            <a href="dashboard.html" class="btn">Volver</a>
+        </div>
+    </div>
+
+    <div id="main-content" style="display: none;">
+        <div class="admin-header">
+            <div class="admin-header-container">
+                <a href="dashboard.html" class="admin-logo">
+                    <i class="fas fa-arrow-left"></i>
+                    <img src="img/logo.jpeg" alt="Logo" class="logo-image" style="width: 40px; height: 40px;">
+                    <span class="logo-text">Pedidos Básicos</span>
+                </a>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </div>
+        
+        <div class="admin-container">
+            <h2 class="admin-title">Gestión de Pedidos</h2>
+            
+            <div class="admin-actions">
+                <div class="date-filter">
+                    <label>Filtrar:</label>
+                    <input type="date" id="filter-start-date">
+                    <span>a</span>
+                    <input type="date" id="filter-end-date">
+                    <select id="filter-status" class="form-input" style="width: auto;">
+                        <option value="">Todos los estados</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Aceptado">Aceptado</option>
+                        <option value="Completado">Completado</option>
+                        <option value="Rechazado">Rechazado</option>
+                    </select>
+                    <button class="btn" onclick="applyFilters()">Buscar</button>
+                    <button class="btn btn-gray" onclick="clearFilters()">Limpiar</button>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-excel" id="download-excel-btn" style="display: none;" onclick="downloadExcel()">Excel</button>
+                    <button class="btn" onclick="forceReload()" style="background-color: #d63384;">
+                        <i class="fas fa-sync-alt"></i> Recarga Forzada
+                    </button>
+                </div>
+            </div>
+            
+            <div class="loader" id="admin-loader"></div>
+            
+            <div class="stats-container" id="stats-container">
+                <div class="stats-tabs">
+                    <button class="stats-tab active" onclick="showStatsTab('products-report')">
+                        <i class="fas fa-boxes"></i> Reporte de Productos
+                    </button>
+                    <button class="stats-tab" onclick="showStatsTab('status-report')">
+                        <i class="fas fa-chart-pie"></i> Estadísticas
+                    </button>
+                </div>
+                
+                <div id="products-report" class="stats-tab-content active">
+                    <div class="stat-card" style="margin-top: 1.5rem;">
+                        <div class="stat-label">Resumen de Productos Aceptados</div>
+                        <div id="products-report-content" style="margin-top: 1rem;"></div>
+                        <div id="products-pagination-controls" class="pagination-container" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+                
+                <div id="status-report" class="stats-tab-content">
+                    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="stat-total">0</div></div>
+                    <div class="stat-card"><div class="stat-label">Pendientes</div><div class="stat-value" id="stat-pending">0</div></div>
+                    <div class="stat-card"><div class="stat-label">Aceptados</div><div class="stat-value" id="stat-accepted">0</div></div>
+                    <div class="stat-card"><div class="stat-label">Completados</div><div class="stat-value" id="stat-completed">0</div></div>
+                    <div class="stat-card"><div class="stat-label">Rechazados</div><div class="stat-value" id="stat-rejected">0</div></div>
+                </div>
+            </div>
+            
+            <div class="chart-container" id="chart-container">
+                <canvas id="orders-chart"></canvas>
+            </div>
+            
+            <div id="orders-section">
+                <div class="admin-actions" style="margin-top: 20px;">
+                    <h3 style="margin-bottom: 1rem; color: var(--primary);">Lista de Pedidos</h3>
+                    <div id="orders-count"></div>
+                </div>
+                
+                <div class="bulk-actions">
+                    <button class="btn btn-action" onclick="acceptAllPending()">Aceptar Pendientes</button>
+                    <button class="btn btn-action" onclick="completeAllAccepted()">Completar Aceptados</button>
+                </div>
+                
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Items</th>
+                            <th>Estado</th>
+                            <th>Cambiar Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-body"></tbody>
+                </table>
+                <div id="orders-pagination" class="pagination-container"></div>
+                <div id="empty-orders" class="empty-state" style="display: none;">
+                    <p>No se encontraron pedidos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal-backdrop" id="order-details-modal">
+        <div class="order-details">
+            <button class="close-modal" onclick="closeOrderDetails()"><i class="fas fa-times"></i></button>
+            <div id="order-details-content"></div>
+        </div>
+    </div>
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <script>
+        // CONFIGURACIÓN API MYSQL
+        const API_URL = 'api.php?resource=carritoCompra';
+        
+        let ordersChart = null;
+        let currentOrders = [];
+        let currentOrderDetailsId = null;
+        
+        // Paginación
+        let ordersCurrentPage = 1;
+        const ordersPageSize = 10;
+        let productsCurrentPage = 1;
+        const productsPageSize = 10;
+        
+        function checkAccess() {
+            if (localStorage.getItem('adminLoggedIn') !== 'true') {
+                document.getElementById('access-denied').style.display = 'block';
+                return false;
+            }
+            document.getElementById('main-content').style.display = 'block';
+            return true;
+        }
+        
+        function showToast(msg, type='info') {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div'); t.className = `toast toast-${type}`; t.textContent = msg;
+            c.appendChild(t); setTimeout(() => t.remove(), 3000);
+        }
+        
+        function logout() { localStorage.removeItem('adminLoggedIn'); window.location.href = 'dashboard.html'; }
+        
+        function showLoader() { document.getElementById('admin-loader').style.display = 'block'; }
+        function hideLoader() { document.getElementById('admin-loader').style.display = 'none'; }
+        
+        function forceReload() { loadFilteredOrders(true); }
+
+        // --- API MYSQL ---
+        async function fetchOrders(force = false) {
+            try {
+                // Usamos &_t porque el URL ya tiene ?resource=...
+                const response = await fetch(`${API_URL}&_t=${Date.now()}`, {
+                    cache: 'no-store',
+                    headers: { 'Cache-Control': 'no-cache, no-store' }
+                });
+
+                if (!response.ok) return [];
+                const data = await response.json();
+                
+                // La API MySQL devuelve { orders: [...] }
+                let rawOrders = data.orders || data || [];
+                if (!Array.isArray(rawOrders)) rawOrders = [];
+
+                // Deduplicación estricta por ID
+                const uniqueOrdersMap = new Map();
+                rawOrders.forEach(order => {
+                    if (order.id) uniqueOrdersMap.set(order.id, order);
+                });
+                
+                return Array.from(uniqueOrdersMap.values());
+            } catch (error) {
+                console.error(error);
+                showToast('Error de conexión', 'error');
+                return [];
+            }
+        }
+        
+        async function saveOrdersToCloud(orders) {
+            try {
+                await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orders })
+                });
+                return { success: true };
+            } catch (error) { return { success: true }; }
+        }
+
+        // --- LÓGICA PRINCIPAL (Igual que antes) ---
+        async function loadFilteredOrders(force = false) {
+            showLoader();
+            const orders = await fetchOrders(force);
+            
+            const start = document.getElementById('filter-start-date').value;
+            const end = document.getElementById('filter-end-date').value;
+            const status = document.getElementById('filter-status').value;
+            
+            const isDateFilterEmpty = !start && !end;
+
+            let filtered = orders.filter(o => {
+                if(status && o.status !== status) return false;
+                if(start || end) {
+                    const d = new Date(o.timestamp);
+                    if(start) { const s = new Date(start); s.setHours(0,0,0,0); if(d < s) return false; }
+                    if(end) { const e = new Date(end); e.setHours(23,59,59,999); if(d > e) return false; }
+                }
+                return true;
+            });
+            
+            // Ordenar por fecha descendente
+            filtered.sort((a, b) => b.timestamp - a.timestamp);
+            currentOrders = filtered;
+            
+            renderOrders(filtered);
+            updateStats(filtered);
+            createOrdersChart(filtered, isDateFilterEmpty);
+            
+            productsCurrentPage = 1;
+            loadProductsReport();
+            
+            hideLoader();
+            
+            document.getElementById('download-excel-btn').style.display = filtered.length ? 'inline-block' : 'none';
+            document.getElementById('orders-count').innerHTML = `<span>${filtered.length} pedidos</span>`;
+            document.getElementById('empty-orders').style.display = filtered.length ? 'none' : 'block';
+        }
+
+        function renderOrders(orders) {
+            const tbody = document.getElementById('orders-body');
+            tbody.innerHTML = '';
+            
+            if (orders.length === 0) return;
+
+            const pages = Math.ceil(orders.length / ordersPageSize);
+            if (ordersCurrentPage > pages) ordersCurrentPage = 1;
+            
+            const pageOrders = orders.slice((ordersCurrentPage-1)*ordersPageSize, ordersCurrentPage*ordersPageSize);
+
+            pageOrders.forEach(o => {
+                let statusClass = 'order-status status-' + o.status.toLowerCase();
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${o.id}</td>
+                    <td>${o.date ? o.date.split(',')[0] : '-'}</td>
+                    <td>${o.customer}</td>
+                    <td>${o.items ? o.items.length : 0} items</td>
+                    <td><span class="${statusClass}">${o.status}</span></td>
+                    <td>
+                        <select class="form-input" id="status-${o.id}" style="margin:0; padding:5px">
+                            <option value="Pendiente" ${o.status === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+                            <option value="Aceptado" ${o.status === 'Aceptado' ? 'selected' : ''}>Aceptado</option>
+                            <option value="Completado" ${o.status === 'Completado' ? 'selected' : ''}>Completado</option>
+                            <option value="Rechazado" ${o.status === 'Rechazado' ? 'selected' : ''}>Rechazado</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="action-btn" onclick="viewDetails('${o.id}')" title="Ver"><i class="fas fa-eye"></i></button>
+                        <button class="action-btn" onclick="saveOrderStatus('${o.id}')" title="Guardar Estado"><i class="fas fa-save"></i></button>
+                        <button class="action-btn" onclick="deleteOrder('${o.id}')" style="background-color:#dc3545" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            renderOrdersPagination(orders.length);
+        }
+
+        function renderOrdersPagination(totalItems) {
+            const container = document.getElementById('orders-pagination');
+            const totalPages = Math.ceil(totalItems / ordersPageSize);
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+            let html = '';
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button class="pagination-btn${i === ordersCurrentPage ? ' active' : ''}" onclick="ordersCurrentPage=${i}; renderOrders(currentOrders)">${i}</button>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function loadProductsReport() {
+            const container = document.getElementById('products-report-content');
+            const controls = document.getElementById('products-pagination-controls');
+            
+            const accepted = currentOrders.filter(o => o.status === 'Aceptado');
+            
+            if (accepted.length === 0) {
+                container.innerHTML = '<p>No hay productos aceptados.</p>';
+                controls.innerHTML = '';
+                return;
+            }
+
+            const map = {};
+            accepted.forEach(o => {
+                if(o.items) o.items.forEach(i => {
+                    const k = i.name + i.unit;
+                    if(!map[k]) map[k] = {name: i.name, unit: i.unit, quantity: 0};
+                    map[k].quantity += i.quantity;
+                });
+            });
+
+            let list = Object.values(map).sort((a,b) => b.quantity - a.quantity);
+            
+            const totalPages = Math.ceil(list.length / productsPageSize);
+            if (productsCurrentPage > totalPages) productsCurrentPage = 1;
+            
+            const start = (productsCurrentPage - 1) * productsPageSize;
+            const end = start + productsPageSize;
+            const pageList = list.slice(start, end);
+
+            let html = '<table class="orders-table"><thead><tr><th>Producto</th><th>Unidad</th><th>Total</th></tr></thead><tbody>';
+            pageList.forEach(p => {
+                html += `<tr><td>${p.name}</td><td>${p.unit}</td><td>${p.quantity.toFixed(2)}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+
+            let paginationHtml = '';
+            if (totalPages > 1) {
+                paginationHtml += `<button class="pagination-btn" onclick="productsCurrentPage--; loadProductsReport()" ${productsCurrentPage===1?'disabled':''}>&laquo;</button>`;
+                paginationHtml += `<span style="margin:0 10px; font-weight:bold;">${productsCurrentPage} / ${totalPages}</span>`;
+                paginationHtml += `<button class="pagination-btn" onclick="productsCurrentPage++; loadProductsReport()" ${productsCurrentPage===totalPages?'disabled':''}>&raquo;</button>`;
+            }
+            controls.innerHTML = paginationHtml;
+        }
+
+        async function saveOrderStatus(orderId) {
+            const selectElement = document.getElementById(`status-${orderId}`);
+            if(!selectElement) return;
+            const newStatus = selectElement.value;
+            const order = currentOrders.find(o => o.id === orderId);
+            if(order) order.status = newStatus;
+            
+            await saveOrdersToCloud(currentOrders);
+            showToast('Estado actualizado');
+            renderOrders(currentOrders);
+            updateStats(currentOrders);
+            loadProductsReport();
+        }
+
+        async function deleteOrder(id) {
+            if (!confirm(`¿Estás seguro de ELIMINAR definitivamente el pedido #${id}?`)) return;
+            
+            showLoader();
+            
+            try {
+                // AHORA USAMOS EL MÉTODO DELETE DIRECTAMENTE A LA BASE DE DATOS
+                // Nota: API_URL ya tiene 'api.php?resource=carritoCompra', le agregamos el ID
+                const response = await fetch(`${API_URL}&id=${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showToast('Pedido eliminado de la base de datos', 'success');
+                    // Recargamos la lista desde el servidor para ver el cambio real
+                    setTimeout(() => {
+                        loadFilteredOrders(true);
+                    }, 500);
+                } else {
+                    showToast('Error al eliminar en el servidor', 'error');
+                    hideLoader();
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Error de conexión', 'error');
+                hideLoader();
+            }
+        }
+
+        function createOrdersChart(orders, showLastMonthOnly = false) {
+            const ctx = document.getElementById('orders-chart').getContext('2d');
+            if (ordersChart) ordersChart.destroy();
+            
+            let dataToChart = orders;
+            if (showLastMonthOnly) {
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                thirtyDaysAgo.setHours(0,0,0,0);
+                dataToChart = orders.filter(o => new Date(o.timestamp) >= thirtyDaysAgo);
+            }
+            
+            if (dataToChart.length === 0) return;
+            
+            const byDay = {};
+            const sorted = [...dataToChart].sort((a, b) => a.timestamp - b.timestamp);
+            sorted.forEach(o => {
+                const d = new Date(o.timestamp);
+                const key = `${d.getDate()}/${d.getMonth()+1}`;
+                byDay[key] = (byDay[key] || 0) + 1;
+            });
+            
+            ordersChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(byDay),
+                    datasets: [{
+                        label: showLastMonthOnly ? 'Pedidos (Últimos 30 días)' : 'Pedidos',
+                        data: Object.values(byDay),
+                        backgroundColor: 'rgba(74, 124, 89, 0.7)'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            });
+        }
+
+        function viewDetails(id) {
+            const o = currentOrders.find(x => x.id === id);
+            if(!o) return;
+            document.getElementById('order-details-content').innerHTML = `
+                <h3>Pedido #${o.id}</h3>
+                <p><b>Cliente:</b> ${o.customer}</p>
+                <p><b>Tel:</b> ${o.phone}</p>
+                <p><b>Dir:</b> ${o.address}</p>
+                <p><b>Nota:</b> ${o.notes || '-'}</p>
+                <hr>
+                ${(o.items||[]).map(i => `<div>- ${i.name}: ${i.quantity} ${i.unit}</div>`).join('')}
+            `;
+            document.getElementById('order-details-modal').classList.add('active');
+        }
+        function closeOrderDetails() { document.getElementById('order-details-modal').classList.remove('active'); }
+
+        async function acceptAllPending() {
+            if(!confirm('¿Aceptar todos?')) return;
+            let orders = await fetchOrders(true);
+            orders.forEach(o => { if(o.status === 'Pendiente') o.status = 'Aceptado'; });
+            await saveOrdersToCloud(orders);
+            loadFilteredOrders(true);
+        }
+        
+        async function completeAllAccepted() {
+            if(!confirm('¿Completar todos?')) return;
+            let orders = await fetchOrders(true);
+            orders.forEach(o => { if(o.status === 'Aceptado') o.status = 'Completado'; });
+            await saveOrdersToCloud(orders);
+            loadFilteredOrders(true);
+        }
+
+        function updateStats(orders) {
+            document.getElementById('stat-total').textContent = orders.length;
+            document.getElementById('stat-pending').textContent = orders.filter(o => o.status === 'Pendiente').length;
+            document.getElementById('stat-accepted').textContent = orders.filter(o => o.status === 'Aceptado').length;
+            document.getElementById('stat-completed').textContent = orders.filter(o => o.status === 'Completado').length;
+            document.getElementById('stat-rejected').textContent = orders.filter(o => o.status === 'Rechazado').length;
+        }
+        function showStatsTab(tabId) {
+            document.querySelectorAll('.stats-tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.stats-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            if(tabId === 'products-report') loadProductsReport();
+        }
+        function applyFilters() { ordersCurrentPage=1; loadFilteredOrders(); }
+        function clearFilters() { 
+            document.getElementById('filter-start-date').value = '';
+            document.getElementById('filter-end-date').value = '';
+            document.getElementById('filter-status').value = '';
+            loadFilteredOrders(); 
+        }
+        function refreshOrders() { loadFilteredOrders(true); }
+        
+        function downloadExcel() {
+             const acceptedOrders = currentOrders.filter(order => order.status === 'Aceptado');
+             if (acceptedOrders.length === 0) { alert('No hay pedidos aceptados para exportar'); return; }
+             acceptedOrders.sort((a, b) => a.id.localeCompare(b.id));
+             
+             const productsByOrder = {};
+             const allProducts = new Set();
+             
+             acceptedOrders.forEach(order => {
+                if(order.items) {
+                    order.items.forEach(item => {
+                        const productKey = `${item.name}|||${item.unit}`;
+                        allProducts.add(productKey);
+                        if (!productsByOrder[productKey]) productsByOrder[productKey] = {};
+                        productsByOrder[productKey][order.id] = (productsByOrder[productKey][order.id] || 0) + item.quantity;
+                    });
+                }
+             });
+             
+             const sortedProducts = Array.from(allProducts).sort();
+             const summaryData = [['RESUMEN DE PRODUCTOS POR PEDIDO - TIENDA BÁSICA'], []];
+             const headers = ['Producto', 'Unidad'];
+             acceptedOrders.forEach(order => headers.push(order.id));
+             headers.push('TOTAL');
+             summaryData.push(headers);
+             
+             sortedProducts.forEach(productKey => {
+                const [productName, productUnit] = productKey.split('|||');
+                const row = [productName, productUnit];
+                let totalQuantity = 0;
+                acceptedOrders.forEach(order => {
+                    const quantity = productsByOrder[productKey][order.id] || 0;
+                    row.push(quantity > 0 ? quantity : '');
+                    totalQuantity += quantity;
+                });
+                row.push(totalQuantity);
+                summaryData.push(row);
+             });
+             
+             summaryData.push([]);
+             const totalsRow = ['TOTAL DE PRODUCTOS', ''];
+             acceptedOrders.forEach(order => {
+                let orderTotal = 0;
+                if(order.items) order.items.forEach(i => orderTotal += i.quantity);
+                totalsRow.push(orderTotal);
+             });
+             
+             let grandTotal = 0;
+             acceptedOrders.forEach(order => { if(order.items) order.items.forEach(item => grandTotal += item.quantity); });
+             totalsRow.push(grandTotal);
+             summaryData.push(totalsRow);
+             
+             const workbook = XLSX.utils.book_new();
+             const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+             summarySheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }];
+             const colWidths = [{ wch: 30 }, { wch: 12 }];
+             acceptedOrders.forEach(() => colWidths.push({ wch: 12 }));
+             colWidths.push({ wch: 12 });
+             summarySheet['!cols'] = colWidths;
+             XLSX.utils.book_append_sheet(workbook, summarySheet, "Resumen General");
+             
+             acceptedOrders.forEach(order => {
+                const orderData = [
+                    [`PEDIDO #${order.id} - ${order.customer}`],
+                    ['Fecha:', order.date],
+                    ['Dirección:', order.address],
+                    ['Teléfono:', order.phone || 'No especificado'],
+                    ['Notas:', order.notes || 'Ninguna'],
+                    ['Estado:', order.status],
+                    ['ID Usuario:', order.userId || 'No registrado'],
+                    [],
+                    ['Producto', 'Unidad', 'Cantidad'],
+                ];
+                if(order.items) {
+                    order.items.forEach(item => {
+                        orderData.push([item.name, item.unit || 'unidad', item.quantity]);
+                    });
+                    orderData.push([]);
+                    orderData.push(['Total de productos distintos:', '', order.items.length]);
+                }
+                const orderSheet = XLSX.utils.aoa_to_sheet(orderData);
+                orderSheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 2 } }];
+                orderSheet['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 15 }];
+                const safeName = `Pedido ${order.id}`.replace(/[:\/\\?*\[\]]/g, "");
+                XLSX.utils.book_append_sheet(workbook, orderSheet, safeName);
+             });
+             
+             const today = new Date().toISOString().slice(0, 10);
+             XLSX.writeFile(workbook, `Pedidos_Basicos_${today}.xlsx`);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if(checkAccess()) loadFilteredOrders();
+            document.getElementById('order-details-modal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('order-details-modal')) closeOrderDetails();
+            });
+        });
+    </script>
+</body>
+</html>
